@@ -211,22 +211,37 @@ export function MysticTarot() {
       const profileContext = getProfileContext();
 
       const prompt = `
-        这是一次正式的塔罗占卜仪式。用户选择了【${currentMode.name}】（共${currentMode.cardCount}张牌）。
-        本次占卜的领域是：【${categoryName}】
-        ${zodiacSign ? `用户的太阳星座是：【${zodiacSign}】。` : ""}
-        ${question ? `用户心中默念的问题是：“${question}”` : "用户提供深度整体运势解读。"}
-        ${profileContext}
-        
-        牌阵展开如下：
-        ${cardsList}
-        
-        请用中文提供专业、深刻的解读报告。Markdown格式，必须包含：
-        ### 🔮 牌阵解析
-        ### 🌌 牌面间的能量连结
-        ### 🌟 最终神谕与指引
+<instruction>
+你正在进行一次正式的塔罗占卜仪式。请基于提供的牌阵和用户信息，用中文撰写一份专业、深刻的解读报告。
+</instruction>
 
-        最后提炼一句20字内的「灵魂箴言」：
-        [SOUL_MOTTO] 你的灵魂箴言内容 [/SOUL_MOTTO]
+<divination_context>
+  <spread_mode>${currentMode.name} (共${currentMode.cardCount}张牌)</spread_mode>
+  <category>${categoryName}</category>
+</divination_context>
+
+<user_profile>
+  ${profileContext}
+  ${zodiacSign ? `<zodiac>${zodiacSign}</zodiac>` : ""}
+</user_profile>
+
+<user_question>
+  ${question ? question : "未提供具体问题，请进行深度整体运势解读"}
+</user_question>
+
+<drawn_cards>
+  ${cardsList}
+</drawn_cards>
+
+<output_format>
+使用Markdown排版，必须且只能包含以下三个二级标题（##）：
+## 🔮 牌阵解析
+## 🌌 牌面间的能量连结
+## 🌟 最终神谕与指引
+
+在文章末尾，必须单独提炼一句20字内的灵魂箴言，严格使用以下XML标签包裹：
+[SOUL_MOTTO] 你的灵魂箴言内容 [/SOUL_MOTTO]
+</output_format>
       `;
 
       let fullResponse = "";

@@ -46,11 +46,23 @@ export default function CollectiveMirrorApp() {
     if (hasGenerated) return;
     
     const prompt = `
-今天是：${today.toLocaleDateString()}
-今日全球集体卦象：第${hexagram.num}卦 ${hexagram.name} (${hexagram.meaning})
+<instruction>
+请基于以下给定的集体卦象，结合当前全球的集体潜意识状态（可以泛指现代社会的焦虑、科技发展、人际疏离或觉醒等），给出一份「今日集体镜像」的解读。
+请告诉我们：作为集体的一部分，我们今天共同面临着怎样的能量？我们应该如何在这个集体能量中自处？
+</instruction>
 
-请基于这个卦象，结合当前全球的集体潜意识状态（可以泛指现代社会的焦虑、科技发展、人际疏离或觉醒等），给出一份「今日集体镜像」的解读。
-告诉我们：作为集体的一部分，我们今天共同面临着怎样的能量？我们应该如何在这个集体能量中自处？
+<divination_context>
+  <time>${today.toLocaleDateString()}</time>
+  <hexagram>
+    <number>${hexagram.num}</number>
+    <name>${hexagram.name}</name>
+    <meaning>${hexagram.meaning}</meaning>
+  </hexagram>
+</divination_context>
+
+<output_format>
+使用Markdown排版。必须包含具有启发性的引导语和具体的共处建议。
+</output_format>
 `;
 
     try {

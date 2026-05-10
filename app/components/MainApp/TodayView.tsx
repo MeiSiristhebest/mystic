@@ -60,16 +60,20 @@ export function TodayView() {
       try {
         const context = getProfileContext();
         const prompt = `
-          你是一位充满智慧的灵魂导师。请根据以下用户信息，为他/她生成今日的“灵魂神谕”和“能量建议”。
-          
-          用户信息：
-          ${context}
-          
-          请返回一个JSON对象，包含以下字段：
-          1. oracle: 灵魂神谕，语气优雅、深邃、富有哲理，30-50字。
-          2. energyTip: 今日能量建议，具体且可操作，15-25字。
-          
-          仅返回JSON对象，不要有任何解释。
+<instruction>
+你是一位充满智慧的灵魂导师。请根据提供的用户信息，为他/她生成今日的“灵魂神谕”和“能量建议”。
+仅返回JSON对象，不要有任何其他解释或前言。
+</instruction>
+
+<user_profile>
+  ${context}
+</user_profile>
+
+<output_format>
+必须严格按照提供的 JSON Schema 返回数据：
+1. oracle: 灵魂神谕，语气优雅、深邃、富有哲理，30-50字。
+2. energyTip: 今日能量建议，具体且可操作，15-25字。
+</output_format>
         `;
         
         const text = await generateContent(prompt, AKASHA_PERSONA, {

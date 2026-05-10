@@ -58,13 +58,23 @@ export default function TimeWisdomApp() {
     if (hasGenerated) return;
     
     const prompt = `
-今天是：${today.toLocaleDateString()}
-当前月相：${moonPhase.name}
-
-${getProfileContext()}
-
+<instruction>
 请结合今天的月相能量和近期的宏观星象（如土星、木星的行进，或水逆等，可根据当前日期合理推演），为我提供一份专属的「流年/近期运势提醒」。
 重点放在：我当下的能量适合做什么？需要避开什么？
+</instruction>
+
+<divination_context>
+  <time>${today.toLocaleDateString()}</time>
+  <moon_phase>${moonPhase.name}</moon_phase>
+</divination_context>
+
+<user_profile>
+  ${getProfileContext()}
+</user_profile>
+
+<output_format>
+使用Markdown排版。结构应清晰，重点分明，给出具体可操作的能量建议。
+</output_format>
 `;
 
     try {

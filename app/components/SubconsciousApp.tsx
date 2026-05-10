@@ -28,7 +28,15 @@ export default function SubconsciousApp() {
     setInput("");
     
     const prompt = messages.length === 0 
-      ? `${getProfileContext()}\n\n用户输入：${currentInput}`
+      ? `
+<user_profile>
+${getProfileContext()}
+</user_profile>
+
+<user_input>
+${currentInput}
+</user_input>
+`
       : currentInput;
 
     try {

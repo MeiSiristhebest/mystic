@@ -190,27 +190,36 @@ export default function IChingApp({ mode = 'liuyao', onReadingChange }: { mode?:
     if (type === 'qimen') {
       const qimenData = await getQiMenServerData(new Date());
       prompt = `
-        这是一次正式的奇门遁甲（时家奇门）排盘与预测。
-        用户心中默念的问题是：“${sanitizedQuestion || '无具体问题，请测近期局势'}”
-        当前占卜时间（作为起局依据）：${new Date().toLocaleString('zh-CN')}
-        
-        【系统已通过专业历法库计算出准确排盘基础数据，请严格基于以下数据进行解读】：
-        节气：${qimenData.jieQi}
-        四柱：${qimenData.baZi.join(' ')}
-        昼夜：${qimenData.isDaylight ? '昼' : '夜'}
-        
-        ${profileContext}
-        
-        请用中文提供一份专业、深刻、严谨的奇门遁甲排盘与解读报告。
-        请使用Markdown格式排版，必须包含以下结构：
-        ### ☯️ 奇门排盘局象
-        （请根据提供的基础数据推算阴阳遁局数，定地盘、天盘、人盘八门、神盘八神、九星，并简述当前格局，如伏吟、反吟、吉凶格等）
-        
-        ### 🔍 用神与多维分析
-        （根据用户的问题提取用神，分析日干、时干的落宫生克关系，结合八门、九星、八神分析天时、地利、人和、神助）
-        
-        ### 🌟 破局与行动指引
-        （给出具体的趋吉避凶建议，包括有利方位、时机、策略等）
+<instruction>
+这是一次正式的奇门遁甲（时家奇门）排盘与预测。请严格基于系统提供的基础数据进行排盘与解读。
+</instruction>
+
+<divination_context>
+  <time>${new Date().toLocaleString('zh-CN')}</time>
+  <jie_qi>${qimenData.jieQi}</jie_qi>
+  <ba_zi>${qimenData.baZi.join(' ')}</ba_zi>
+  <day_night>${qimenData.isDaylight ? '昼' : '夜'}</day_night>
+</divination_context>
+
+<user_profile>
+  ${profileContext}
+</user_profile>
+
+<user_question>
+  ${sanitizedQuestion || '无具体问题，请测近期局势'}
+</user_question>
+
+<output_format>
+请使用Markdown排版，必须且只能包含以下结构：
+## ☯️ 奇门排盘局象
+（请根据提供的基础数据推算阴阳遁局数，定地盘、天盘、人盘八门、神盘八神、九星，并简述当前格局，如伏吟、反吟、吉凶格等）
+
+## 🔍 用神与多维分析
+（根据用户的问题提取用神，分析日干、时干的落宫生克关系，结合八门、九星、八神分析天时、地利、人和、神助）
+
+## 🌟 破局与行动指引
+（给出具体的趋吉避凶建议，包括有利方位、时机、策略等）
+</output_format>
       `;
     } else if (type === 'liuyao') {
       const lineNames = (data.lines || []).map((l: number, i: number) => {
@@ -219,40 +228,70 @@ export default function IChingApp({ mode = 'liuyao', onReadingChange }: { mode?:
       }).join('\n');
       
       prompt = `
-        这是一次正式的六爻金钱卦占卜。用户摇卦六次，得出的爻象如下（从初爻到上爻）：
-        ${lineNames}
-        
-        用户心中默念的问题是：“${sanitizedQuestion || '无具体问题，请测近期运势'}”
-        ${profileContext}
-        
-        请用中文提供一份专业、深刻、严谨的易经六爻排盘与解读报告。
-        请使用Markdown格式排版，必须包含以下结构：
-        ### ☯️ 卦象解析（本卦与变卦）
-        （请排盘出本卦与变卦，并解析卦名、卦辞、爻辞的含义）
-        
-        ### 🔍 六爻动静分析
-        （分析世应关系、用神、动爻与变爻的作用，以及五行生克制化）
-        
-        ### 🌟 最终断语与指引
-        （结合卦象与用户的问题，给出客观、具有启发性和建设性的最终建议）
+<instruction>
+这是一次正式的六爻金钱卦占卜。请用中文提供一份专业、深刻、严谨的易经六爻排盘与解读报告。
+</instruction>
+
+<divination_context>
+  <method>六爻起卦法</method>
+  <lines_drawn>
+${lineNames}
+  </lines_drawn>
+</divination_context>
+
+<user_profile>
+  ${profileContext}
+</user_profile>
+
+<user_question>
+  ${sanitizedQuestion || '无具体问题，请测近期运势'}
+</user_question>
+
+<output_format>
+请使用Markdown排版，必须且只能包含以下结构：
+## ☯️ 卦象解析（本卦与变卦）
+（请排盘出本卦与变卦，并解析卦名、卦辞、爻辞的含义）
+
+## 🔍 六爻动静分析
+（分析世应关系、用神、动爻与变爻的作用，以及五行生克制化）
+
+## 🌟 最终断语与指引
+（结合卦象与用户的问题，给出客观、具有启发性和建设性的最终建议）
+</output_format>
       `;
     } else {
       prompt = `
-        这是一次正式的梅花易数占卜。用户提供的两个随机数字是：${data.num1} 和 ${data.num2}。
-        
-        用户心中默念的问题是：“${sanitizedQuestion || '无具体问题，请测近期运势'}”
-        ${profileContext}
-        
-        请用中文提供一份专业、深刻、严谨的梅花易数排盘与解读报告。
-        请使用Markdown格式排版，必须包含以下结构：
-        ### ☯️ 卦象解析（本卦、互卦、变卦）
-        （请根据数字起卦法：第一个数除以8余数为上卦，第二个数除以8余数为下卦，两数之和加当前时辰数除以6余数为动爻。请假设当前时辰为随机，或仅用两数之和除以6取动爻。解析卦名与卦象）
-        
-        ### 🔍 体用生克分析
-        （分析体卦与用卦的五行生克关系，以及互卦、变卦的影响）
-        
-        ### 🌟 最终断语与指引
-        （结合卦象与用户的问题，给出客观、具有启发性和建设性的最终建议）
+<instruction>
+这是一次正式的梅花易数占卜。请用中文提供一份专业、深刻、严谨的梅花易数排盘与解读报告。
+</instruction>
+
+<divination_context>
+  <method>梅花易数起卦法（数字起卦）</method>
+  <numbers_provided>
+    <num1>${data.num1}</num1>
+    <num2>${data.num2}</num2>
+  </numbers_provided>
+</divination_context>
+
+<user_profile>
+  ${profileContext}
+</user_profile>
+
+<user_question>
+  ${sanitizedQuestion || '无具体问题，请测近期运势'}
+</user_question>
+
+<output_format>
+请使用Markdown排版，必须且只能包含以下结构：
+## ☯️ 卦象解析（本卦、互卦、变卦）
+（根据数字起卦法：第一个数除以8余数为上卦，第二个数除以8余数为下卦，两数之和加当前时辰数除以6余数为动爻。请假设当前时辰为随机，或仅用两数之和除以6取动爻。解析卦名与卦象）
+
+## 🔍 体用生克分析
+（分析体卦与用卦的五行生克关系，以及互卦、变卦的影响）
+
+## 🌟 最终断语与指引
+（结合卦象与用户的问题，给出客观、具有启发性和建设性的最终建议）
+</output_format>
       `;
     }
 
