@@ -1,0 +1,67 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: dailyImages
+    // Document ID: YYYY-MM-DD_promptHash
+    // Fields:
+    //   - imageUrl: string (required, base64 data) - The generated image.
+    //   - prompt: string (required) - The prompt used.
+    //   - date: string (required, YYYY-MM-DD) - The date of generation.
+    //   - createdAt: timestamp (required) - Creation time.
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          (request.auth.token.email == "cassianisthebest1@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function isValidDailyImage(data) {
+      return hasRequiredFields(['imageUrl', 'prompt', 'date', 'createdAt']) &&
+             hasOnlyAllowedFields(['imageUrl', 'prompt', 'date', 'createdAt']) &&
+             data.imageUrl is string && data.imageUrl.size() > 100 && data.imageUrl.size() < 2000000 &&
+             data.prompt is string && data.prompt.size() > 0 && data.prompt.size() < 1000 &&
+             data.date is string && data.date.matches("^\\d{4}-\\d{2}-\\d{2}$") &&
+             data.createdAt is timestamp;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /dailyImages/{imageId} {
+      // Allow public read of shared images
+      allow read: if true;
+      
+      // Writes are now strictly handled by Firebase Admin SDK on the server side
+      allow write: if false;
+    }
+
+    // Default deny for everything else
+    match /{path=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "name": "Mystic App",
+  "description": "A mystic application with various tools.",
+  "requestFramePermissions": ["camera"]
+}
