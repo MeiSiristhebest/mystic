@@ -92,13 +92,17 @@ export default function BaziApp({ mode = 'bazi', onReadingChange }: { mode?: str
   const posterRef = useRef<HTMLDivElement>(null);
   const [currentEntryId, setCurrentEntryId] = useState<string | null>(null);
 
-  useEffect(() => {
+  const [prevProfile, setPrevProfile] = useState(profile);
+
+  // Sync state when profile loads/changes (React 19 pattern)
+  if (profile !== prevProfile) {
     if (profile.birthDate) setBirthDate(profile.birthDate);
     if (profile.birthTime) setBirthTime(profile.birthTime);
     if (profile.gender) setGender(profile.gender === '女' ? 'female' : 'male');
     if (profile.birthPlace) setBirthPlace(profile.birthPlace);
     if (profile.name) setFullName(profile.name);
-  }, [profile]);
+    setPrevProfile(profile);
+  }
   
   const [messages, setMessages] = useState<{ role: 'user' | 'model'; content: string }[]>([]);
   const [isAskingFollowUp, setIsAskingFollowUp] = useState(false);

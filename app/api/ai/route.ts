@@ -13,34 +13,54 @@ export async function POST(req: NextRequest) {
     
     const ai = new GoogleGenAI({ apiKey });
     const body = await req.json();
-    const { prompt, systemInstruction = AKASHA_PERSONA, config: userConfig = {} } = body;
+    const { 
+      prompt, 
+      systemInstruction = AKASHA_PERSONA, 
+      config: userConfig = {} 
+    } = body;
     
     const contents = Array.isArray(prompt) 
       ? prompt.map((m: any) => {
-          if (m.role && m.parts) return m; // Already in standard format
-          if (m.text) return { role: 'user', parts: [{ text: m.text }] }; // Simple text object
-          return { role: 'user', parts: [m] }; // Single part object
+          if (m.role && m.parts) return m;
+          if (m.text) return { role: 'user', parts: [{ text: m.text }] };
+          return { role: 'user', parts: [m] };
         })
       : [{ role: 'user', parts: [{ text: prompt }] }];
 
+    // Prepare generation config for v2 SDK
+    const generationConfig: any = {};
+    if (userConfig.responseMimeType) generationConfig.responseMimeType = userConfig.responseMimeType;
+    if (userConfig.responseSchema) generationConfig.responseSchema = userConfig.responseSchema;
+    if (userConfig.temperature !== undefined) generationConfig.temperature = userConfig.temperature;
+    if (userConfig.maxOutputTokens !== undefined) generationConfig.maxOutputTokens = userConfig.maxOutputTokens;
+
     const responseStream = await ai.models.generateContentStream({
-      model: DEFAULT_MODEL,
+      model: userConfig.model || DEFAULT_MODEL,
       contents,
       config: {
         systemInstruction,
-        ...userConfig,
+        ...generationConfig,
       },
     });
 
     const stream = new ReadableStream({
       async start(controller) {
-        for await (const chunk of responseStream) {
-          controller.enqueue(new TextEncoder().encode(chunk.text || ""));
+        try {
+          for await (const chunk of responseStream) {
+            const text = chunk.text || "";
+            if (text) {
+              controller.enqueue(new TextEncoder().encode(text));
+            }
+          }
+        } catch (e) {
+          console.error("Stream processing error:", e);
+          controller.error(e);
+        } finally {
+          controller.close();
         }
-        controller.close();
       },
       cancel() {
-        // Handle client disconnect if needed
+        // Optional: handle abort
       }
     });
 

@@ -21,15 +21,13 @@ export default function JourneyApp() {
   const { isGeneratingPoster, handleGeneratePoster } = usePosterGenerator();
   const { stream, isLoading: isStreaming, error: streamError, abort } = useAIStream();
 
-  useEffect(() => {
-    if (selectedEntry) {
-      if (selectedEntry.details?.messages) {
-        setChatMessages(selectedEntry.details.messages);
-      } else {
-        setChatMessages([]);
-      }
-    }
-  }, [selectedEntry]);
+  const [prevSelectedEntryId, setPrevSelectedEntryId] = useState<string | null>(null);
+
+  // Sync chat messages when selected entry changes (React 19 pattern)
+  if (selectedEntry?.id !== prevSelectedEntryId) {
+    setChatMessages(selectedEntry?.details?.messages || []);
+    setPrevSelectedEntryId(selectedEntry?.id || null);
+  }
 
   useEffect(() => {
     if (scrollContainerRef.current) {

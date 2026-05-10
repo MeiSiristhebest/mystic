@@ -11,12 +11,13 @@ interface UserProfileModalProps {
 export default function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
   const { profile, updateProfile, clearProfile, isLoaded } = useUserProfile();
   const [localProfile, setLocalProfile] = useState<UserProfile>(profile);
+  const [prevProfile, setPrevProfile] = useState<UserProfile>(profile);
 
-  useEffect(() => {
-    if (isLoaded) {
-      setLocalProfile(profile);
-    }
-  }, [profile, isLoaded]);
+  // Sync local profile when external profile changes (React 19 pattern)
+  if (profile !== prevProfile) {
+    setLocalProfile(profile);
+    setPrevProfile(profile);
+  }
 
   const handleSave = () => {
     updateProfile(localProfile);

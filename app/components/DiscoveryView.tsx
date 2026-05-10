@@ -91,39 +91,40 @@ const ARCHETYPES = [
 export default function DiscoveryView({ onComplete }: { onComplete?: () => void }) {
   const { profile, updateProfile, isLoaded } = useUserProfile();
   const [step, setStep] = useState(1); // 1: Intro, 2: Basic Info, 3: MBTI, 4: Enneagram, 5: Archetype, 6: Summary
-  
-  useEffect(() => {
-    if (isLoaded && profile && profile.name && profile.mbti && profile.jungianArchetype) {
-      setStep(6);
-      setEnneagramAnswer(profile.enneagram || "");
-      setMbtiResult(profile.mbti || "");
-      setMbtiIdentity(profile.mbtiIdentity || "");
-      setSelectedArchetype(profile.jungianArchetype || "");
-      setFormData({
-        name: profile.name || "",
-        gender: profile.gender || "",
-        birthDate: profile.birthDate || "",
-        birthTime: profile.birthTime || "",
-        birthPlace: profile.birthPlace || ""
-      });
-    }
-  }, [isLoaded, profile]);
-
+  const [enneagramAnswer, setEnneagramAnswer] = useState(profile.enneagram || "");
+  const [mbtiResult, setMbtiResult] = useState(profile.mbti || "");
+  const [mbtiIdentity, setMbtiIdentity] = useState(profile.mbtiIdentity || "");
+  const [selectedArchetype, setSelectedArchetype] = useState(profile.jungianArchetype || "");
+  const [formData, setFormData] = useState({
+    name: profile.name || "",
+    gender: profile.gender || "",
+    birthDate: profile.birthDate || "",
+    birthTime: profile.birthTime || "",
+    birthPlace: profile.birthPlace || ""
+  });
+  const [prevProfile, setPrevProfile] = useState(profile);
   const [answers, setAnswers] = useState<Record<number, string>>({});
-  const [enneagramAnswer, setEnneagramAnswer] = useState("");
-  const [mbtiResult, setMbtiResult] = useState("");
-  const [mbtiIdentity, setMbtiIdentity] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [archetypeAnalysis, setArchetypeAnalysis] = useState("");
-  const [selectedArchetype, setSelectedArchetype] = useState("");
-  
-  const [formData, setFormData] = useState({
-    name: "",
-    gender: "",
-    birthDate: "",
-    birthTime: "",
-    birthPlace: ""
-  });
+
+  // Sync state when profile loads/changes (React 19 pattern)
+  if (isLoaded && profile !== prevProfile) {
+    if (profile.name && profile.mbti && profile.jungianArchetype && step < 6) {
+      setStep(6);
+    }
+    setEnneagramAnswer(profile.enneagram || "");
+    setMbtiResult(profile.mbti || "");
+    setMbtiIdentity(profile.mbtiIdentity || "");
+    setSelectedArchetype(profile.jungianArchetype || "");
+    setFormData({
+      name: profile.name || "",
+      gender: profile.gender || "",
+      birthDate: profile.birthDate || "",
+      birthTime: profile.birthTime || "",
+      birthPlace: profile.birthPlace || ""
+    });
+    setPrevProfile(profile);
+  }
 
   if (!isLoaded) {
     return <div className="flex items-center justify-center min-h-[60vh] text-amber-500/60">正在读取灵魂档案...</div>;

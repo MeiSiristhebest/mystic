@@ -160,6 +160,7 @@ export const MysticImage = ({
   }, [prompt, aspectRatio, seed, imageUrl]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     generateImage();
   }, [generateImage]);
 

@@ -78,6 +78,7 @@ ${getProfileContext()}
 
   useEffect(() => {
     if (profile.birthDate && !hasGenerated && !isLoading) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       generateReading();
       setHasGenerated(true);
     }

@@ -97,13 +97,12 @@ export default function AstrologyApp() {
   const [birthTime, setBirthTime] = useState(profile.birthTime || "12:00");
   const [birthCity, setBirthCity] = useState(profile.birthPlace || CITIES[0].name);
 
-  useEffect(() => {
-    if (profile.birthDate) setBirthDate(profile.birthDate);
-    if (profile.birthTime) setBirthTime(profile.birthTime);
-    if (profile.birthPlace) setBirthCity(profile.birthPlace);
-    
-    // Try to match zodiac
+  const [prevProfile, setPrevProfile] = useState(profile);
+
+  // Sync state when profile loads/changes (React 19 pattern)
+  if (profile !== prevProfile) {
     if (profile.birthDate) {
+      setBirthDate(profile.birthDate);
       const date = new Date(profile.birthDate);
       const month = date.getMonth() + 1;
       const day = date.getDate();
@@ -115,12 +114,14 @@ export default function AstrologyApp() {
       });
       if (sign) setSelectedZodiac(sign.id);
     }
-
+    if (profile.birthTime) setBirthTime(profile.birthTime);
+    if (profile.birthPlace) setBirthCity(profile.birthPlace);
     if (profile.mbti) {
       const mbti = MBTI_TYPES.find(m => profile.mbti?.includes(m.id));
       if (mbti) setSelectedMBTI(mbti.id);
     }
-  }, [profile]);
+    setPrevProfile(profile);
+  }
 
   const [error, setError] = useState("");
   const [inputMessage, setInputMessage] = useState("");

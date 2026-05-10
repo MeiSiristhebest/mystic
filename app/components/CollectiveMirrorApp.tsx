@@ -64,6 +64,7 @@ export default function CollectiveMirrorApp() {
 
   useEffect(() => {
     if (!hasGenerated && !isLoading) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       generateReading();
       setHasGenerated(true);
     }

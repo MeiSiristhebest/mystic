@@ -4,6 +4,8 @@ import withSerwistInit from '@serwist/next';
 const withSerwist = withSerwistInit({
   swSrc: 'app/sw.ts',
   swDest: 'public/sw.js',
+  // Only bundle the service worker in production; Turbopack (dev) doesn't support it.
+  disable: process.env.NODE_ENV !== 'production',
 });
 
 const nextConfig: NextConfig = {

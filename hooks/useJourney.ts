@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import LZString from 'lz-string';
-import { cleanupLocalStorage } from '@/lib/storage';
+import { saveToIndexedDB, getFromIndexedDB, deleteFromIndexedDB } from '@/lib/storage';
 
 export type Message = {
   role: 'user' | 'model';
@@ -39,35 +39,57 @@ export type JourneyEntry = {
   details?: JourneyDetails;
 };
 
-const STORAGE_KEY = 'akasha_journey_v2';
+const STORAGE_KEY = 'akasha_journey_v3'; // Incremented version for IndexedDB migration
 
 export function useJourney() {
   const [entries, setEntries] = useState<JourneyEntry[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
+    const loadJourney = async () => {
       try {
-        const decompressed = LZString.decompress(stored);
-        if (decompressed) {
-          setEntries(JSON.parse(decompressed));
+        // Try IndexedDB first
+        const stored = await getFromIndexedDB(STORAGE_KEY);
+        if (stored && typeof stored === 'string') {
+          const decompressed = LZString.decompress(stored);
+          if (decompressed) {
+            setEntries(JSON.parse(decompressed));
+          }
+        } else if (stored && Array.isArray(stored)) {
+          // If it's already an array (not compressed)
+          setEntries(stored);
+        } else {
+          // Migration from localStorage if exists
+          const legacy = localStorage.getItem('akasha_journey_v2');
+          if (legacy) {
+            const decompressed = LZString.decompress(legacy);
+            if (decompressed) {
+              const legacyEntries = JSON.parse(decompressed);
+              setEntries(legacyEntries);
+              // Save to IndexedDB for future
+              await saveToIndexedDB(STORAGE_KEY, legacy);
+              // Optionally remove legacy from localStorage
+              // localStorage.removeItem('akasha_journey_v2');
+            }
+          }
         }
       } catch (e) {
-        console.error('Failed to load journey', e);
+        console.error('Failed to load journey from IndexedDB', e);
+      } finally {
+        setIsLoaded(true);
       }
-    }
-    setIsLoaded(true);
+    };
+
+    loadJourney();
   }, []);
 
-  const saveToLocalStorage = (updatedEntries: JourneyEntry[]) => {
+  const persistToIndexedDB = async (updatedEntries: JourneyEntry[]) => {
     try {
-      cleanupLocalStorage();
       const stringified = JSON.stringify(updatedEntries);
       const compressed = LZString.compress(stringified);
-      localStorage.setItem(STORAGE_KEY, compressed);
+      await saveToIndexedDB(STORAGE_KEY, compressed);
     } catch (e) {
-      console.error('Failed to save journey', e);
+      console.error('Failed to save journey to IndexedDB', e);
     }
   };
 
@@ -81,7 +103,7 @@ export function useJourney() {
     
     const updatedEntries = [newEntry, ...entries];
     setEntries(updatedEntries);
-    saveToLocalStorage(updatedEntries);
+    await persistToIndexedDB(updatedEntries);
     return id;
   };
 
@@ -90,18 +112,19 @@ export function useJourney() {
       entry.id === id ? { ...entry, ...updates } : entry
     );
     setEntries(updatedEntries);
-    saveToLocalStorage(updatedEntries);
+    await persistToIndexedDB(updatedEntries);
   };
 
   const deleteEntry = async (id: string) => {
     const updatedEntries = entries.filter(entry => entry.id !== id);
     setEntries(updatedEntries);
-    saveToLocalStorage(updatedEntries);
+    await persistToIndexedDB(updatedEntries);
   };
 
   const clearJourney = async () => {
     setEntries([]);
-    localStorage.removeItem(STORAGE_KEY);
+    await deleteFromIndexedDB(STORAGE_KEY);
+    localStorage.removeItem('akasha_journey_v2'); // Also clear legacy
   };
 
   return { entries, addEntry, updateEntry, deleteEntry, clearJourney, isLoaded };
