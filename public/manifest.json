@@ -1,0 +1,27 @@
+{
+  "name": "星象塔罗 - AI神秘学空间",
+  "short_name": "星象塔罗",
+  "description": "融合AI与神秘学的深度占卜空间，探索命运的无限可能。",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#080510",
+  "theme_color": "#080510",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

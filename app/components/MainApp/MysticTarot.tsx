@@ -374,7 +374,13 @@ export function MysticTarot() {
             </div>
             {!isProfessionalMode ? (
               <div className="luxury-card p-10 md:p-16 space-y-12 relative overflow-hidden">
-                <div className="absolute inset-0 z-0"><MysticImage prompt="A cosmic oracle holding a glowing crystal ball" className="w-full h-full opacity-40" /></div>
+                <div className="absolute inset-0 z-0">
+                  <MysticImage 
+                    prompt={question ? `Mystical ethereal representation of: ${question}` : "A cosmic oracle holding a glowing crystal ball"} 
+                    className="w-full h-full opacity-40" 
+                    seed={question || "default"}
+                  />
+                </div>
                 <div className="relative z-10 text-center space-y-8">
                   <h2 className="text-3xl font-serif gold-gradient-text">今天，你心里在想什么？</h2>
                   <textarea className="glass-input-v2 w-full min-h-[150px] text-xl font-serif" placeholder="输入你的困惑..." value={question} onChange={(e) => setQuestion(e.target.value)} />
@@ -415,6 +421,16 @@ export function MysticTarot() {
               <button onClick={() => setRevealedCards(new Array(currentMode.cardCount).fill(true))} className="mb-8 px-6 py-3 bg-amber-500/20 border border-amber-500/50 rounded-full text-amber-200 font-serif">一键翻开所有牌</button>
             )}
             <div ref={posterRef} className="w-full flex flex-col items-center relative pb-8">
+              {revealedCards.every((r) => r) && (
+                <div className="absolute inset-0 -z-10 opacity-30 pointer-events-none rounded-3xl overflow-hidden">
+                  <MysticImage 
+                    prompt={soulMotto ? `Cosmic soul vision: ${soulMotto}` : "Ethereal cosmic nebula"} 
+                    className="w-full h-full" 
+                    seed={soulMotto || "result"}
+                    aspectRatio="16:9"
+                  />
+                </div>
+              )}
               <SpreadLayoutRenderer mode={currentMode.id} cards={drawnCards} revealedCards={revealedCards} handleRevealCard={handleRevealCard} setSelectedCard={setSelectedCard} cardSize={cardSize} positions={currentMode.positions} />
               <AnimatePresence>
                 {revealedCards.every((r) => r) && (

@@ -16,13 +16,27 @@ const playfair = Playfair_Display({
 import { Viewport } from 'next';
 
 export const metadata: Metadata = {
-  title: '星象塔罗 - AI在线占卜',
-  description: 'AI驱动的神秘塔罗牌在线占卜与深度解读。',
+  title: '星象塔罗 - AI在线占卜 | 深度解读命运',
+  description: 'AI驱动的神秘塔罗牌在线占卜与深度解读。融合阿卡夏记录与现代星象学，为你指引方向。',
   manifest: "/manifest.json",
+  applicationName: "星象塔罗",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "default",
-    title: "Mystic AI",
+    statusBarStyle: "black-translucent",
+    title: "星象塔罗",
+  },
+  openGraph: {
+    type: 'website',
+    siteName: '星象塔罗',
+    title: '星象塔罗 - AI在线占卜',
+    description: 'AI驱动的神秘塔罗牌在线占卜与深度解读。',
+    images: ['/icon-512x512.png'],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: '星象塔罗 - AI在线占卜',
+    description: 'AI驱动的神秘塔罗牌在线占卜与深度解读。',
+    images: ['/icon-512x512.png'],
   },
 };
 
