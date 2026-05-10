@@ -2,7 +2,7 @@ import { GoogleGenAI } from "@google/genai";
 import { NextRequest } from "next/server";
 import { AKASHA_PERSONA } from "@/lib/ai";
 
-const DEFAULT_MODEL = "gemini-2.0-flash-exp";
+const DEFAULT_MODEL = "gemini-3-flash-preview";
 
 export async function POST(req: NextRequest) {
   try {
