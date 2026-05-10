@@ -350,7 +350,19 @@ export function MysticTarot() {
             <h2 className="text-2xl font-serif text-amber-300 mb-8">请凭直觉抽取 {currentMode.cardCount} 张牌 ({selectedIndices.length}/{currentMode.cardCount})</h2>
             <div className="flex flex-wrap justify-center gap-2">
               {deckCards.map((_, idx) => (
-                <div key={idx} onClick={() => handleSelectCardFromDeck(idx)} className={`w-10 h-16 sm:w-16 sm:h-24 rounded-lg border cursor-pointer transition-all ${selectedIndices.includes(idx) ? "opacity-0 scale-50" : "border-amber-500/30 hover:border-amber-400 bg-black/60"}`} />
+                <div 
+                  key={idx} 
+                  onClick={() => handleSelectCardFromDeck(idx)} 
+                  className={`w-10 h-16 sm:w-16 sm:h-24 rounded-lg border cursor-pointer transition-all relative overflow-hidden ${
+                    selectedIndices.includes(idx) 
+                      ? "opacity-0 scale-50 pointer-events-none" 
+                      : "border-[#C9A84C]/30 hover:border-[#C9A84C] bg-[#080510] hover:shadow-[0_0_15px_rgba(201,168,76,0.3)] hover:-translate-y-1"
+                  }`}
+                >
+                  <div className="absolute inset-1 border border-[#C9A84C]/10 rounded flex items-center justify-center">
+                    <Moon className="text-[#C9A84C]/20" size={12} />
+                  </div>
+                </div>
               ))}
             </div>
           </div>
@@ -453,7 +465,28 @@ function TarotCardView({ card, isRevealed, onReveal, onSelect, delay, size = "la
   return (
     <div className={`${dims} relative perspective-1200`} onClick={() => isRevealed ? onSelect() : onReveal()}>
       <motion.div animate={{ rotateY: isRevealed ? 0 : 180 }} transition={{ duration: 0.8 }} className="w-full h-full relative preserve-3d">
-        <div className="absolute inset-0 rounded-xl border border-amber-500/40 bg-black backface-hidden rotate-y-180 flex items-center justify-center"><Moon className="text-amber-500/20" size={48} /></div>
+        {/* Card Back */}
+        <div className="absolute inset-0 rounded-xl border-2 border-[#C9A84C]/40 bg-[#080510] backface-hidden rotate-y-180 overflow-hidden shadow-[0_0_20px_rgba(201,168,76,0.2)]">
+          <div className="absolute inset-2 border border-[#C9A84C]/20 rounded-lg flex items-center justify-center">
+            {/* Ornate Pattern */}
+            <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
+            <div className="relative z-10 flex flex-col items-center">
+              <div className="w-16 h-16 rounded-full border border-[#C9A84C]/30 flex items-center justify-center bg-black/40 shadow-[0_0_15px_rgba(201,168,76,0.1)]">
+                <Moon className="text-[#C9A84C] opacity-60" size={32} />
+              </div>
+              <div className="mt-4 flex gap-2">
+                <Star size={10} className="text-[#C9A84C]/30 animate-pulse" />
+                <Star size={10} className="text-[#C9A84C]/30 animate-pulse delay-700" />
+                <Star size={10} className="text-[#C9A84C]/30 animate-pulse delay-300" />
+              </div>
+            </div>
+          </div>
+          {/* Decorative Corners */}
+          <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-[#C9A84C]/40 rounded-tl-xl" />
+          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-[#C9A84C]/40 rounded-tr-xl" />
+          <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-[#C9A84C]/40 rounded-bl-xl" />
+          <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-[#C9A84C]/40 rounded-br-xl" />
+        </div>
         <div className="absolute inset-0 rounded-xl border-2 border-amber-400 bg-black backface-hidden flex flex-col p-2">
           <div className="flex-1 relative w-full"><Image src={`https://www.trustedtarot.com/img/cards/${card.englishName.toLowerCase().replace(/ /g, "-")}.png`} alt={card.name} fill className="object-contain" referrerPolicy="no-referrer" /></div>
           <div className="text-center bg-black/60 rounded-b-lg"><h3 className="text-amber-300 font-serif text-sm">{card.name}</h3>{card.isReversed && <span className="text-red-400 text-xs">逆位</span>}</div>
