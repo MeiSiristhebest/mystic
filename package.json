@@ -11,6 +11,7 @@
   "dependencies": {
     "@google/genai": "^2.0.1",
     "@serwist/next": "^9.5.11",
+    "@vercel/analytics": "^2.0.1",
     "ephemeris": "^2.2.0",
     "firebase": "^12.13.0",
     "firebase-admin": "^13.9.0",
