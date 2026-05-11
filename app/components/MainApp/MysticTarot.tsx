@@ -43,9 +43,11 @@ export function MysticTarot({ initialHandoff, clearHandoff }: MysticTarotProps =
   useEffect(() => {
     if (initialHandoff) {
       if (initialHandoff.question || initialHandoff.context) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setQuestion(initialHandoff.question || initialHandoff.context);
       }
       if (initialHandoff.modeId) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSelectedSpread(initialHandoff.modeId);
       }
       clearHandoff?.();

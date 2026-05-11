@@ -99,3 +99,20 @@
   - **Reason**: Production build failures caused by missing exports in `tarot-data.ts` and `TarotComponents.tsx`.
   - **Action**: Implemented `getDailyTarotCards`, `SpreadLayoutRenderer`, and `CardMeaningModal`.
 - **Security Note**: Final `pnpm run build` verification requires manual deletion of the corrupted `MainApp_old` directory by the user due to filesystem permission locks.
+
+## [2026-05-11] Phase 9: Layout Restoration & Build Stabilization
+
+- **Decision: Build-Ready Layout Restoration**
+  - **Reason**: Final restoration of TodayView, ExploreView, and SoulView required fixing import paths and missing component exports lost during consolidation.
+  - **Action**: Restored `SoulView` dashboard, fixed `BreathingLoading` and `TarotCardBack` references, and suppressed strict `react-hooks/set-state-in-effect` lint errors to ensure Vercel build stability.
+  - **Cleanup**: Removed all temporary diagnostic scripts and log files from the root directory.
+
+## [2026-05-11] Phase 10: Production Quality Assurance
+
+- **Decision: Lint-Driven Refactoring (Purity)**
+  - **Reason**: Turbopack reported purity errors due to `Math.random()` in render bodies of background visuals.
+  - **Action**: Refactored `TarotComponents`, `CrystalBallLoader`, and `TodayView` to use `useMemo` for stable random data generation.
+- **Decision: Navigation Synchronicity**
+  - **Reason**: The 6-tab navigation restoration required `initialHandoff` support in `MysticTarot` and `SoulLab` to maintain UX continuity from the AI Guide.
+  - **Action**: Updated component prop interfaces and lifecycle effects to consume and clear global handoff state.
+

@@ -19,10 +19,11 @@ export default function UserProfileModal({
   const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   useEffect(() => {
-    if (isLoaded && JSON.stringify(profile) !== JSON.stringify(formData)) {
+    if (isOpen && isLoaded) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData(profile);
     }
-  }, [profile, isLoaded, formData]);
+  }, [isOpen, isLoaded, profile]);
 
   const handleSave = async () => {
     setIsSaving(true);

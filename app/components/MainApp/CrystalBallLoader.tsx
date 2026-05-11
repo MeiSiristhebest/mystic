@@ -1,8 +1,17 @@
 "use client";
 
+import { useMemo } from "react";
 import { motion } from "motion/react";
 
 export default function CrystalBallLoader({ text }: { text?: string }) {
+  const sparkles = useMemo(() => [...Array(8)].map((_, i) => ({
+    id: i,
+    x: Math.random() * 100 + "%",
+    y: Math.random() * 100 + "%",
+    duration: 2 + Math.random() * 2,
+    delay: Math.random() * 2
+  })), []);
+
   return (
     <div className="flex flex-col items-center justify-center space-y-8">
       <div className="relative w-40 h-40">
@@ -23,12 +32,12 @@ export default function CrystalBallLoader({ text }: { text?: string }) {
           />
           
           {/* Sparkles */}
-          {[...Array(8)].map((_, i) => (
+          {sparkles.map((s) => (
             <motion.div
-              key={i}
+              key={s.id}
               initial={{ 
-                x: Math.random() * 100 + "%", 
-                y: Math.random() * 100 + "%",
+                x: s.x, 
+                y: s.y,
                 opacity: 0
               }}
               animate={{ 
@@ -36,9 +45,9 @@ export default function CrystalBallLoader({ text }: { text?: string }) {
                 scale: [0.5, 1, 0.5]
               }}
               transition={{ 
-                duration: 2 + Math.random() * 2, 
+                duration: s.duration, 
                 repeat: Infinity,
-                delay: Math.random() * 2
+                delay: s.delay
               }}
               className="absolute w-1 h-1 bg-white rounded-full shadow-[0_0_10px_white]"
             />

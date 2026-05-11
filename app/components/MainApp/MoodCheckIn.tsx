@@ -11,7 +11,7 @@ const moods = [
   { emoji: "🌿", label: "正在疗愈", value: "healing" },
 ];
 
-export function MoodCheckIn({ onSelect }: { onSelect: (mood: string) => void }) {
+export function MoodCheckIn({ onSelect }: { onSelect?: (mood: string) => void }) {
   return (
     <div className="w-full max-w-2xl mx-auto p-8 glass-panel rounded-3xl border border-white/5">
       <h3 className="text-xl font-serif text-amber-200/80 mb-8 text-center tracking-widest">
@@ -21,7 +21,7 @@ export function MoodCheckIn({ onSelect }: { onSelect: (mood: string) => void }) 
         {moods.map((mood) => (
           <button
             key={mood.value}
-            onClick={() => onSelect(mood.value)}
+            onClick={() => onSelect?.(mood.value)}
             className="flex flex-col items-center gap-3 group"
           >
             <motion.div

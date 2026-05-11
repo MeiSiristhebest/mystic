@@ -37,7 +37,9 @@ export function ExploreView() {
   // Sync with global handoff (e.g. from TodayView)
   useEffect(() => {
     if (globalHandoff) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setHandoffData(globalHandoff);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSubTab(globalHandoff.system);
       setGlobalHandoff(null); 
       
@@ -45,6 +47,7 @@ export function ExploreView() {
         window.scrollTo({ top: 800, behavior: 'smooth' });
       }, 500);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [globalHandoff, setGlobalHandoff]);
 
   const systems = [

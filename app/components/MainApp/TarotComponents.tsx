@@ -1,9 +1,19 @@
 "use client";
 
+import { useMemo } from "react";
 import { motion } from "motion/react";
 import { X } from "lucide-react";
 
 export function AmbientCosmicBackground() {
+  const particles = useMemo(() => [...Array(30)].map((_, i) => ({
+    id: i,
+    x: Math.random() * 100 + "%",
+    y: Math.random() * 100 + "%",
+    opacity: Math.random() * 0.5 + 0.1,
+    duration: Math.random() * 20 + 10,
+    delay: Math.random() * 10
+  })), []);
+
   return (
     <div className="fixed inset-0 w-full h-full pointer-events-none overflow-hidden">
       {/* Deep Space Base */}
@@ -29,23 +39,23 @@ export function AmbientCosmicBackground() {
       
       {/* Floating Particles */}
       <div className="absolute inset-0">
-        {[...Array(30)].map((_, i) => (
+        {particles.map((p) => (
           <motion.div
-            key={i}
+            key={p.id}
             initial={{ 
-              x: Math.random() * 100 + "%", 
-              y: Math.random() * 100 + "%",
-              opacity: Math.random() * 0.5 + 0.1
+              x: p.x, 
+              y: p.y,
+              opacity: p.opacity
             }}
             animate={{ 
               y: ["0%", "100%"],
               opacity: [0.1, 0.5, 0.1]
             }}
             transition={{ 
-              duration: Math.random() * 20 + 10, 
+              duration: p.duration, 
               repeat: Infinity, 
               ease: "linear",
-              delay: Math.random() * 10
+              delay: p.delay
             }}
             className="absolute w-[1px] h-[1px] bg-white rounded-full shadow-[0_0_8px_white]"
           />
