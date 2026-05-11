@@ -1,13 +1,14 @@
 "use client";
 
 import { motion } from "motion/react";
-import { User, Star, Compass, Wand2, Sparkles, Book } from "lucide-react";
+import { User, Star, Compass, Wand2, Sparkles, Book, Layers } from "lucide-react";
 
 export const navItems = [
   { id: "today", name: "今日", icon: Star, label: "Today" },
   { id: "discovery", name: "发现", icon: Compass, label: "Discovery" },
   { id: "explore", name: "探索", icon: Wand2, label: "Explore" },
   { id: "soul", name: "灵魂", icon: Sparkles, label: "Soul" },
+  { id: "more", name: "更多", icon: Layers, label: "More" },
   { id: "journal", name: "日记", icon: Book, label: "Journal" },
 ];
 

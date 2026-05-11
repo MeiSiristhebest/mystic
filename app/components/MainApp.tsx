@@ -83,6 +83,7 @@ export default function App() {
                 {activeTab === "explore" && <ExploreView />}
                 {activeTab === "soul" && <SoulView />}
                 {activeTab === "journal" && <JourneyApp />}
+                {activeTab === "more" && <MoreView />}
               </motion.div>
             </AnimatePresence>
           </main>
