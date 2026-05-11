@@ -103,17 +103,20 @@ export async function generateMysticImage(prompt: string, aspectRatio: any, docI
   // 3. Save to server-side cache
   try {
     const docRef = adminDb.collection("daily-images").doc(docId);
-    if (base64Data.length < 1000000) {
-      await docRef.set({
-        imageUrl: base64Data,
-        prompt: prompt,
-        date: docId.split('_')[0],
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        expiresAt: admin.firestore.Timestamp.fromDate(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)) // Auto-delete after 30 days
-      });
-    }
+    
+    // Firestore has a 1MB document limit. Base64 adds ~33% overhead.
+    // If it's too large, we'll try to save it anyway but log the error.
+    // Ideally we would compress here if we had 'sharp'.
+    await docRef.set({
+      imageUrl: base64Data,
+      prompt: prompt,
+      date: docId.split('_')[0],
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      expiresAt: admin.firestore.Timestamp.fromDate(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000))
+    });
+    console.log(`Successfully saved image to Firestore: ${docId} (${base64Data.length} bytes)`);
   } catch (error) {
-    console.error("Failed to save to server cache", error);
+    console.error(`Failed to save to server cache for docId ${docId}:`, error);
   }
 
   return base64Data;

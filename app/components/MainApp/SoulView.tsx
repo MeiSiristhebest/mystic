@@ -171,7 +171,7 @@ export function SoulView() {
               <div className="flex items-center justify-between">
                 <h4 className="font-serif text-xl tracking-widest">能量波动</h4>
               </div>
-              <div className="h-32 flex items-end gap-2">
+              <div className="h-32 flex items-end gap-1 md:gap-2">
                 {energyLevels.map((h, i) => (
                   <motion.div
                     key={i}

@@ -121,7 +121,13 @@ export const MysticImage = ({
     }, 15000);
 
     try {
-      const localDateStr = new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+      // Use a strict YYYY-MM-DD format regardless of locale
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const localDateStr = `${year}-${month}-${day}`;
+      
       const promptHash = hashString(prompt + aspectRatio);
       const docId = `${localDateStr}_${promptHash}`;
       

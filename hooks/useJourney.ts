@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import LZString from 'lz-string';
 import { saveToIndexedDB, getFromIndexedDB, deleteFromIndexedDB } from '@/lib/storage';
+import { useAppStore } from '@/lib/store';
 
 export type Message = {
   role: 'user' | 'model';
