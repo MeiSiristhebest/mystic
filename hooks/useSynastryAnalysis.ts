@@ -16,7 +16,7 @@ export function useSynastryAnalysis() {
   const [currentEntryId, setCurrentEntryId] = useState<string | null>(null);
   const [soulMotto, setSoulMotto] = useState("");
 
-  const { userProfile, getProfileContext } = useUserProfile();
+  const { profile, getProfileContext } = useUserProfile();
   const { addEntry } = useJourney();
   const { stream, isLoading: isAnalyzing } = useAIStream({ model: MODELS.PRO });
 
@@ -73,7 +73,7 @@ export function useSynastryAnalysis() {
 
     const id = await addEntry({
       type: 'synastry',
-      title: `合盘：${userProfile?.name || '我'} & ${partner.name}`,
+      title: `合盘：${profile?.name || '我'} & ${partner.name}`,
       summary: fullResponse.substring(0, 100) + '...',
       details: {
         type: 'synastry',
@@ -84,7 +84,7 @@ export function useSynastryAnalysis() {
       }
     });
     setCurrentEntryId(id || null);
-  }, [userProfile, getProfileContext, addEntry, stream]);
+  }, [profile, getProfileContext, addEntry, stream]);
 
   const resetAnalysis = useCallback(() => {
     setMessages([]);
