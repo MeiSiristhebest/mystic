@@ -81,7 +81,7 @@ export async function generateMysticImage(prompt: string, aspectRatio: any, docI
   const fullPrompt = `In a high-end, mysterious, cosmic luxury style. Deep cosmic black background with mystic gold and nebula purple accents. Ethereal, dreamlike, sophisticated, professional digital art. Subject: ${prompt}. No text, no watermark.`;
   
   const response = await ai.models.generateContent({
-    model: "gemini-3.1-flash",
+    model: "gemini-3.1-flash-image-preview",
     contents: {
       parts: [{ text: fullPrompt }],
     },
