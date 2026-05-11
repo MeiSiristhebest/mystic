@@ -1,12 +1,15 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useJourney, JourneyEntry } from "@/hooks/useJourney";
-import { Trash2, Book, Sparkles, Compass, Star, Sun, Moon, X, ChevronRight, Send, Download } from "lucide-react";
+import { Trash2, Book, Sparkles, Compass, Star, Sun, Moon, X, ChevronRight, Send, Download, Maximize2, Minimize2 } from "lucide-react";
 import MysticMarkdown from "./MysticMarkdown";
 import BreathingLoading from "./BreathingLoading";
 import { AKASHA_PERSONA, DEFAULT_MODEL } from "@/lib/ai";
 import { usePosterGenerator } from "@/hooks/usePosterGenerator";
 import { useAIStream } from "@/hooks/useAIStream";
+import { SpreadLayoutRenderer, CardMeaningModal, AmbientCosmicBackground } from "./MainApp/TarotComponents";
+import { SPREAD_MODES } from "./MainApp/constants";
+import { TarotCard } from "@/lib/tarot-data";
 
 export default function JourneyApp() {
   const { entries, deleteEntry, updateEntry, clearJourney } = useJourney();
@@ -22,6 +25,10 @@ export default function JourneyApp() {
   const { stream, isLoading: isStreaming, error: streamError, abort } = useAIStream();
 
   const [prevSelectedEntryId, setPrevSelectedEntryId] = useState<string | null>(null);
+  
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const [selectedCard, setSelectedCard] = useState<TarotCard | null>(null);
+  const [cardMeaningsCache, setCardMeaningsCache] = useState<Record<string, string>>({});
 
   // Sync chat messages when selected entry changes (React 19 pattern)
   const currentId = selectedEntry?.id || null;
@@ -133,17 +140,27 @@ export default function JourneyApp() {
     let metadataContent = null;
 
     if (entry.type === 'tarot' && entry.details && 'cards' in entry.details) {
+      const modeData = SPREAD_MODES.find(m => m.name === entry.details?.mode) || SPREAD_MODES[1];
+      const positions = modeData.positions;
+      // All cards are revealed in diary view
+      const revealedCards = new Array(entry.details.cards.length).fill(true);
+
       metadataContent = (
-        <div className="space-y-4 text-amber-100/80 mb-6 pb-6 border-b border-amber-500/20">
-          <p><strong>牌阵模式：</strong> {entry.details.mode || '未知'}</p>
-          <div>
-            <strong>抽取的牌卡：</strong>
-            <ul className="list-disc pl-5 mt-2 space-y-1">
-              {entry.details.cards.map((card: { name: string, isReversed: boolean }, i: number) => (
-                <li key={i}>{card.name} {card.isReversed ? '(逆位)' : '(正位)'}</li>
-              ))}
-            </ul>
+        <div className="space-y-4 mb-6 pb-6 border-b border-amber-500/20 relative z-10">
+          <div className="flex items-center justify-center mb-8">
+            <span className="px-4 py-1.5 bg-amber-500/20 text-amber-300 rounded-full text-sm border border-amber-500/30">
+              {entry.details.mode || '未知牌阵'}
+            </span>
           </div>
+          <SpreadLayoutRenderer 
+            mode={modeData.id} 
+            cards={entry.details.cards} 
+            revealedCards={revealedCards} 
+            handleRevealCard={() => {}} 
+            setSelectedCard={setSelectedCard} 
+            cardSize={modeData.cardCount > 6 ? "small" : "medium"} 
+            positions={positions} 
+          />
         </div>
       );
     } else if (entry.type === 'bazi' && entry.details && 'birthDate' in entry.details) {
@@ -275,9 +292,15 @@ export default function JourneyApp() {
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-[#1a0f0a] border border-amber-500/30 rounded-2xl p-6 sm:p-8 max-w-3xl w-full max-h-[85vh] flex flex-col relative shadow-2xl shadow-amber-900/20"
+              className={`bg-[#1a0f0a]/90 backdrop-blur-xl border border-amber-500/30 p-6 sm:p-8 flex flex-col relative shadow-2xl shadow-amber-900/20 overflow-hidden transition-all duration-500 ease-in-out ${
+                isFullScreen 
+                  ? "fixed inset-0 w-full h-full rounded-none" 
+                  : "rounded-2xl max-w-3xl w-full max-h-[85vh]"
+              }`}
             >
-              <div className="flex justify-between items-start mb-6 pr-8">
+              {isFullScreen && <AmbientCosmicBackground />}
+              
+              <div className="flex justify-between items-start mb-6 pr-16 relative z-10">
                 <div className="flex items-center space-x-4">
                   <div className="p-3 bg-amber-500/10 rounded-xl">
                     {getIcon(selectedEntry.type)}
@@ -310,18 +333,28 @@ export default function JourneyApp() {
                 </div>
               </div>
 
-              <button
-                onClick={() => { setSelectedEntry(null); abort(); }}
-                className="absolute top-4 right-4 p-2 text-amber-100/50 hover:text-amber-100 bg-black/20 hover:bg-black/40 rounded-full transition-colors z-10"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div className="absolute top-4 right-4 flex space-x-2 z-20">
+                <button
+                  onClick={() => setIsFullScreen(!isFullScreen)}
+                  className="p-2 text-amber-100/50 hover:text-amber-100 bg-black/40 hover:bg-black/60 rounded-full transition-colors"
+                  title={isFullScreen ? "退出全屏" : "全屏沉浸阅读"}
+                >
+                  {isFullScreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
+                </button>
+                <button
+                  onClick={() => { setSelectedEntry(null); abort(); setIsFullScreen(false); }}
+                  className="p-2 text-amber-100/50 hover:text-amber-100 bg-black/40 hover:bg-black/60 rounded-full transition-colors"
+                  title="关闭"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
 
               <div 
                 ref={scrollContainerRef}
-                className="flex-grow overflow-y-auto pr-2 pb-4 space-y-6"
+                className="flex-grow overflow-y-auto pr-2 pb-4 space-y-6 relative z-10"
               >
-                <div ref={posterRef} className="bg-[#1a0f0a] p-4 rounded-xl">
+                <div ref={posterRef} className={`bg-black/20 p-4 sm:p-8 rounded-xl ${isFullScreen ? 'max-w-5xl mx-auto' : ''}`}>
                   <div className="prose prose-invert prose-amber max-w-none font-serif leading-relaxed text-amber-100/90 markdown-body">
                     {renderDetails(selectedEntry)}
                   </div>
@@ -329,7 +362,7 @@ export default function JourneyApp() {
               </div>
 
               {/* Chat Input for Follow-up */}
-              <div className="mt-4 pt-4 border-t border-amber-500/20">
+              <div className={`mt-4 pt-4 border-t border-amber-500/20 relative z-10 ${isFullScreen ? 'max-w-3xl mx-auto w-full' : ''}`}>
                 <form onSubmit={handleSendMessage} className="relative">
                   <input
                     type="text"
@@ -337,15 +370,15 @@ export default function JourneyApp() {
                     onChange={(e) => setInputMessage(e.target.value)}
                     placeholder="继续追问阿卡夏..."
                     disabled={isAskingFollowUp}
-                    className="w-full bg-black/40 border border-amber-500/30 rounded-xl py-3 pl-4 pr-12 text-amber-100 placeholder-amber-100/30 focus:outline-none focus:border-amber-500/60 transition-colors disabled:opacity-50"
+                    className="w-full bg-black/60 backdrop-blur-md border border-amber-500/30 rounded-xl py-4 pl-6 pr-12 text-amber-100 placeholder-amber-100/30 focus:outline-none focus:border-amber-500/60 transition-colors disabled:opacity-50 text-lg shadow-[0_0_20px_rgba(0,0,0,0.5)]"
                   />
                   <button
                     type="submit"
                     disabled={!inputMessage.trim() || isAskingFollowUp}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-amber-400 hover:text-amber-300 disabled:opacity-50 transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-amber-500/20 rounded-lg text-amber-400 hover:text-amber-300 hover:bg-amber-500/30 disabled:opacity-50 transition-colors"
                   >
                     {isAskingFollowUp ? (
-                      "..."
+                      <span className="px-1 font-serif tracking-widest animate-pulse">...</span>
                     ) : (
                       <Send className="w-5 h-5" />
                     )}
@@ -354,6 +387,17 @@ export default function JourneyApp() {
               </div>
             </motion.div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {selectedCard && (
+          <CardMeaningModal 
+            card={selectedCard} 
+            onClose={() => setSelectedCard(null)} 
+            cache={cardMeaningsCache} 
+            setCache={setCardMeaningsCache} 
+          />
         )}
       </AnimatePresence>
       <AnimatePresence>

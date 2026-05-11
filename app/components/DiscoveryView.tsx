@@ -107,7 +107,27 @@ export default function DiscoveryView({ onComplete }: { onComplete?: () => void 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [archetypeAnalysis, setArchetypeAnalysis] = useState("");
 
-  // Sync state when profile loads/changes (React 19 pattern)
+  // Initial sync on mount or when profile first loads
+  useEffect(() => {
+    if (isLoaded) {
+      if (profile.name && profile.mbti && profile.jungianArchetype && step === 1) {
+        setStep(6);
+      }
+      setEnneagramAnswer(profile.enneagram || "");
+      setMbtiResult(profile.mbti || "");
+      setMbtiIdentity(profile.mbtiIdentity || "");
+      setSelectedArchetype(profile.jungianArchetype || "");
+      setFormData({
+        name: profile.name || "",
+        gender: profile.gender || "",
+        birthDate: profile.birthDate || "",
+        birthTime: profile.birthTime || "",
+        birthPlace: profile.birthPlace || ""
+      });
+    }
+  }, [isLoaded]); // Only run when isLoaded changes (i.e. on mount / hydration complete)
+
+  // Sync state when profile changes dynamically (e.g. from another tab/modal)
   if (isLoaded && profile !== prevProfile) {
     if (profile.name && profile.mbti && profile.jungianArchetype && step < 6) {
       setStep(6);
@@ -571,7 +591,13 @@ export default function DiscoveryView({ onComplete }: { onComplete?: () => void 
                 进入神秘世界
               </button>
               <button
-                onClick={() => setStep(1)}
+                onClick={() => {
+                  setStep(1);
+                  setAnswers({});
+                  setEnneagramAnswer("");
+                  setSelectedArchetype("");
+                  setArchetypeAnalysis("");
+                }}
                 className="text-xs text-amber-500/60 hover:text-amber-500 transition-colors flex items-center gap-1"
               >
                 <RefreshCw className="w-3 h-3" /> 重新探索

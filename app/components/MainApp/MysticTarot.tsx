@@ -33,8 +33,10 @@ import { CATEGORIES, SPREAD_MODES } from "./constants";
 import { MysticImage } from "./MysticImage";
 import BreathingLoading from "../BreathingLoading";
 import { useAppStore } from "@/lib/store";
+import { TarotCardView, CardMeaningModal, SpreadLayoutRenderer, AmbientCosmicBackground } from "./TarotComponents";
+import { HandoffData } from "./OmniOracleGuide";
 
-export function MysticTarot() {
+export function MysticTarot({ initialHandoff, clearHandoff }: { initialHandoff?: HandoffData | null, clearHandoff?: () => void }) {
   const { getProfileContext } = useUserProfile();
   const [question, setQuestion] = useState("");
   const [category, setCategory] = useState("general");
@@ -65,7 +67,6 @@ export function MysticTarot() {
   const [messages, setMessages] = useState<{ role: 'user' | 'model'; content: string }[]>([]);
   const [isAskingFollowUp, setIsAskingFollowUp] = useState(false);
   const [isSocraticMode, setIsSocraticMode] = useState(false);
-  const [isProfessionalMode, setIsProfessionalMode] = useState(false);
   const [showExportOptions, setShowExportOptions] = useState(false);
 
   const currentMode = SPREAD_MODES.find((m) => m.id === mode) || SPREAD_MODES[1];
@@ -171,6 +172,21 @@ export function MysticTarot() {
       setIsSelectingCards(true);
     }, 3500);
   };
+
+  useEffect(() => {
+    if (initialHandoff && initialHandoff.system === 'tarot') {
+      setQuestion(initialHandoff.question || "");
+      if (initialHandoff.modeId && SPREAD_MODES.some(m => m.id === initialHandoff.modeId)) {
+        setMode(initialHandoff.modeId);
+      }
+      
+      // Auto trigger draw cards after a brief delay
+      setTimeout(() => {
+        handleDrawCards();
+        if (clearHandoff) clearHandoff();
+      }, 500);
+    }
+  }, [initialHandoff]);
 
   const handleSelectCardFromDeck = (index: number) => {
     if (selectedIndices.includes(index)) return;
@@ -383,28 +399,10 @@ export function MysticTarot() {
           </div>
         ) : drawnCards.length === 0 ? (
           <div className="w-full max-w-5xl space-y-8">
-            <div className="flex justify-center gap-4">
-              <button onClick={() => setIsProfessionalMode(false)} className={`px-6 py-2 rounded-full font-serif text-sm ${!isProfessionalMode ? "bg-[#C9A84C] text-[#080510]" : "bg-white/5 text-[#E8DFB8]/40"}`}>AI 引导模式</button>
-              <button onClick={() => setIsProfessionalMode(true)} className={`px-6 py-2 rounded-full font-serif text-sm ${isProfessionalMode ? "bg-[#C9A84C] text-[#080510]" : "bg-white/5 text-[#E8DFB8]/40"}`}>专业牌阵模式</button>
-            </div>
-            {!isProfessionalMode ? (
-              <div className="luxury-card p-10 md:p-16 space-y-12 relative overflow-hidden">
-                <div className="absolute inset-0 z-0">
-                  <MysticImage 
-                    prompt={question ? `Mystical ethereal representation of: ${question}` : "A cosmic oracle holding a glowing crystal ball"} 
-                    className="w-full h-full opacity-40" 
-                    seed={question || "default"}
-                  />
-                </div>
-                <div className="relative z-10 text-center space-y-8">
-                  <h2 className="text-3xl font-serif gold-gradient-text">今天，你心里在想什么？</h2>
-                  <textarea className="glass-input-v2 w-full min-h-[150px] text-xl font-serif" placeholder="输入你的困惑..." value={question} onChange={(e) => setQuestion(e.target.value)} />
-                  <button onClick={handleDrawCards} disabled={!question.trim()} className="action-button-luxury">开始占卜</button>
-                </div>
-              </div>
-            ) : (
               <div className="luxury-card p-8 rounded-2xl flex flex-col gap-8 relative overflow-hidden">
-                <div className="absolute inset-0 z-0"><MysticImage prompt="Sacred geometry patterns" className="w-full h-full opacity-30" /></div>
+                <div className="absolute inset-0 z-0">
+                  <AmbientCosmicBackground />
+                </div>
                 <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div>
                     <label className="block text-sm font-serif uppercase tracking-widest mb-3">1. 选择占卜领域</label>
@@ -445,7 +443,18 @@ export function MysticTarot() {
                   </div>
                 </div>
 
-                <div className="relative z-10"><label className="block text-sm font-serif uppercase tracking-widest mb-3">4. 选择牌阵模式</label>
+                <div className="relative z-10">
+                  <div className="flex justify-between items-center mb-3">
+                    <label className="text-sm font-serif uppercase tracking-widest">4. 选择牌阵模式</label>
+                    <div className="flex gap-2 text-[#C9A84C]">
+                      <button onClick={() => scroll("left")} className="p-1.5 hover:bg-[#C9A84C]/10 rounded-lg border border-[#C9A84C]/20 transition-colors" title="向左滑动">
+                        <ChevronLeft size={16} />
+                      </button>
+                      <button onClick={() => scroll("right")} className="p-1.5 hover:bg-[#C9A84C]/10 rounded-lg border border-[#C9A84C]/20 transition-colors" title="向右滑动">
+                        <ChevronRight size={16} />
+                      </button>
+                    </div>
+                  </div>
                   <div ref={scrollContainerRef} className="flex overflow-x-auto gap-4 pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden items-stretch">
                     {SPREAD_MODES.map((m) => (
                       <button 
@@ -483,7 +492,6 @@ export function MysticTarot() {
                   </button>
                 </div>
               </div>
-            )}
           </div>
         ) : (
           <div className="w-full flex flex-col items-center">
@@ -492,14 +500,7 @@ export function MysticTarot() {
             )}
             <div ref={posterRef} className="w-full flex flex-col items-center relative pb-8">
               {revealedCards.every((r) => r) && (
-                <div className="absolute inset-0 -z-10 opacity-30 pointer-events-none rounded-3xl overflow-hidden">
-                  <MysticImage 
-                    prompt={soulMotto ? `Cosmic soul vision: ${soulMotto}` : "Ethereal cosmic nebula"} 
-                    className="w-full h-full" 
-                    seed={soulMotto || "result"}
-                    aspectRatio="16:9"
-                  />
-                </div>
+                <AmbientCosmicBackground />
               )}
               <SpreadLayoutRenderer mode={currentMode.id} cards={drawnCards} revealedCards={revealedCards} handleRevealCard={handleRevealCard} setSelectedCard={setSelectedCard} cardSize={cardSize} positions={currentMode.positions} />
               <AnimatePresence>
@@ -543,81 +544,4 @@ export function MysticTarot() {
   );
 }
 
-function TarotCardView({ card, isRevealed, onReveal, onSelect, delay, size = "large" }: any) {
-  let dims = "w-36 h-60 sm:w-48 sm:h-80";
-  if (size === "small") dims = "w-24 h-40 sm:w-32 sm:h-56";
-  else if (size === "medium") dims = "w-28 h-48 sm:w-40 sm:h-64";
 
-  return (
-    <div className={`${dims} relative perspective-1200`} onClick={() => isRevealed ? onSelect() : onReveal()}>
-      <motion.div animate={{ rotateY: isRevealed ? 0 : 180 }} transition={{ duration: 0.8 }} className="w-full h-full relative preserve-3d">
-        {/* Card Back */}
-        <div className="absolute inset-0 rounded-xl border-2 border-[#C9A84C]/40 bg-[#080510] backface-hidden rotate-y-180 overflow-hidden shadow-[0_0_20px_rgba(201,168,76,0.2)]">
-          <div className="absolute inset-2 border border-[#C9A84C]/20 rounded-lg flex items-center justify-center">
-            {/* Ornate Pattern */}
-            <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
-            <div className="relative z-10 flex flex-col items-center">
-              <div className="w-16 h-16 rounded-full border border-[#C9A84C]/30 flex items-center justify-center bg-black/40 shadow-[0_0_15px_rgba(201,168,76,0.1)]">
-                <Moon className="text-[#C9A84C] opacity-60" size={32} />
-              </div>
-              <div className="mt-4 flex gap-2">
-                <Star size={10} className="text-[#C9A84C]/30 animate-pulse" />
-                <Star size={10} className="text-[#C9A84C]/30 animate-pulse delay-700" />
-                <Star size={10} className="text-[#C9A84C]/30 animate-pulse delay-300" />
-              </div>
-            </div>
-          </div>
-          {/* Decorative Corners */}
-          <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-[#C9A84C]/40 rounded-tl-xl" />
-          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-[#C9A84C]/40 rounded-tr-xl" />
-          <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-[#C9A84C]/40 rounded-bl-xl" />
-          <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-[#C9A84C]/40 rounded-br-xl" />
-        </div>
-        <div className="absolute inset-0 rounded-xl border-2 border-amber-400 bg-black backface-hidden flex flex-col p-2">
-          <div className="flex-1 relative w-full"><Image src={`https://www.trustedtarot.com/img/cards/${card.englishName.toLowerCase().replace(/ /g, "-")}.png`} alt={card.name} fill className="object-contain" referrerPolicy="no-referrer" /></div>
-          <div className="text-center bg-black/60 rounded-b-lg"><h3 className="text-amber-300 font-serif text-sm">{card.name}</h3>{card.isReversed && <span className="text-red-400 text-xs">逆位</span>}</div>
-        </div>
-      </motion.div>
-    </div>
-  );
-}
-
-function CardMeaningModal({ card, onClose, cache, setCache }: any) {
-  const [loading, setLoading] = useState(false);
-  const [meaning, setMeaning] = useState("");
-  useEffect(() => {
-    const fetch = async () => {
-      const key = `${card.id}-${card.isReversed ? "rev" : "up"}`;
-      if (cache[key]) { setMeaning(cache[key]); return; }
-      setLoading(true);
-      try {
-        const text = await generateContent(`解释塔罗牌【${card.name}】在【${card.isReversed ? "逆位" : "正位"}】时的含义。使用Markdown。`);
-        setMeaning(text || "");
-        setCache((prev: any) => ({ ...prev, [key]: text }));
-      } finally { setLoading(false); }
-    };
-    fetch();
-  }, [card, cache, setCache]);
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80" onClick={onClose}>
-      <div className="glass-panel rounded-2xl w-full max-w-2xl max-h-[85vh] overflow-y-auto p-8" onClick={e => e.stopPropagation()}>
-        <div className="flex justify-between items-center mb-6"><h3 className="text-2xl font-serif text-amber-300">{card.name}</h3><button onClick={onClose}><X /></button></div>
-        {loading ? <p className="animate-pulse">正在感应...</p> : <MysticMarkdown content={meaning} />}
-      </div>
-    </div>
-  );
-}
-
-function SpreadLayoutRenderer({ mode, cards, revealedCards, handleRevealCard, setSelectedCard, cardSize, positions }: any) {
-  return (
-    <div className="flex flex-wrap gap-6 justify-center">
-      {cards.map((c: any, i: number) => (
-        <div key={i} className="flex flex-col items-center">
-          <span className="text-xs text-amber-500 mb-2">{positions[i]}</span>
-          <TarotCardView card={c} isRevealed={revealedCards[i]} onReveal={() => handleRevealCard(i)} onSelect={() => setSelectedCard(c)} size={cardSize} />
-        </div>
-      ))}
-    </div>
-  );
-}

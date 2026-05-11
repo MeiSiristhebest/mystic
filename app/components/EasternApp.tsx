@@ -6,6 +6,8 @@ import { Star, Compass, Calendar, Coins, BookOpen, User, Eye, Map } from 'lucide
 import BaziApp from './BaziApp';
 import IChingApp from './IChingApp';
 import FaceReadingApp from './FaceReadingApp';
+import { HandoffData } from './MainApp/OmniOracleGuide';
+import { useEffect } from 'react';
 
 const EASTERN_MODES = [
   { id: 'bazi', name: '八字排盘', icon: Calendar },
@@ -17,9 +19,18 @@ const EASTERN_MODES = [
   { id: 'face', name: '面相骨相', icon: Eye },
 ];
 
-export default function EasternApp() {
+export default function EasternApp({ initialHandoff, clearHandoff }: { initialHandoff?: HandoffData | null, clearHandoff?: () => void }) {
   const [mode, setMode] = useState('bazi');
   const [isReading, setIsReading] = useState(false);
+
+  useEffect(() => {
+    if (initialHandoff && initialHandoff.system === 'eastern') {
+      if (initialHandoff.modeId) {
+        setMode(initialHandoff.modeId);
+      }
+      if (clearHandoff) clearHandoff();
+    }
+  }, [initialHandoff, clearHandoff]);
 
   return (
     <div className="w-full flex flex-col items-center">

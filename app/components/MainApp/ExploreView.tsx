@@ -13,6 +13,7 @@ import { MysticImage } from "./MysticImage";
 import BreathingLoading from "../BreathingLoading";
 import { useAppStore } from "@/lib/store";
 import { MysticTarot } from "@/app/components/MainApp/MysticTarot";
+import { OmniOracleGuide, HandoffData } from "./OmniOracleGuide";
 
 const AstrologyApp = dynamic(() => import("../AstrologyApp"), { 
   loading: () => <BreathingLoading text="正在连接星辰..." /> 
@@ -22,7 +23,9 @@ const EasternApp = dynamic(() => import("../EasternApp"), {
 });
 
 export function ExploreView() {
-  const [subTab, setSubTab] = useState("tarot");
+  const [subTab, setSubTab] = useState("");
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
+  const [handoffData, setHandoffData] = useState<HandoffData | null>(null);
   const setActiveTab = useAppStore((state) => state.setActiveTab);
 
   const systems = [
@@ -40,6 +43,25 @@ export function ExploreView() {
           选择一个神秘系统，开启你的探索之旅。无论是当下的困惑，还是长远的人生蓝图，星辰皆有回应。
         </p>
       </header>
+
+      {/* Prominent Omni-Oracle Entry Point */}
+      <motion.div
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        onClick={() => setIsGuideOpen(true)}
+        className="w-full relative luxury-card p-8 sm:p-12 cursor-pointer group overflow-hidden flex flex-col items-center justify-center text-center border-[#C9A84C]/40 bg-[#C9A84C]/5 shadow-[0_0_30px_rgba(201,168,76,0.15)]"
+      >
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20 group-hover:opacity-40 transition-opacity duration-1000 mix-blend-screen" />
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#C9A84C]/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
+        
+        <Sparkles className="w-12 h-12 text-[#C9A84C] mb-6 animate-pulse" />
+        <h2 className="text-3xl sm:text-4xl font-serif gold-gradient-text mb-4 tracking-widest">
+          唤醒全知向导
+        </h2>
+        <p className="text-[#E8DFB8]/70 text-lg sm:text-xl font-serif max-w-2xl">
+          &quot;迷茫的旅人，不知从何问起？让我通过深邃的对话，为你指引通往真理的阵法。&quot;
+        </p>
+      </motion.div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
         {systems.map((system) => {
@@ -98,12 +120,29 @@ export function ExploreView() {
             exit={{ opacity: 0, scale: 0.98 }}
             transition={{ duration: 0.5 }}
           >
-            {subTab === "tarot" && <MysticTarot />}
-            {subTab === "eastern" && <EasternApp />}
+            {subTab === "tarot" && <MysticTarot initialHandoff={handoffData} clearHandoff={() => setHandoffData(null)} />}
+            {subTab === "eastern" && <EasternApp initialHandoff={handoffData} clearHandoff={() => setHandoffData(null)} />}
             {subTab === "astrology" && <AstrologyApp />}
           </motion.div>
         </AnimatePresence>
       </div>
+
+      <AnimatePresence>
+        {isGuideOpen && (
+          <OmniOracleGuide 
+            onClose={() => setIsGuideOpen(false)} 
+            onHandoff={(data) => {
+              setIsGuideOpen(false);
+              setHandoffData(data);
+              setSubTab(data.system);
+              // Scroll down to the app area
+              setTimeout(() => {
+                window.scrollTo({ top: 800, behavior: 'smooth' });
+              }, 500);
+            }} 
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
