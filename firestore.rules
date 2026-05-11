@@ -6,7 +6,7 @@ service cloud.firestore {
     // Assumed Data Model
     // ===============================================================
     //
-    // Collection: dailyImages
+    // Collection: daily-images
     // Document ID: YYYY-MM-DD_promptHash
     // Fields:
     //   - imageUrl: string (required, base64 data) - The generated image.
@@ -39,19 +39,20 @@ service cloud.firestore {
     }
 
     function isValidDailyImage(data) {
-      return hasRequiredFields(['imageUrl', 'prompt', 'date', 'createdAt']) &&
-             hasOnlyAllowedFields(['imageUrl', 'prompt', 'date', 'createdAt']) &&
+      return hasRequiredFields(['imageUrl', 'prompt', 'date', 'createdAt', 'expiresAt']) &&
+             hasOnlyAllowedFields(['imageUrl', 'prompt', 'date', 'createdAt', 'expiresAt']) &&
              data.imageUrl is string && data.imageUrl.size() > 100 && data.imageUrl.size() < 2000000 &&
              data.prompt is string && data.prompt.size() > 0 && data.prompt.size() < 1000 &&
              data.date is string && data.date.matches("^\\d{4}-\\d{2}-\\d{2}$") &&
-             data.createdAt is timestamp;
+             data.createdAt is timestamp &&
+             data.expiresAt is timestamp;
     }
 
     // ===============================================================
     // Rules
     // ===============================================================
 
-    match /dailyImages/{imageId} {
+    match /daily-images/{imageId} {
       // Allow public read of shared images
       allow read: if true;
       

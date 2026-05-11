@@ -107,26 +107,6 @@ export default function DiscoveryView({ onComplete }: { onComplete?: () => void 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [archetypeAnalysis, setArchetypeAnalysis] = useState("");
 
-  // Initial sync on mount or when profile first loads
-  useEffect(() => {
-    if (isLoaded) {
-      if (profile.name && profile.mbti && profile.jungianArchetype && step === 1) {
-        setStep(6);
-      }
-      setEnneagramAnswer(profile.enneagram || "");
-      setMbtiResult(profile.mbti || "");
-      setMbtiIdentity(profile.mbtiIdentity || "");
-      setSelectedArchetype(profile.jungianArchetype || "");
-      setFormData({
-        name: profile.name || "",
-        gender: profile.gender || "",
-        birthDate: profile.birthDate || "",
-        birthTime: profile.birthTime || "",
-        birthPlace: profile.birthPlace || ""
-      });
-    }
-  }, [isLoaded]); // Only run when isLoaded changes (i.e. on mount / hydration complete)
-
   // Sync state when profile changes dynamically (e.g. from another tab/modal)
   if (isLoaded && profile !== prevProfile) {
     if (profile.name && profile.mbti && profile.jungianArchetype && step < 6) {

@@ -162,6 +162,11 @@ export default function JourneyApp() {
             cardSize={modeData.cardCount > 6 ? "small" : "medium"} 
             positions={positions} 
           />
+          {tarotDetails.question && (
+            <div className="mt-8 p-6 bg-amber-900/10 border border-amber-500/20 rounded-2xl italic text-amber-200/70 text-center font-serif">
+              &quot;{tarotDetails.question}&quot;
+            </div>
+          )}
         </div>
       );
     } else if (entry.type === 'bazi' && entry.details && 'birthDate' in entry.details) {

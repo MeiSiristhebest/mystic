@@ -100,6 +100,23 @@ export function MysticTarot({ initialHandoff, clearHandoff }: { initialHandoff?:
     abort();
   };
 
+  const processedHandoffRef = useRef<any>(null);
+
+  // Sync state when handoff data is received
+  if (initialHandoff && initialHandoff.system === 'tarot' && initialHandoff !== processedHandoffRef.current) {
+    setQuestion(initialHandoff.question || "");
+    if (initialHandoff.modeId && SPREAD_MODES.some(m => m.id === initialHandoff.modeId)) {
+      setMode(initialHandoff.modeId);
+    }
+    processedHandoffRef.current = initialHandoff;
+    
+    // Auto trigger draw cards after a brief delay
+    setTimeout(() => {
+      handleDrawCards();
+      if (clearHandoff) clearHandoff();
+    }, 500);
+  }
+
   const scroll = (direction: "left" | "right") => {
     if (scrollContainerRef.current) {
       const { current } = scrollContainerRef;
@@ -157,7 +174,7 @@ export function MysticTarot({ initialHandoff, clearHandoff }: { initialHandoff?:
     }
   };
 
-  const handleDrawCards = () => {
+  const handleDrawCards = useCallback(() => {
     if (isShuffling) return;
     setIsShuffling(true);
     setDrawnCards([]);
@@ -171,24 +188,9 @@ export function MysticTarot({ initialHandoff, clearHandoff }: { initialHandoff?:
       setIsShuffling(false);
       setIsSelectingCards(true);
     }, 3500);
-  };
+  }, [isShuffling]);
 
-  useEffect(() => {
-    if (initialHandoff && initialHandoff.system === 'tarot') {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setQuestion(initialHandoff.question || "");
-      if (initialHandoff.modeId && SPREAD_MODES.some(m => m.id === initialHandoff.modeId)) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setMode(initialHandoff.modeId);
-      }
-      
-      // Auto trigger draw cards after a brief delay
-      setTimeout(() => {
-        handleDrawCards();
-        if (clearHandoff) clearHandoff();
-      }, 500);
-    }
-  }, [initialHandoff, clearHandoff, handleDrawCards]);
+
 
   const handleSelectCardFromDeck = (index: number) => {
     if (selectedIndices.includes(index)) return;
@@ -278,15 +280,20 @@ export function MysticTarot({ initialHandoff, clearHandoff }: { initialHandoff?:
       }
 
       try {
+        const displayTitle = question 
+          ? (question.length > 25 ? `${question.substring(0, 25)}...` : question)
+          : categoryName;
+
         const id = await addEntry({
           type: 'tarot',
-          title: question ? `塔罗占卜：${question}` : `塔罗占卜：${categoryName}`,
+          title: `塔罗：${displayTitle}`,
           summary: fullResponse.substring(0, 100) + '...',
           details: { 
             type: 'tarot',
             text: fullResponse, 
             cards: drawnCards, 
             mode: currentMode.name, 
+            question: question,
             messages: [{ role: 'model', content: fullResponse }] 
           }
         });

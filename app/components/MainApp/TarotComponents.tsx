@@ -67,7 +67,16 @@ export function TarotCardView({ card, isRevealed, onReveal, onSelect, size = "la
           <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.03] to-transparent pointer-events-none" />
         </div>
         <div className="absolute inset-0 rounded-xl border-2 border-amber-400 bg-black backface-hidden flex flex-col p-2 shadow-[0_0_15px_rgba(201,168,76,0.3)]">
-          <div className="flex-1 relative w-full"><Image src={`https://www.trustedtarot.com/img/cards/${card.englishName.toLowerCase().replace(/ /g, "-")}.png`} alt={card.name} fill sizes="200px" className="object-contain" referrerPolicy="no-referrer" /></div>
+          <div className="flex-1 relative w-full">
+            <Image 
+              src={`https://www.trustedtarot.com/img/cards/${card.englishName.toLowerCase().replace(/ /g, "-")}.png`} 
+              alt={card.name} 
+              fill 
+              sizes="200px" 
+              className={`object-contain ${card.isReversed ? 'rotate-180' : ''}`} 
+              referrerPolicy="no-referrer" 
+            />
+          </div>
           <div className="text-center bg-black/60 rounded-b-lg py-1 mt-1"><h3 className="text-amber-300 font-serif text-sm">{card.name}</h3>{card.isReversed && <span className="text-red-400 text-xs">逆位</span>}</div>
         </div>
       </motion.div>
@@ -98,7 +107,14 @@ export function CardMeaningModal({ card, onClose, cache, setCache }: any) {
         <div className="flex justify-between items-start mb-6 border-b border-amber-500/20 pb-4">
           <div className="flex items-center gap-4">
             <div className="w-16 h-24 relative rounded border border-amber-500/30 overflow-hidden shrink-0">
-              <Image src={`https://www.trustedtarot.com/img/cards/${card.englishName.toLowerCase().replace(/ /g, "-")}.png`} alt={card.name} fill sizes="100px" className="object-contain" referrerPolicy="no-referrer" />
+              <Image 
+                src={`https://www.trustedtarot.com/img/cards/${card.englishName.toLowerCase().replace(/ /g, "-")}.png`} 
+                alt={card.name} 
+                fill 
+                sizes="100px" 
+                className={`object-contain ${card.isReversed ? 'rotate-180' : ''}`} 
+                referrerPolicy="no-referrer" 
+              />
             </div>
             <div>
               <h3 className="text-2xl font-serif text-amber-300">{card.name}</h3>
@@ -149,7 +165,7 @@ export function SpreadLayoutRenderer({ mode, cards, revealedCards, handleRevealC
  */
 export function AmbientCosmicBackground() {
   return (
-    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+    <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
       {/* Deep space base */}
       <div className="absolute inset-0 bg-[#080510]" />
       

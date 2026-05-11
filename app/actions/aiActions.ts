@@ -61,7 +61,7 @@ export async function getQiMenServerData(date: Date) {
 export async function generateMysticImage(prompt: string, aspectRatio: any, docId: string) {
   // 1. Check server-side cache first to avoid duplicate generations
   try {
-    const docRef = adminDb.collection("dailyImages").doc(docId);
+    const docRef = adminDb.collection("daily-images").doc(docId);
     const cachedDoc = await docRef.get();
     if (cachedDoc.exists) {
       const data = cachedDoc.data();
@@ -102,13 +102,14 @@ export async function generateMysticImage(prompt: string, aspectRatio: any, docI
 
   // 3. Save to server-side cache
   try {
-    const docRef = adminDb.collection("dailyImages").doc(docId);
+    const docRef = adminDb.collection("daily-images").doc(docId);
     if (base64Data.length < 1000000) {
       await docRef.set({
         imageUrl: base64Data,
         prompt: prompt,
         date: docId.split('_')[0],
-        createdAt: admin.firestore.FieldValue.serverTimestamp()
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        expiresAt: admin.firestore.Timestamp.fromDate(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)) // Auto-delete after 30 days
       });
     }
   } catch (error) {

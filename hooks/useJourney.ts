@@ -21,7 +21,7 @@ export type TarotCard = {
 };
 
 export type JourneyDetails = 
-  | { type: 'tarot'; text: string; cards: TarotCard[]; mode?: string; messages: Message[] }
+  | { type: 'tarot'; text: string; cards: TarotCard[]; mode?: string; question?: string; messages: Message[] }
   | { type: 'bazi'; text: string; mode?: string; birthDate?: string; birthTime?: string; gender?: string; fullName?: string; birthPlace?: string; messages: Message[] }
   | { type: 'iching'; text: string; data?: { method: string; question?: string; hexagrams?: unknown[] }; messages: Message[] }
   | { type: 'daily'; text: string; sign: string; messages: Message[] }

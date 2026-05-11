@@ -107,7 +107,7 @@ export function SoulView() {
             <div className="absolute inset-0 z-0">
               <MysticImage 
                 prompt={`A glowing ethereal soul essence for ${archetype || 'Seeker'}, nebula heart, cosmic energy flow, sacred geometry`} 
-                className="w-full h-full opacity-60"
+                className="w-full h-full opacity-30"
                 aspectRatio="16:9"
               />
             </div>
@@ -147,9 +147,9 @@ export function SoulView() {
                   { label: "MBTI", value: mbti },
                   { label: "状态", value: profile.currentStatus ? "已同步" : "待更新" },
                 ].map((trait, i) => (
-                  <div key={i} className="cinematic-panel p-6 rounded-2xl text-center">
-                    <p className="micro-label mb-2">{trait.label}</p>
-                    <p className="font-serif text-lg">{trait.value}</p>
+                  <div key={i} className="cinematic-panel bg-black/40 backdrop-blur-xl p-6 rounded-2xl text-center border border-white/5">
+                    <p className="micro-label mb-2 text-[#C9A84C] opacity-80">{trait.label}</p>
+                    <p className="font-serif text-lg text-[#E8DFB8] drop-shadow-md">{trait.value}</p>
                   </div>
                 ))}
               </div>
