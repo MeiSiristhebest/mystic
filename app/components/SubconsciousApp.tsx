@@ -4,6 +4,7 @@ import { Moon, MessageCircle, Send } from "lucide-react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useAIChat } from "@/hooks/useAIChat";
 import BreathingLoading from "./BreathingLoading";
+import { MODELS } from "@/lib/ai";
 
 export default function SubconsciousApp() {
   const { getProfileContext } = useUserProfile();
@@ -11,6 +12,7 @@ export default function SubconsciousApp() {
   const [input, setInput] = useState("");
   
   const { messages, sendMessage, isLoading, error, clearMessages } = useAIChat({
+    model: MODELS.PRO,
     systemInstruction: mode === 'dream' 
       ? `你是一位精通荣格心理学和符号学的梦境解析师。
 请基于用户的灵魂档案，解析他们梦境中的意象（如水、坠落、追逐、特定人物等）。

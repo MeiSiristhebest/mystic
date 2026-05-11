@@ -4,6 +4,7 @@ import { ShieldAlert, MessageCircle, Send, AlertTriangle } from "lucide-react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useAIChat } from "@/hooks/useAIChat";
 import BreathingLoading from "./BreathingLoading";
+import { MODELS } from "@/lib/ai";
 
 export default function ShadowWorkApp() {
   const { getProfileContext } = useUserProfile();
@@ -12,6 +13,7 @@ export default function ShadowWorkApp() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { messages, sendMessage, isLoading, error, clearMessages } = useAIChat({
+    model: MODELS.PRO,
     systemInstruction: `你现在是一位受过严格训练的荣格派分析师和IFS（内部家庭系统）引导者。
 用户正在进行「阴影工作坊」与核心创伤探索。
 

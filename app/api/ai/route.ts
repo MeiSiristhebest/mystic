@@ -1,6 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 import { NextRequest } from "next/server";
 import { AKASHA_PERSONA } from "@/lib/ai";
+import { getCachedResponse, setCachedResponse, generateCacheKey } from "@/lib/ai-cache";
 
 const DEFAULT_MODEL = "gemini-3.1-flash-lite";
 
@@ -19,6 +20,8 @@ export async function POST(req: NextRequest) {
       config: userConfig = {} 
     } = body;
     
+    const modelName = userConfig.model || DEFAULT_MODEL;
+    
     const contents = Array.isArray(prompt) 
       ? prompt.map((m: any) => {
           if (m.role && m.parts) return m;
@@ -27,6 +30,15 @@ export async function POST(req: NextRequest) {
         })
       : [{ role: 'user', parts: [{ text: prompt }] }];
 
+    // 1. Check Cache
+    const cacheKey = generateCacheKey(contents, modelName, systemInstruction);
+    const cached = getCachedResponse(cacheKey);
+    if (cached) {
+      return new Response(cached, {
+        headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+      });
+    }
+
     // Prepare generation config for v2 SDK
     const generationConfig: any = {};
     if (userConfig.responseMimeType) generationConfig.responseMimeType = userConfig.responseMimeType;
@@ -34,24 +46,45 @@ export async function POST(req: NextRequest) {
     if (userConfig.temperature !== undefined) generationConfig.temperature = userConfig.temperature;
     if (userConfig.maxOutputTokens !== undefined) generationConfig.maxOutputTokens = userConfig.maxOutputTokens;
 
-    const responseStream = await ai.models.generateContentStream({
-      model: userConfig.model || DEFAULT_MODEL,
-      contents,
-      config: {
-        systemInstruction,
-        ...generationConfig,
-        tools: [{ google_search: {} }], // Enable real-time Google Search grounding
-      },
-    });
+    // 2. Execute with Search Grounding & Robustness Fallback
+    let responseStream;
+    try {
+      responseStream = await ai.models.generateContentStream({
+        model: modelName,
+        contents,
+        config: {
+          systemInstruction,
+          ...generationConfig,
+          tools: [{ google_search: {} }],
+        },
+      });
+    } catch (searchError) {
+      console.warn("[Search Fallback] Google Search failed, retrying without tools:", searchError);
+      responseStream = await ai.models.generateContentStream({
+        model: modelName,
+        contents,
+        config: {
+          systemInstruction,
+          ...generationConfig,
+        },
+      });
+    }
 
+    let fullContent = "";
     const stream = new ReadableStream({
       async start(controller) {
         try {
           for await (const chunk of responseStream) {
             const text = chunk.text || "";
             if (text) {
+              fullContent += text;
               controller.enqueue(new TextEncoder().encode(text));
             }
+          }
+          
+          // 3. Store in Cache
+          if (fullContent) {
+            setCachedResponse(cacheKey, fullContent);
           }
         } catch (e) {
           console.error("Stream processing error:", e);

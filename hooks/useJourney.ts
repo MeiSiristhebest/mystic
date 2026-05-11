@@ -27,13 +27,17 @@ export type JourneyDetails =
   | { type: 'daily'; text: string; sign: string; messages: Message[] }
   | { type: 'astrology'; text: string; zodiac: string; messages: Message[] }
   | { type: 'face_reading'; text: string; imageType?: string; question?: string; messages: Message[] }
-  | { type: 'shadow_work'; text: string; mode: string; messages: Message[] }
+  | { type: 'shadow_work'; text: string; issue?: string; messages: Message[] }
+  | { type: 'synastry'; text: string; partner?: any; question?: string; messages: Message[] }
+  | { type: 'subconscious'; text: string; content?: string; messages: Message[] }
+  | { type: 'time'; text: string; question?: string; messages: Message[] }
+  | { type: 'mirror'; text: string; messages: Message[] }
   | { type: 'unified'; text: string; bazi?: unknown; astrology?: unknown; tarot?: unknown; messages: Message[] };
 
 export type JourneyEntry = {
   id: string;
   date: string;
-  type: 'tarot' | 'bazi' | 'iching' | 'daily' | 'astrology' | 'face_reading' | 'shadow_work' | 'unified';
+  type: 'tarot' | 'bazi' | 'iching' | 'daily' | 'astrology' | 'face_reading' | 'shadow_work' | 'synastry' | 'subconscious' | 'time' | 'mirror' | 'unified';
   title: string;
   summary: string;
   details?: JourneyDetails;

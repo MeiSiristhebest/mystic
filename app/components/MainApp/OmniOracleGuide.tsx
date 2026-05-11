@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Send, X, Sparkles } from "lucide-react";
 import { useAIStream } from "@/hooks/useAIStream";
-import { ORCHESTRATOR_PERSONA } from "@/lib/ai";
+import { ORCHESTRATOR_PERSONA, MODELS } from "@/lib/ai";
 import { AmbientCosmicBackground } from "./TarotComponents";
 import MysticMarkdown from "../MysticMarkdown";
 import BreathingLoading from "../BreathingLoading";
@@ -28,7 +28,7 @@ export function OmniOracleGuide({ onClose, onHandoff }: OmniOracleGuideProps) {
   const [isTyping, setIsTyping] = useState(false);
   const [pendingAction, setPendingAction] = useState<HandoffData | null>(null);
   
-  const { stream, isLoading, abort } = useAIStream();
+  const { stream, isLoading, abort } = useAIStream({ model: MODELS.PRO });
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

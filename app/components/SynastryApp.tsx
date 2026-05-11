@@ -6,12 +6,14 @@ import { useAIChat } from "@/hooks/useAIChat";
 import { generateDeck } from "@/lib/tarot-data";
 import BreathingLoading from "./BreathingLoading";
 import MysticMarkdown from "./MysticMarkdown";
+import { MODELS } from "@/lib/ai";
 export default function SynastryApp() {
   const { profile, getProfileContext } = useUserProfile();
   const [question, setQuestion] = useState("");
   const [reading, setReading] = useState("");
   const [drawnCards, setDrawnCards] = useState<any[]>([]);
   const { sendMessage, isLoading, error } = useAIChat({
+    model: MODELS.PRO,
     systemInstruction: `<system>
 <role>
 你是一位精通东西方神秘学的「三才合参」大师。
