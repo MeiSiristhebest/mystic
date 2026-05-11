@@ -69,6 +69,26 @@ export function CardFrame({ children, className = "" }: { children: React.ReactN
   );
 }
 
+export function TarotCardBack({ size = "medium", className = "" }: { size?: "small" | "medium" | "large", className?: string }) {
+  const sizeClasses = {
+    small: "w-16 h-24 md:w-20 md:h-32",
+    medium: "w-24 h-36 md:w-32 md:h-52",
+    large: "w-32 h-48 md:w-40 md:h-64"
+  };
+  return (
+    <CardFrame className={`${sizeClasses[size]} ${className}`}>
+      <div className="w-full h-full bg-[#0a0510] border border-amber-500/30 flex items-center justify-center relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('/noise.svg')] opacity-10 mix-blend-overlay" />
+        <div className="absolute inset-2 border border-amber-500/20 rounded-lg" />
+        <div className="absolute inset-4 border border-amber-500/10 rounded-md" />
+        <div className="w-8 h-8 rotate-45 border border-amber-500/40 flex items-center justify-center shadow-[0_0_15px_rgba(201,168,76,0.2)]">
+          <div className="w-4 h-4 rotate-45 bg-amber-500/20" />
+        </div>
+      </div>
+    </CardFrame>
+  );
+}
+
 interface SpreadLayoutRendererProps {
   cards: any[];
   mode?: string;

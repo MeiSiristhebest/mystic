@@ -4,7 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Moon, Eye } from "lucide-react";
 import dynamic from "next/dynamic";
-import BreathingLoading from "./BreathingLoading";
+import BreathingLoading from "../BreathingLoading";
 
 const ShadowWorkApp = dynamic(() => import("../ShadowWorkApp"), { 
   loading: () => <BreathingLoading text="正在潜入阴影深处..." /> 
