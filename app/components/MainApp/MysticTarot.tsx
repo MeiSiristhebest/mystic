@@ -61,7 +61,7 @@ export function MysticTarot({ initialHandoff, clearHandoff }: { initialHandoff?:
   const soulCardFullRef = useRef<HTMLDivElement>(null);
 
   const { addEntry, updateEntry } = useJourney();
-  const { stream, isLoading: isReading, error: streamError, abort } = useAIStream();
+  const { stream, isLoading: isReading, error: streamError, abort } = useAIStream({ model: MODELS.PRO });
   const { isGeneratingPoster, handleGeneratePoster } = usePosterGenerator();
   
   const [messages, setMessages] = useState<{ role: 'user' | 'model'; content: string }[]>([]);
@@ -131,9 +131,8 @@ export function MysticTarot({ initialHandoff, clearHandoff }: { initialHandoff?:
       牌阵列表：
       ${SPREAD_MODES.map((m) => `${m.id} (${m.name}: ${m.description})`).join("\n")}
 
-      请仅返回一个JSON对象，包含 'categoryId' 和 'modeId' 两个字段。不要包含任何其他文本。
-      `;
       const text = await generateContent(prompt, AKASHA_PERSONA, {
+        model: MODELS.LITE,
         responseMimeType: "application/json",
         responseSchema: {
           type: "OBJECT",

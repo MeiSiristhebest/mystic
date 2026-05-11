@@ -1,4 +1,12 @@
-export const DEFAULT_MODEL = "gemini-3-flash-preview";
+export const MODELS = {
+  PRO: "gemini-3.1-pro-preview",           // For deep reasoning & orchestration
+  FLASH: "gemini-3.1-flash-preview",       // For real-time search & context
+  LITE: "gemini-3.1-flash-lite",           // For standard divination
+  IMAGE: "nano-banana-pro-preview",        // For high-fidelity mystic visuals
+  RESEARCH: "deep-research-preview-04-2026" // For collective mirror deep dives
+};
+
+export const DEFAULT_MODEL = MODELS.LITE;
 
 export function sanitizePrompt(input: string): string {
   if (!input) return "";
@@ -46,12 +54,13 @@ export async function generateContent(
 export async function* generateContentStream(
   prompt: string | any[],
   systemInstruction: string = AKASHA_PERSONA,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  config: any = {}
 ) {
   const response = await fetch('/api/ai', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ prompt, systemInstruction }),
+    body: JSON.stringify({ prompt, systemInstruction, config }),
     signal
   });
 

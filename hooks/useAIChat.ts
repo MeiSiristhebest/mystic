@@ -55,7 +55,8 @@ export function useAIChat(options: UseAIChatOptions = {}) {
     let accumulated = '';
     try {
       const systemInstruction = customSystemInstruction || options.systemInstruction || AKASHA_PERSONA;
-      const stream = generateContentStream(currentPrompt, systemInstruction, abortControllerRef.current.signal);
+      const model = options.model || DEFAULT_MODEL;
+      const stream = generateContentStream(currentPrompt, systemInstruction, abortControllerRef.current.signal, { model });
 
       for await (const chunk of stream) {
         accumulated += chunk;

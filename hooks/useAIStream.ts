@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { generateContentStream, AKASHA_PERSONA } from '@/lib/ai';
 
-export function useAIStream() {
+export function useAIStream(options: { model?: string } = {}) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -19,18 +19,19 @@ export function useAIStream() {
     }
     abortControllerRef.current = new AbortController();
     
-    // Set a timeout of 30 seconds to prevent infinite loading
+    // Set a timeout of 60 seconds (extended for Pro models)
     const timeoutId = setTimeout(() => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort(new Error('Request timed out'));
       }
-    }, 30000);
+    }, 60000);
 
     try {
       const responseStream = generateContentStream(
         prompt as any,
         systemInstruction,
-        abortControllerRef.current.signal
+        abortControllerRef.current.signal,
+        { model: options.model }
       );
 
       for await (const chunk of responseStream) {

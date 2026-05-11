@@ -2,7 +2,7 @@ import { GoogleGenAI } from "@google/genai";
 import { NextRequest } from "next/server";
 import { AKASHA_PERSONA } from "@/lib/ai";
 
-const DEFAULT_MODEL = "gemini-3-flash-preview";
+const DEFAULT_MODEL = "gemini-3.1-flash-lite";
 
 export async function POST(req: NextRequest) {
   try {
@@ -40,6 +40,7 @@ export async function POST(req: NextRequest) {
       config: {
         systemInstruction,
         ...generationConfig,
+        tools: [{ google_search: {} }], // Enable real-time Google Search grounding
       },
     });
 

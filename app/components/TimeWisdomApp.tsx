@@ -1,32 +1,36 @@
+'use client';
+
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { motion } from "motion/react";
-import { Clock, Moon, Sun, Star } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import { Clock, Moon, Sun, Star, Globe, Zap, AlertTriangle } from "lucide-react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useAIChat } from "@/hooks/useAIChat";
 import BreathingLoading from "./BreathingLoading";
+import MysticMarkdown from "./MysticMarkdown";
+import { MODELS } from "@/lib/ai";
 
-// Simple moon phase calculator
+// Dynamic Global Context instruction
+const GLOBAL_CONTEXT_INSTRUCTION = `
+<dynamic_context_instruction>
+  你必须使用 Google Search 工具来获取【此时此刻】的全球核心时事、地缘政治动态以及最新的占星学相位（星历数据）。
+  将这些实时抓取的信息作为“大环境背景”，与用户的个人档案进行深度共振分析。
+</dynamic_context_instruction>
+`;
+
 function getMoonPhase(date: Date) {
   let year = date.getFullYear();
   let month = date.getMonth() + 1;
   let day = date.getDate();
-  
-  if (month < 3) {
-    year--;
-    month += 12;
-  }
-  
+  if (month < 3) { year--; month += 12; }
   ++month;
   let c = 365.25 * year;
   let e = 30.6 * month;
-  let jd = c + e + day - 694039.09; // jd is total days elapsed
-  jd /= 29.5305882; // divide by the moon cycle
-  let b = parseInt(jd.toString()); // int(jd) -> b, take integer part of jd
-  jd -= b; // subtract integer part to leave fractional part of original jd
-  let b2 = Math.round(jd * 8); // scale fraction from 0-8 and round
-  
-  if (b2 >= 8) b2 = 0; // 0 and 8 are the same so turn 8 into 0
-  
+  let jd = c + e + day - 694039.09;
+  jd /= 29.5305882;
+  let b = parseInt(jd.toString());
+  jd -= b;
+  let b2 = Math.round(jd * 8);
+  if (b2 >= 8) b2 = 0;
   const phases = [
     { name: "新月 (New Moon)", desc: "播种意图，开启新周期的最佳时机。" },
     { name: "蛾眉月 (Waxing Crescent)", desc: "积蓄能量，开始采取初步行动。" },
@@ -37,7 +41,6 @@ function getMoonPhase(date: Date) {
     { name: "下弦月 (Last Quarter)", desc: "释放放手，清理不再服务于你的事物。" },
     { name: "残月 (Waning Crescent)", desc: "深度休息，反思与疗愈，准备下一个循环。" }
   ];
-  
   return phases[b2];
 }
 
@@ -49,9 +52,10 @@ export default function TimeWisdomApp() {
   const moonPhase = useMemo(() => getMoonPhase(today), [today]);
 
   const { sendMessage, isLoading, error } = useAIChat({
-    systemInstruction: `你是一位精通占星学（Astrology）和时间周期律的「时间智者」。
-请基于当前的宇宙天象（如今天的月相、近期的重要星象）以及用户的灵魂档案，为他们提供一份当下的「时间智慧」解读。
-语气：充满宇宙的宏大感，同时又落地于日常生活的指导。`,
+    model: MODELS.FLASH,
+    systemInstruction: `你是一位精通宇宙时空节律的「时间智者」。
+你的使命是将宏观的全球局势（时事）、剧烈的天体相位与个体的灵魂档案进行深度对齐。
+你拒绝给出平庸的运势描述，必须指出当下这一刻在整个人类进化史和用户个体生命史中的独特性。`,
   });
 
   const generateReading = useCallback(async () => {
@@ -59,21 +63,29 @@ export default function TimeWisdomApp() {
     
     const prompt = `
 <instruction>
-请结合今天的月相能量和近期的宏观星象（如土星、木星的行进，或水逆等，可根据当前日期合理推演），为我提供一份专属的「流年/近期运势提醒」。
-重点放在：我当下的能量适合做什么？需要避开什么？
+请基于以下【全球时空脉动】背景，结合今天的月相能量以及用户的【灵魂档案】，撰写一份极具深度的时间智慧报告。
+要求：
+1. 分析全球局势（如地缘张力、变革趋势）如何作为一种“背景低音”影响着用户的心理状态。
+2. 结合冥王星在水瓶座逆行等星象，给出用户在这个五月进行“权力重构”或“自我变革”的深度建议。
+3. 最后的输出必须符合 <output_format> 的 Markdown 要求。
 </instruction>
 
-<divination_context>
-  <time>${today.toLocaleDateString()}</time>
-  <moon_phase>${moonPhase.name}</moon_phase>
-</divination_context>
+<current_context>
+  <iso_time>${today.toISOString()}</iso_time>
+  <local_time>${today.toLocaleString()}</local_time>
+  <moon_phase>${moonPhase.name} - ${moonPhase.desc}</moon_phase>
+  ${GLOBAL_CONTEXT_INSTRUCTION}
+</current_context>
 
 <user_profile>
   ${getProfileContext()}
 </user_profile>
 
 <output_format>
-使用Markdown排版。结构应清晰，重点分明，给出具体可操作的能量建议。
+使用极具专业感的Markdown排版：
+- 使用 ### 作为主要标题。
+- 使用 **粗体** 强调关键词。
+- 必须包含：【🌌 宏观能量场】、【🧬 个体共振】、【⏳ 时间之礼：今日行动指南】。
 </output_format>
 `;
 
@@ -84,80 +96,99 @@ export default function TimeWisdomApp() {
     } catch (e) {
       console.error(e);
     }
-  }, [hasGenerated, today, moonPhase.name, getProfileContext, sendMessage]);
+  }, [hasGenerated, today, moonPhase, getProfileContext, sendMessage]);
 
   useEffect(() => {
     if (profile.birthDate && !hasGenerated && !isLoading) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       generateReading();
-      setHasGenerated(true);
     }
   }, [profile.birthDate, generateReading, hasGenerated, isLoading]);
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="text-center mb-12">
-        <h1 className="text-3xl md:text-4xl font-serif font-bold text-blue-400 tracking-widest mb-4 drop-shadow-[0_0_15px_rgba(96,165,250,0.3)]">
-          时间智慧 (Time Wisdom)
-        </h1>
-        <p className="text-blue-200/60 max-w-2xl mx-auto text-sm md:text-base">
-          顺应宇宙的呼吸。通过星象、月相与流年，把握当下的能量节律。
-        </p>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="inline-block p-3 rounded-full bg-blue-500/10 border border-blue-500/20 mb-6"
+        >
+          <Clock className="w-8 h-8 text-blue-400" />
+        </motion.div>
+        <h1 className="text-4xl font-serif gold-gradient-text mb-4 tracking-widest">时间智慧</h1>
+        <p className="text-blue-200/60 font-serif italic">"在永恒的当下，锚定你的坐标"</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-blue-950/30 border border-blue-500/30 rounded-2xl p-6 backdrop-blur-sm flex flex-col items-center text-center">
-          <Clock className="w-8 h-8 text-blue-400 mb-3" />
-          <h3 className="text-sm font-medium text-blue-300 mb-1">今日日期</h3>
-          <p className="text-lg font-serif text-blue-100">{today.toLocaleDateString()}</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+        <div className="luxury-card p-6 border-blue-500/20 bg-blue-500/5">
+          <div className="flex items-center gap-4 mb-4">
+            <Globe className="w-6 h-6 text-blue-400 opacity-70" />
+            <h3 className="text-sm font-serif uppercase tracking-widest text-blue-300">全球共振节点</h3>
+          </div>
+          <div className="space-y-3">
+            <div className="flex items-start gap-2 text-xs text-blue-200/50">
+              <Zap className="w-3 h-3 mt-0.5 text-amber-400 shrink-0" />
+              <span>实时星象脉动扫描中...</span>
+            </div>
+            <div className="flex items-start gap-2 text-xs text-blue-200/50">
+              <Zap className="w-3 h-3 mt-0.5 text-amber-400 shrink-0" />
+              <span>全球时事能量场对齐中...</span>
+            </div>
+            <div className="flex items-start gap-2 text-xs text-blue-200/50">
+              <Activity className="w-3 h-3 mt-0.5 text-blue-400 shrink-0" />
+              <span>正在检索今日核心共振节点</span>
+            </div>
+          </div>
         </div>
-        <div className="bg-blue-950/30 border border-blue-500/30 rounded-2xl p-6 backdrop-blur-sm flex flex-col items-center text-center">
-          <Moon className="w-8 h-8 text-blue-400 mb-3" />
-          <h3 className="text-sm font-medium text-blue-300 mb-1">当前月相</h3>
-          <p className="text-lg font-serif text-blue-100 mb-2">{moonPhase.name}</p>
-          <p className="text-xs text-blue-200/70">{moonPhase.desc}</p>
-        </div>
-        <div className="bg-blue-950/30 border border-blue-500/30 rounded-2xl p-6 backdrop-blur-sm flex flex-col items-center text-center">
-          <Sun className="w-8 h-8 text-blue-400 mb-3" />
-          <h3 className="text-sm font-medium text-blue-300 mb-1">宇宙能量</h3>
-          <p className="text-xs text-blue-200/70 mt-2">
-            结合您的本命盘与当前天象，计算专属流年指引。
-          </p>
+
+        <div className="luxury-card p-6 border-blue-500/20 bg-blue-500/5">
+          <div className="flex items-center gap-4 mb-4">
+            <Moon className="w-6 h-6 text-blue-400 opacity-70" />
+            <h3 className="text-sm font-serif uppercase tracking-widest text-blue-300">当前月相能量</h3>
+          </div>
+          <div className="text-center">
+            <p className="text-xl font-serif text-blue-100 mb-2">{moonPhase.name}</p>
+            <p className="text-xs text-blue-200/60 leading-relaxed">{moonPhase.desc}</p>
+          </div>
         </div>
       </div>
 
-      <div className="bg-black/40 border border-blue-500/20 rounded-2xl p-6 md:p-8 backdrop-blur-sm min-h-[300px]">
+      <div className="relative min-h-[400px] luxury-card p-8 md:p-12 border-blue-500/10 bg-black/40 overflow-hidden">
+        <div className="absolute top-0 right-0 p-4 opacity-10">
+          <Clock className="w-32 h-32 text-blue-500" />
+        </div>
+
         {!profile.birthDate ? (
-          <div className="h-full flex flex-col items-center justify-center text-center py-12">
-            <Star className="w-12 h-12 text-blue-500/50 mb-4" />
-            <p className="text-blue-200/70 mb-4">需要您的出生信息来计算专属的时间智慧。</p>
-            <p className="text-sm text-blue-300/50">请在右上角「档案」中完善信息。</p>
+          <div className="flex flex-col items-center justify-center h-64 text-center">
+            <Star className="w-12 h-12 text-blue-500/30 mb-4 animate-pulse" />
+            <p className="text-blue-200/50 mb-2">需要完善您的“灵魂档案”以开启时间智慧</p>
+            <p className="text-[10px] text-blue-500/40 uppercase tracking-widest">Awaiting Cosmic Alignment</p>
           </div>
         ) : isLoading ? (
           <div className="py-20">
-            <BreathingLoading text="正在观测星象轨迹与流年能量..." />
+            <BreathingLoading text="正在读取 2026年5月 的全球时空记录..." />
           </div>
-        ) : error ? (
-          <div className="text-center text-red-400 p-4">{error}</div>
-        ) : reading ? (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="prose prose-invert prose-blue max-w-none"
-          >
-            <div className="whitespace-pre-wrap text-blue-50/90 leading-relaxed font-serif text-sm md:text-base">
-              {reading}
-            </div>
-          </motion.div>
         ) : (
-          <div className="flex justify-center py-12">
-            <button
-              onClick={generateReading}
-              className="bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/50 text-blue-200 px-8 py-3 rounded-full font-serif transition-colors"
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={reading}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 1 }}
             >
-              获取今日时间智慧
-            </button>
-          </div>
+              <MysticMarkdown content={reading} />
+              
+              {reading && (
+                <div className="mt-12 pt-8 border-t border-blue-500/10 flex justify-center">
+                  <button 
+                    onClick={() => { setHasGenerated(false); generateReading(); }}
+                    className="text-xs font-serif text-blue-400/40 hover:text-blue-400 transition-colors tracking-[0.3em] uppercase"
+                  >
+                    刷新时空场域
+                  </button>
+                </div>
+              )}
+            </motion.div>
+          </AnimatePresence>
         )}
       </div>
     </div>
