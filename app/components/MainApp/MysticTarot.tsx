@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Sparkles,
@@ -100,15 +100,15 @@ export function MysticTarot({ initialHandoff, clearHandoff }: { initialHandoff?:
     abort();
   };
 
-  const processedHandoffRef = useRef<any>(null);
+  const [prevHandoff, setPrevHandoff] = useState<any>(null);
 
   // Sync state when handoff data is received
-  if (initialHandoff && initialHandoff.system === 'tarot' && initialHandoff !== processedHandoffRef.current) {
+  if (initialHandoff && initialHandoff.system === 'tarot' && initialHandoff !== prevHandoff) {
     setQuestion(initialHandoff.question || "");
     if (initialHandoff.modeId && SPREAD_MODES.some(m => m.id === initialHandoff.modeId)) {
       setMode(initialHandoff.modeId);
     }
-    processedHandoffRef.current = initialHandoff;
+    setPrevHandoff(initialHandoff);
     
     // Auto trigger draw cards after a brief delay
     setTimeout(() => {

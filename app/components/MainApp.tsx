@@ -24,6 +24,8 @@ const UserProfileModal = dynamic(() => import("./UserProfileModal"));
 // State Management
 import { useAppStore } from "@/lib/store";
 
+import { AmbientCosmicBackground } from "./MainApp/TarotComponents";
+
 export default function App() {
   const activeTab = useAppStore((state) => state.activeTab);
   const setActiveTab = useAppStore((state) => state.setActiveTab);
@@ -43,7 +45,13 @@ export default function App() {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-[#080510] text-[#E8DFB8] font-sans selection:bg-[#C9A84C]/30 pb-20 md:pb-0">
+      <div className="min-h-screen bg-[#050308] text-[#E8DFB8] font-sans selection:bg-[#C9A84C]/30 pb-20 md:pb-0 relative overflow-hidden">
+        {/* Global Cosmic Background */}
+        <div className="fixed inset-0 z-0 pointer-events-none opacity-50">
+          <AmbientCosmicBackground />
+        </div>
+        
+        <div className="relative z-10 min-h-screen flex flex-col">
         {/* Navigation Layer */}
         <DesktopNavigation 
           activeTab={activeTab} 
@@ -85,6 +93,7 @@ export default function App() {
           isOpen={isProfileModalOpen} 
           onClose={() => setIsProfileModalOpen(false)} 
         />
+        </div>
       </div>
     </ErrorBoundary>
   );
