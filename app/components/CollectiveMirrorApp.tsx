@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Globe, Users, Activity, Sparkles, TrendingUp, Info } from "lucide-react";
+import { Globe, Users, Activity, Sparkles, TrendingUp, Info, AlertTriangle } from "lucide-react";
 import { useAIChat } from "@/hooks/useAIChat";
 import BreathingLoading from "./BreathingLoading";
 import MysticMarkdown from "./MysticMarkdown";

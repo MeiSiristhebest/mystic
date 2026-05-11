@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Clock, Moon, Sun, Star, Globe, Zap, AlertTriangle } from "lucide-react";
+import { Clock, Moon, Sun, Star, Globe, Zap, AlertTriangle, Activity } from "lucide-react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useAIChat } from "@/hooks/useAIChat";
 import BreathingLoading from "./BreathingLoading";
