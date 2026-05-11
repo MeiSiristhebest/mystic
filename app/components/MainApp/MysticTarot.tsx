@@ -11,6 +11,7 @@ import { AKASHA_PERSONA } from "@/lib/ai";
 import { getDailyTarotCards } from "@/lib/tarot-data";
 import { useJourney } from "@/hooks/useJourney";
 import { useUserProfile } from "@/hooks/useUserProfile";
+import { useAppStore } from "@/lib/store";
 import BreathingLoading from "../BreathingLoading";
 
 const TarotRitualManager = dynamic(() => import("./TarotRitualManager"), {
