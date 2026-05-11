@@ -24,9 +24,10 @@ export default function JourneyApp() {
   const [prevSelectedEntryId, setPrevSelectedEntryId] = useState<string | null>(null);
 
   // Sync chat messages when selected entry changes (React 19 pattern)
-  if (selectedEntry?.id !== prevSelectedEntryId) {
+  const currentId = selectedEntry?.id || null;
+  if (currentId !== prevSelectedEntryId) {
     setChatMessages(selectedEntry?.details?.messages || []);
-    setPrevSelectedEntryId(selectedEntry?.id || null);
+    setPrevSelectedEntryId(currentId);
   }
 
   useEffect(() => {

@@ -55,3 +55,18 @@
 - **Decision: Package Manager Migration (npm to pnpm)**
   - **Reason**: Node modules bloat and inconsistent lockfiles.
   - **Action**: Fully migrated project to pnpm. Verified workspace integrity and build-time optimization.
+
+## [2026-05-10] Phase 7: Advanced Prompt Harnessing (Harness Engineering)
+
+- **Decision: XML Encapsulation for Context Isolation**
+  - **Reason**: To prevent prompt injection and clearly demarcate system instructions from user-provided data (`profile`, `question`, `cards`).
+  - **Action**: Refactored all dynamic prompts (`MysticTarot`, `IChingApp`, `FaceReadingApp`, `CollectiveMirrorApp`, `TimeWisdomApp`, `SubconsciousApp`) to use explicit XML tags (e.g., `<instruction>`, `<divination_context>`, `<user_question>`).
+- **Decision: Chain of Thought (CoT) Induction**
+  - **Reason**: Complex esoterica modules required the model to cross-reference multiple systems (e.g., Bazi + Tarot) before answering. Direct generation led to shallow reasoning.
+  - **Action**: Introduced `<thinking_process>` instructions in `SynastryApp` and `IChingApp`. Updated UI to strip `<thinking>` blocks so they remain an internal monologue hidden from the user.
+- **Decision: Strict Output Formatting**
+  - **Reason**: Markdown formatting was inconsistent across model generations.
+  - **Action**: Enforced `<output_format>` tags detailing exact markdown headers and XML tags for final outputs (e.g., `[SOUL_MOTTO]`).
+- **Decision: Boundary Enforcement (Guardrails)**
+  - **Reason**: The personas lacked instructions on how to handle malicious, violent, or nonsensical input.
+  - **Action**: Added `<boundary_enforcement>` to `AKASHA_PERSONA` detailing the strategy for handling "无意义输入" (meaningless input) and "恶意提问" (malicious questions).

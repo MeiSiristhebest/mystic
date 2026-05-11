@@ -231,7 +231,7 @@ export const MysticImage = ({
             className="absolute w-[110%] h-[110%] border border-[#9B7FD4]/10 rounded-full"
           />
         </div>
-        <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay pointer-events-none md:bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+        <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay pointer-events-none md:bg-[url('/noise.svg')]" />
       </div>
     </div>
   );

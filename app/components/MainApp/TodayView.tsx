@@ -16,6 +16,7 @@ import { AKASHA_PERSONA, generateContent } from "@/lib/ai";
 import { MysticImage } from "./MysticImage";
 import { saveToIndexedDB, getFromIndexedDB } from "@/lib/storage";
 import { useAppStore } from "@/lib/store";
+import * as htmlToImage from 'html-to-image';
 
 export function TodayView() {
   const { profile, getProfileContext, isLoaded } = useUserProfile();
@@ -30,6 +31,20 @@ export function TodayView() {
   const [energyTip, setEnergyTip] = useState("保持觉察，在呼吸间感受宇宙的律动。");
   const [isGenerating, setIsGenerating] = useState(false);
   const generatingRef = useRef(false);
+  const cardRef = useRef<HTMLElement>(null);
+
+  const handleDownload = async () => {
+    if (!cardRef.current) return;
+    try {
+      const dataUrl = await htmlToImage.toPng(cardRef.current, { quality: 0.95 });
+      const link = document.createElement('a');
+      link.download = `mystic-oracle-${dateStr}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error('Failed to download image', err);
+    }
+  };
 
   useEffect(() => {
     const generateDailyContent = async () => {
@@ -129,7 +144,7 @@ export function TodayView() {
         </h1>
       </header>
 
-      <section className="luxury-card relative overflow-hidden group min-h-[300px] flex items-center">
+      <section ref={cardRef} className="luxury-card relative overflow-hidden group min-h-[300px] flex items-center">
         <div className="absolute inset-0 z-0">
           <MysticImage 
             prompt="A mystical oracle card floating in a nebula, cosmic eye, sacred geometry" 
@@ -160,8 +175,11 @@ export function TodayView() {
             </motion.blockquote>
           )}
           <div className="flex justify-end">
-            <button className="text-xs font-serif tracking-[0.2em] text-[#E8DFB8]/40 hover:text-[#C9A84C] transition-colors flex items-center gap-2">
-              长按保存卡片 <Download className="w-3 h-3" />
+            <button 
+              onClick={handleDownload}
+              className="text-xs font-serif tracking-[0.2em] text-[#E8DFB8]/40 hover:text-[#C9A84C] transition-colors flex items-center gap-2"
+            >
+              点击保存卡片 <Download className="w-3 h-3" />
             </button>
           </div>
         </div>
