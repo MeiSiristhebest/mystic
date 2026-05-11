@@ -1,126 +1,13 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
+import { useAppStore, UserProfile, LifeEvent, EmotionalState } from '@/lib/store';
 
-export interface LifeEvent {
-  id: string;
-  date: string;
-  description: string;
-  impact: 'positive' | 'negative' | 'transformative';
-}
-
-export interface EmotionalState {
-  date: string;
-  words: string[];
-}
-
-export interface UserProfile {
-  name: string;
-  gender: string;
-  birthDate: string;
-  birthTime: string;
-  birthPlace?: string;
-  mbti: string;
-  mbtiIdentity?: string; // e.g., "-A" or "-T"
-  enneagram?: string; // e.g., "4w5" or "Type 4"
-  bazi?: string;
-  zodiac?: string;
-  currentStatus: string;
-  // Deep Soul Profile additions
-  jungianArchetype?: string;
-  coreIssues?: string[];
-  lifeEvents?: LifeEvent[];
-  emotionalBaseline?: EmotionalState[];
-}
-
-const DEFAULT_PROFILE: UserProfile = {
-  name: '',
-  gender: '',
-  birthDate: '',
-  birthTime: '',
-  birthPlace: '',
-  mbti: '',
-  mbtiIdentity: '',
-  enneagram: '',
-  bazi: '',
-  zodiac: '',
-  currentStatus: '',
-  jungianArchetype: '',
-  coreIssues: [],
-  lifeEvents: [],
-  emotionalBaseline: [],
-};
-
-export const PROFILE_UPDATE_EVENT = 'mystic_profile_updated';
+export type { UserProfile, LifeEvent, EmotionalState };
 
 export function useUserProfile() {
-  const [profile, setProfile] = useState<UserProfile>(DEFAULT_PROFILE);
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  useEffect(() => {
-    const loadProfile = () => {
-      try {
-        const stored = localStorage.getItem('mystic_user_profile');
-        if (stored) {
-          // Only parse if it looks like a valid JSON object
-          if (stored.startsWith('{')) {
-            let parsed = JSON.parse(stored);
-            // Basic validation to ensure it's not garbled or old format
-            if (parsed && typeof parsed === 'object') {
-              // Check for garbled text in key fields
-              const isGarbled = (str: any) => typeof str === 'string' && /[\u0080-\u00ff]/.test(str) && !/[\u4e00-\u9fa5]/.test(str);
-              
-              if (isGarbled(parsed.jungianArchetype)) parsed.jungianArchetype = '';
-              if (isGarbled(parsed.name)) parsed.name = '';
-              if (isGarbled(parsed.currentStatus)) parsed.currentStatus = '';
-              
-              setProfile({ ...DEFAULT_PROFILE, ...parsed });
-            }
-          } else {
-            // If it's not JSON, it might be old garbled data, clear it
-            localStorage.removeItem('mystic_user_profile');
-          }
-        }
-      } catch (e) {
-        console.error('Failed to load user profile', e);
-      }
-      setIsLoaded(true);
-    };
-
-    loadProfile();
-    window.addEventListener(PROFILE_UPDATE_EVENT, loadProfile);
-    return () => window.removeEventListener(PROFILE_UPDATE_EVENT, loadProfile);
-  }, []);
-
-  const updateProfile = useCallback((newProfile: Partial<UserProfile>) => {
-    // Sanitize newProfile to prevent garbled text
-    const sanitize = (val: any) => {
-      if (typeof val === 'string' && /[\u0080-\u00ff]/.test(val) && !/[\u4e00-\u9fa5]/.test(val)) {
-        return '';
-      }
-      return val;
-    };
-
-    const sanitizedNewProfile = { ...newProfile };
-    if (sanitizedNewProfile.name) sanitizedNewProfile.name = sanitize(sanitizedNewProfile.name);
-    if (sanitizedNewProfile.jungianArchetype) sanitizedNewProfile.jungianArchetype = sanitize(sanitizedNewProfile.jungianArchetype);
-    if (sanitizedNewProfile.currentStatus) sanitizedNewProfile.currentStatus = sanitize(sanitizedNewProfile.currentStatus);
-
-    setProfile(prev => {
-      const updated = { ...prev, ...sanitizedNewProfile };
-      try {
-        localStorage.setItem('mystic_user_profile', JSON.stringify(updated));
-        window.dispatchEvent(new Event(PROFILE_UPDATE_EVENT));
-      } catch (e) {
-        console.error('Failed to save user profile', e);
-      }
-      return updated;
-    });
-  }, []);
-
-  const clearProfile = useCallback(() => {
-    setProfile(DEFAULT_PROFILE);
-    localStorage.removeItem('mystic_user_profile');
-    window.dispatchEvent(new Event(PROFILE_UPDATE_EVENT));
-  }, []);
+  const profile = useAppStore(state => state.profile);
+  const updateProfile = useAppStore(state => state.updateProfile);
+  const clearProfile = useAppStore(state => state.clearProfile);
+  const isLoaded = useAppStore(state => state.isLoaded);
 
   const getProfileContext = useCallback(() => {
     if (!isLoaded) return '';
@@ -153,3 +40,4 @@ export function useUserProfile() {
 
   return { profile, updateProfile, clearProfile, getProfileContext, isLoaded };
 }
+

@@ -409,24 +409,79 @@ export function MysticTarot() {
                   <div>
                     <label className="block text-sm font-serif uppercase tracking-widest mb-3">1. 选择占卜领域</label>
                     <div className="grid grid-cols-2 gap-3">
-                      {CATEGORIES.map((cat) => (
-                        <button key={cat.id} onClick={() => setCategory(cat.id)} className={`py-3 px-3 rounded-xl transition-all ${category === cat.id ? "glass-button active text-amber-300" : "glass-button"}`}>{cat.name}</button>
-                      ))}
+                      {CATEGORIES.map((cat) => {
+                        const Icon = cat.icon;
+                        return (
+                          <button 
+                            key={cat.id} 
+                            onClick={() => setCategory(cat.id)} 
+                            className={`py-3 px-3 rounded-xl transition-all flex items-center justify-center gap-2 ${category === cat.id ? "glass-button active text-[#C9A84C]" : "glass-button text-[#E8DFB8]/60 hover:text-[#E8DFB8]"}`}
+                          >
+                            <Icon size={16} />
+                            {cat.name}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                   <div>
-                    <div className="flex justify-between mb-3"><label className="text-sm font-serif uppercase tracking-widest">2. 你的问题</label><button onClick={handleRecommendMode} disabled={isRecommending || !question.trim()} className="text-xs text-amber-300 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/30">智能推荐牌阵</button></div>
-                    <textarea rows={4} className="glass-input w-full p-4" placeholder="输入你的困惑..." value={question} onChange={(e) => setQuestion(e.target.value)} />
+                    <div className="flex justify-between mb-3"><label className="text-sm font-serif uppercase tracking-widest">2. 你的问题（选填）</label><button onClick={handleRecommendMode} disabled={isRecommending} className="text-xs text-[#C9A84C] bg-[#C9A84C]/10 px-3 py-1 rounded-full border border-[#C9A84C]/30 flex items-center gap-1 hover:bg-[#C9A84C]/20 transition-colors"><Wand2 size={12} />智能推荐牌阵</button></div>
+                    <textarea rows={4} className="glass-input w-full p-4 text-[#E8DFB8]" placeholder="例如：我最近的感情走向如何？或 我该如何突破事业瓶颈？" value={question} onChange={(e) => setQuestion(e.target.value)} />
                   </div>
                 </div>
-                <div className="relative z-10"><label className="block text-sm font-serif uppercase tracking-widest mb-3">3. 选择牌阵</label>
-                  <div ref={scrollContainerRef} className="flex overflow-x-auto gap-4 pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                    {SPREAD_MODES.map((m) => (
-                      <button key={m.id} onClick={() => setMode(m.id)} className={`min-w-[240px] rounded-2xl p-5 text-left transition-all ${mode === m.id ? "glass-button active" : "glass-button"}`}>{m.name} ({m.cardCount}张)</button>
+                
+                <div className="relative z-10">
+                  <label className="block text-sm font-serif uppercase tracking-widest mb-3">3. 你的星座（选填，用于星象塔罗共振）</label>
+                  <div className="flex flex-wrap gap-2">
+                    {["白羊座", "金牛座", "双子座", "巨蟹座", "狮子座", "处女座", "天秤座", "天蝎座", "射手座", "摩羯座", "水瓶座", "双鱼座"].map((sign) => (
+                      <button 
+                        key={sign} 
+                        onClick={() => setZodiacSign(zodiacSign === sign ? "" : sign)} 
+                        className={`px-4 py-1.5 rounded-full text-xs transition-all ${zodiacSign === sign ? "bg-[#C9A84C]/20 text-[#C9A84C] border border-[#C9A84C]/50" : "bg-white/5 text-[#E8DFB8]/40 border border-white/5 hover:bg-white/10"}`}
+                      >
+                        {sign}
+                      </button>
                     ))}
                   </div>
                 </div>
-                <button onClick={handleDrawCards} className="group relative px-10 py-4 bg-gradient-to-r from-amber-600 to-amber-800 text-amber-50 rounded-full font-serif text-lg tracking-wider">开始占卜仪式</button>
+
+                <div className="relative z-10"><label className="block text-sm font-serif uppercase tracking-widest mb-3">4. 选择牌阵模式</label>
+                  <div ref={scrollContainerRef} className="flex overflow-x-auto gap-4 pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden items-stretch">
+                    {SPREAD_MODES.map((m) => (
+                      <button 
+                        key={m.id} 
+                        onClick={() => setMode(m.id)} 
+                        className={`min-w-[260px] max-w-[260px] rounded-2xl p-6 text-left transition-all flex flex-col justify-between ${mode === m.id ? "glass-button active border-[#C9A84C]/50" : "glass-button hover:border-white/20"}`}
+                      >
+                        <div>
+                          <div className="flex justify-between items-start mb-4">
+                            <div className={`p-2 rounded-lg ${mode === m.id ? "bg-[#C9A84C]/20 text-[#C9A84C]" : "bg-white/5 text-[#E8DFB8]/60"}`}>
+                              <Layers size={18} />
+                            </div>
+                            <span className={`text-xs px-3 py-1 rounded-full ${mode === m.id ? "bg-[#C9A84C] text-[#080510] font-bold" : "bg-white/5 text-[#E8DFB8]/40"}`}>
+                              {m.cardCount} 张牌
+                            </span>
+                          </div>
+                          <h3 className="text-lg font-serif mb-2 text-[#E8DFB8]">{m.name}</h3>
+                          <p className="text-sm text-[#E8DFB8]/50 line-clamp-2">{m.description}</p>
+                        </div>
+                        
+                        <div className="mt-8 flex gap-1 justify-start opacity-50 pt-4 border-t border-white/10">
+                          {Array.from({ length: Math.min(m.cardCount, 5) }).map((_, i) => (
+                            <div key={i} className={`w-4 h-6 border rounded-sm ${mode === m.id ? "border-[#C9A84C]" : "border-[#E8DFB8]/30"}`} />
+                          ))}
+                          {m.cardCount > 5 && <span className="text-xs text-[#E8DFB8]/30 ml-1 self-end">+{m.cardCount - 5}</span>}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="relative z-10 flex justify-center mt-4">
+                  <button onClick={handleDrawCards} className="group relative px-12 py-4 bg-gradient-to-r from-[#C9A84C] to-[#9b7b2d] text-[#080510] rounded-full font-serif text-lg tracking-wider font-bold hover:shadow-[0_0_20px_rgba(201,168,76,0.4)] transition-all flex items-center gap-2">
+                    <Sparkles size={20} />
+                    开始占卜仪式 ({currentMode.cardCount}张)
+                  </button>
+                </div>
               </div>
             )}
           </div>
