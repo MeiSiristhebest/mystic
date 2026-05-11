@@ -20,22 +20,22 @@ import {
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { calculateBazi, getZodiac, getSunSign } from '@/lib/metaphysics';
 
-// MBTI Questions (Comprehensive 40-question version)
+// MBTI Questions
 const MBTI_QUESTIONS = [
-  { id: 1, text: "在社交聚会中，你通常：", options: [{ text: "待到很晚，并且越来越有精神", type: "E" }, { text: "早早离开，觉得精力被消耗", type: "I" }] },
+  { id: 1, text: "在社交聚会中，你通常：", options: [{ text: "待到很晚，并且越来越有精力", type: "E" }, { text: "早早离开，觉得精力被消耗", type: "I" }] },
   { id: 2, text: "你更关注：", options: [{ text: "眼前的事实和细节", type: "S" }, { text: "未来的可能性和隐藏的模式", type: "N" }] },
   { id: 3, text: "在做决定时，你主要依赖：", options: [{ text: "逻辑分析和客观事实", type: "T" }, { text: "个人价值观和他人的感受", type: "F" }] },
   { id: 4, text: "你的生活方式更倾向于：", options: [{ text: "有计划、有条理、按部就班", type: "J" }, { text: "随性、灵活、顺其自然", type: "P" }] },
   { id: 5, text: "你更喜欢：", options: [{ text: "广泛的社交圈，有很多朋友", type: "E" }, { text: "较小的社交圈，只有几个深交的知己", type: "I" }] },
-  { id: 6, text: "你更喜欢哪种学习方式：", options: [{ text: "通过实际操作和具体例子", type: "S" }, { text: "通过理解概念和理论框架", type: "N" }] },
+  { id: 6, text: "你更喜欢哪种学习方式？", options: [{ text: "通过实际操作和具体例子", type: "S" }, { text: "通过理解概念和理论框架", type: "N" }] },
   { id: 7, text: "你认为哪种评价是对你更高的赞美：", options: [{ text: "“你非常有逻辑和理智”", type: "T" }, { text: "“你非常有同情心和人情味”", type: "F" }] },
   { id: 8, text: "在旅行前，你通常：", options: [{ text: "提前制定详细的行程和攻略", type: "J" }, { text: "只定个大概方向，到了再看", type: "P" }] },
   { id: 9, text: "遇到问题时，你倾向于：", options: [{ text: "与他人讨论来理清思路", type: "E" }, { text: "自己在内心深思熟虑", type: "I" }] },
   { id: 10, text: "你认为自己更像是一个：", options: [{ text: "务实、脚踏实地的人", type: "S" }, { text: "富有想象力、有远见的人", type: "N" }] },
   { id: 11, text: "在处理冲突时，你倾向于：", options: [{ text: "寻找公平、公正的解决方案，即使会伤人", type: "T" }, { text: "尽量维护和谐，照顾各方的情绪", type: "F" }] },
   { id: 12, text: "面对截止日期，你通常：", options: [{ text: "提前规划，按时或提前完成", type: "J" }, { text: "倾向于在最后时刻冲刺完成", type: "P" }] },
-  { id: 13, text: "在新的环境中，你通常：", options: [{ text: "主动与陌生人交谈", type: "E" }, { text: "等待别人来找你搭话", type: "I" }] },
-  { id: 14, text: "在描述一件事情时，你通常：", options: [{ text: "详细陈述具体发生的事实", type: "S" }, { text: "概括大意，强调整体印象", type: "N" }] },
+  { id: 13, text: "在新的环境中，你通常：", options: [{ text: "主动与陌生人交谈", type: "E" }, { text: "等待别人来找你搭讪", type: "I" }] },
+  { id: 14, text: "在描述一件事情时，你通常：", options: [{ text: "详细陈述具体发生的事情", type: "S" }, { text: "概括大意，强调整体印象", type: "N" }] },
   { id: 15, text: "你更看重：", options: [{ text: "真理和客观性", type: "T" }, { text: "和谐与人际关系", type: "F" }] },
   { id: 16, text: "你的工作空间通常是：", options: [{ text: "整洁有序，物品都有固定位置", type: "J" }, { text: "有些凌乱，但你自己能找到东西", type: "P" }] },
   { id: 17, text: "你的周末理想度过方式是：", options: [{ text: "参加热闹的活动或聚会", type: "E" }, { text: "独自在家看书、看电影或休息", type: "I" }] },
@@ -48,28 +48,26 @@ const MBTI_QUESTIONS = [
   { id: 24, text: "意外的改变会让你感到：", options: [{ text: "焦虑，打乱了你的计划", type: "J" }, { text: "兴奋，带来了新的可能性", type: "P" }] },
   { id: 25, text: "你觉得自己是：", options: [{ text: "容易接近，外向的人", type: "E" }, { text: "有点保留，内向的人", type: "I" }] },
   { id: 26, text: "你的注意力通常集中在：", options: [{ text: "此时此地，正在发生的事情", type: "S" }, { text: "未来可能发生的事情，以及事物的意义", type: "N" }] },
-  { id: 27, text: "你的决策过程通常是：", options: [{ text: "冷静、客观、不带个人色彩的", type: "T" }, { text: "充满同理心、考虑对他人的影响的", type: "F" }] },
+  { id: 27, text: "你的决策过程通常是：", options: [{ text: "冷静、客观、不带个人色彩的", type: "T" }, { text: "充满同理心、考虑对他人的影响", type: "F" }] },
   { id: 28, text: "你更倾向于认为：", options: [{ text: "工作先于娱乐，做完事再玩", type: "J" }, { text: "工作和娱乐可以交替进行，享受过程", type: "P" }] },
   { id: 29, text: "工作时，你更喜欢：", options: [{ text: "充满互动和交流的环境", type: "E" }, { text: "安静、不被打扰的独立空间", type: "I" }] },
-  { id: 30, text: "你更喜欢阅读哪类书籍：", options: [{ text: "纪实文学、传记或实用指南", type: "S" }, { text: "科幻、奇幻或哲学类书籍", type: "N" }] },
-  { id: 31, text: "你更倾向于用什么来评判事物：", options: [{ text: "对与错，合理与不合理", type: "T" }, { text: "好与坏，喜欢与不喜欢", type: "F" }] },
+  { id: 30, text: "你更喜欢阅读哪类书籍？", options: [{ text: "纪实文学、传记或实用指南", type: "S" }, { text: "科幻、奇幻或哲学类书籍", type: "N" }] },
+  { id: 31, text: "你更倾向于用什么来评判事物？", options: [{ text: "对与错，合理与不合理", type: "T" }, { text: "好与坏，喜欢与不喜欢", type: "F" }] },
   { id: 32, text: "在日常生活中，你更喜欢：", options: [{ text: "遵循固定的日程表和习惯", type: "J" }, { text: "每天都有不同的安排和惊喜", type: "P" }] },
   { id: 33, text: "表达想法时，你通常：", options: [{ text: "边说边想，脱口而出", type: "E" }, { text: "在脑海中组织好语言再说", type: "I" }] },
   { id: 34, text: "在做计划时，你更看重：", options: [{ text: "具体的操作步骤和可行性", type: "S" }, { text: "整体的愿景和长远目标", type: "N" }] },
   { id: 35, text: "在讨论问题时，你更容易：", options: [{ text: "坚持真理，哪怕引起争论", type: "T" }, { text: "为了避免伤害感情而妥协", type: "F" }] },
-  { id: 36, text: "你更欣赏哪种工作态度：", options: [{ text: "严谨、守时、有始有终", type: "J" }, { text: "灵活、适应力强、善于变通", type: "P" }] },
+  { id: 36, text: "你更欣赏哪种工作态度？", options: [{ text: "严谨、守时、有始有终", type: "J" }, { text: "灵活、适应力强、善于变通", type: "P" }] },
   { id: 37, text: "经过一天的忙碌后，你如何恢复精力：", options: [{ text: "和朋友出去玩或聊天", type: "E" }, { text: "一个人独处，享受安静时光", type: "I" }] },
-  { id: 38, text: "你认为哪种特质更重要：", options: [{ text: "准确和精确", type: "S" }, { text: "创新和灵感", type: "N" }] },
+  { id: 38, text: "你认为哪种特质更重要？", options: [{ text: "准确和精密", type: "S" }, { text: "创新和灵感", type: "N" }] },
   { id: 39, text: "你认为自己是一个：", options: [{ text: "坚韧、讲求原则的人", type: "T" }, { text: "温和、体贴的人", type: "F" }] },
-  { id: 40, text: "你觉得哪种状态更让你舒服：", options: [{ text: "事情已经解决，有了明确的结论", type: "J" }, { text: "事情还在发展中，充满未知", type: "P" }] },
-  // Identity (A/T) Questions
+  { id: 40, text: "你觉得哪种状态更让你舒服？", options: [{ text: "事情已经解决，有了明确的结论", type: "J" }, { text: "事情还在发展中，充满未知", type: "P" }] },
   { id: 41, text: "面对压力和挑战时，你通常：", options: [{ text: "保持自信，相信自己能解决", type: "IdA" }, { text: "容易感到焦虑和自我怀疑", type: "IdT" }] },
   { id: 42, text: "对于自己做出的决定，你通常：", options: [{ text: "很少后悔，坚信自己的选择", type: "IdA" }, { text: "经常反思，担心做错决定", type: "IdT" }] },
-  { id: 43, text: "你如何看待自己的能力：", options: [{ text: "充满自信，清楚自己的价值", type: "IdA" }, { text: "觉得自己还有很多不足，需要不断证明自己", type: "IdT" }] },
+  { id: 43, text: "你如何看待自己的能力？", options: [{ text: "充满自信，清楚自己的价值", type: "IdA" }, { text: "觉得自己还有很多不足，需要不断证明自己", type: "IdT" }] },
   { id: 44, text: "面对过去的错误，你倾向于：", options: [{ text: "很快放下，吸取教训向前看", type: "IdA" }, { text: "经常回想，感到内疚或遗憾", type: "IdT" }] },
 ];
 
-// Enneagram Questions (Core Fear/Desire based)
 const ENNEAGRAM_QUESTIONS = [
   { id: "1", text: "我追求完美，害怕犯错，总是努力做正确的事。", type: "1号 完美主义者" },
   { id: "2", text: "我渴望被爱和被需要，总是乐于助人，害怕被拒绝。", type: "2号 给予者" },
@@ -90,7 +88,7 @@ const ARCHETYPES = [
 
 export default function DiscoveryView({ onComplete }: { onComplete?: () => void }) {
   const { profile, updateProfile, isLoaded } = useUserProfile();
-  const [step, setStep] = useState(1); // 1: Intro, 2: Basic Info, 3: MBTI, 4: Enneagram, 5: Archetype, 6: Summary
+  const [step, setStep] = useState(1); 
   const [enneagramAnswer, setEnneagramAnswer] = useState(profile.enneagram || "");
   const [mbtiResult, setMbtiResult] = useState(profile.mbti || "");
   const [mbtiIdentity, setMbtiIdentity] = useState(profile.mbtiIdentity || "");
@@ -107,30 +105,30 @@ export default function DiscoveryView({ onComplete }: { onComplete?: () => void 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [archetypeAnalysis, setArchetypeAnalysis] = useState("");
 
-  // Sync state when profile changes dynamically (e.g. from another tab/modal)
-  if (isLoaded && profile !== prevProfile) {
-    if (profile.name && profile.mbti && profile.jungianArchetype && step < 6) {
-      setStep(6);
+  useEffect(() => {
+    if (isLoaded && profile !== prevProfile) {
+      if (profile.name && profile.mbti && profile.jungianArchetype && step < 6) {
+        setStep(6);
+      }
+      setEnneagramAnswer(profile.enneagram || "");
+      setMbtiResult(profile.mbti || "");
+      setMbtiIdentity(profile.mbtiIdentity || "");
+      setSelectedArchetype(profile.jungianArchetype || "");
+      setFormData({
+        name: profile.name || "",
+        gender: profile.gender || "",
+        birthDate: profile.birthDate || "",
+        birthTime: profile.birthTime || "",
+        birthPlace: profile.birthPlace || ""
+      });
+      setPrevProfile(profile);
     }
-    setEnneagramAnswer(profile.enneagram || "");
-    setMbtiResult(profile.mbti || "");
-    setMbtiIdentity(profile.mbtiIdentity || "");
-    setSelectedArchetype(profile.jungianArchetype || "");
-    setFormData({
-      name: profile.name || "",
-      gender: profile.gender || "",
-      birthDate: profile.birthDate || "",
-      birthTime: profile.birthTime || "",
-      birthPlace: profile.birthPlace || ""
-    });
-    setPrevProfile(profile);
-  }
+  }, [isLoaded, profile, prevProfile, step]);
 
   if (!isLoaded) {
     return <div className="flex items-center justify-center min-h-[60vh] text-amber-500/60">正在读取灵魂档案...</div>;
   }
 
-  // Calculate MBTI
   const calculateMBTI = () => {
     const counts: Record<string, number> = { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0, IdA: 0, IdT: 0 };
     Object.values(answers).forEach(type => {
@@ -151,7 +149,6 @@ export default function DiscoveryView({ onComplete }: { onComplete?: () => void 
     return { res, identity };
   };
 
-  // AI Archetype Exploration
   const exploreArchetype = async () => {
     setIsAnalyzing(true);
     try {
@@ -160,8 +157,7 @@ export default function DiscoveryView({ onComplete }: { onComplete?: () => void 
       const sunSign = getSunSign(new Date(formData.birthDate));
       
       const promptText = `
-        作为一名深层心理学专家、荣格分析师及神秘学导师，请根据以下用户信息，帮助他探索其“核心人格原型（Jungian Archetype）”。
-        
+        作为一名深层心理学专家、荣格分析师及神秘学导师，请根据以下用户信息，帮助他探索其“核心人格原型（Jungian Archetype）”：
         用户信息：
         - 姓名: ${formData.name}
         - 性别: ${formData.gender}
@@ -173,7 +169,6 @@ export default function DiscoveryView({ onComplete }: { onComplete?: () => void 
         请提供一段约250字的深度分析，探讨其性格中的阴影与光明，灵魂的渴望与恐惧，并从以下12个原型中推荐一个最契合的：
         ${ARCHETYPES.join(", ")}
         
-        请以温暖、神秘、充满洞察力且富有文学美感的口吻回答。
         最后请以 JSON 格式返回推荐的原型名称，格式为：{"recommendation": "原型名称", "analysis": "分析内容"}
       `;
 
@@ -223,7 +218,6 @@ export default function DiscoveryView({ onComplete }: { onComplete?: () => void 
       jungianArchetype: selectedArchetype
     });
     
-    // Final step
     setStep(6);
   };
 
@@ -231,7 +225,6 @@ export default function DiscoveryView({ onComplete }: { onComplete?: () => void 
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 md:py-12 min-h-[60vh] flex flex-col">
-      {/* Progress Bar */}
       <div className="w-full h-1 bg-white/5 rounded-full mb-12 overflow-hidden">
         <motion.div 
           initial={{ width: 0 }}
@@ -300,8 +293,8 @@ export default function DiscoveryView({ onComplete }: { onComplete?: () => void 
                   className="w-full bg-black/40 border border-amber-500/20 rounded-lg px-4 py-3 text-amber-100 focus:border-amber-500/50 outline-none transition-all appearance-none"
                 >
                   <option value="">选择性别</option>
-                  <option value="男">乾 (男)</option>
-                  <option value="女">坤 (女)</option>
+                  <option value="男">男 (乾造)</option>
+                  <option value="女">女 (坤造)</option>
                   <option value="其他">其他</option>
                 </select>
               </div>
@@ -415,7 +408,7 @@ export default function DiscoveryView({ onComplete }: { onComplete?: () => void 
             </div>
 
             <div className="space-y-6">
-              <p className="text-amber-100/60 text-sm">请选择最符合你内心深处真实写照的一句话：</p>
+              <p className="text-amber-100/60 text-sm">请选择最符合你内心深处真实写照的一句话。</p>
               <div className="grid grid-cols-1 gap-3 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
                 {ENNEAGRAM_QUESTIONS.map((q) => (
                   <button
@@ -555,12 +548,12 @@ export default function DiscoveryView({ onComplete }: { onComplete?: () => void 
               </div>
               <div className="bg-black/40 border border-amber-500/10 rounded-2xl p-4 space-y-1">
                 <span className="text-[10px] uppercase tracking-widest text-amber-500/40">星座</span>
-                <p className="text-amber-200 text-sm">{getSunSign(new Date(formData.birthDate))}</p>
+                <p className="text-amber-200 text-sm">{formData.birthDate ? getSunSign(new Date(formData.birthDate)) : ''}</p>
               </div>
             </div>
 
             <div className="bg-amber-500/5 border border-amber-500/10 rounded-2xl p-4 text-xs text-amber-500/60 font-mono">
-              八字：{calculateBazi(formData.birthDate, formData.birthTime)}
+              八字：{formData.birthDate ? calculateBazi(formData.birthDate, formData.birthTime) : ''}
             </div>
 
             <div className="flex flex-col items-center gap-4">

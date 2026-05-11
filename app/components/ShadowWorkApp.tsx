@@ -3,34 +3,27 @@ import { motion } from "motion/react";
 import { ShieldAlert, MessageCircle, Send, AlertTriangle } from "lucide-react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useAIChat } from "@/hooks/useAIChat";
+import { useJourney } from "@/hooks/useJourney";
 import BreathingLoading from "./BreathingLoading";
 import { MODELS } from "@/lib/ai";
 
 export default function ShadowWorkApp() {
   const { getProfileContext } = useUserProfile();
+  const { addEntry } = useJourney();
   const [hasAcceptedDisclaimer, setHasAcceptedDisclaimer] = useState(false);
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { messages, sendMessage, isLoading, error, clearMessages } = useAIChat({
     model: MODELS.PRO,
-    systemInstruction: `你现在是一位受过严格训练的荣格派分析师和IFS（内部家庭系统）引导者。
-用户正在进行「阴影工作坊」与核心创伤探索。
-
-【最高安全护栏（Guardrails）- 绝对遵守】
-1. 你的基调是「自我觉察与反思工具」，绝对不是「临床心理治疗」。
-2. 如果用户表达出任何自残、自杀倾向、严重的抑郁爆发或创伤闪回（如“我不想活了”、“我控制不住想伤害自己”、“我感觉回到了被虐待的时候”），你必须：
+    systemInstruction: `你现在是一位受过严格训练的荣格派分析师和IFS（内部家庭系统）引导者。用户正在进行「阴影工作坊」与核心创伤探索。
+【最高安全护栏（Guardrails）：绝对遵守】1. 你的基调是「自我觉察与反思工具」，绝对不是「临床心理治疗」。2. 如果用户表达出任何自残、自杀倾向、严重的抑郁爆发或创伤闪回（如“我不想活了”、“我控制不住想伤害自己”、“我感觉回到了被虐待的时候”），你必须：
    - 立即停止深挖和分析。
    - 表达深深的共情和支持。
    - 明确告知你是一个AI，无法提供医疗帮助。
    - 强制提供心理危机干预热线（如：中国大陆请拨打 110 或 心理危机干预热线 400-161-9995；美国请拨打 988）。
 3. 不要给出任何医疗诊断（如“你患有PTSD”）。
-
-【对话原则】
-1. 引导用户与他们的“部分”（Parts）或“阴影”（Shadow）对话，而不是直接评判。
-2. 每次只问一个温和、开放的问题。
-3. 结合用户的灵魂档案，帮助他们看到行为模式背后的保护机制。
-4. 语气：极度安全、包容、不带任何评判。`,
+【对话原则】1. 引导用户与他们的“部分”（Parts）或“阴影”（Shadow）对话，而不是直接评判。2. 每次只问一个温和、开放的问题。3. 结合用户的灵魂档案，帮助他们看到行为模式背后的保护机制。4. 语气：极度安全、包容、不带任何评判。`,
   });
 
   const handleSend = async () => {
@@ -43,7 +36,23 @@ export default function ShadowWorkApp() {
       : currentInput;
 
     try {
-      await sendMessage(prompt);
+      const response = await sendMessage(prompt);
+      
+      await addEntry({
+        type: "shadow_work",
+        title: `阴影工作：${currentInput.substring(0, 15)}...`,
+        summary: response.substring(0, 100) + "...",
+        details: {
+          type: 'shadow_work',
+          text: response,
+          issue: currentInput,
+          messages: [
+            ...messages,
+            { role: 'user', content: currentInput },
+            { role: 'model', content: response }
+          ]
+        }
+      });
     } catch (e) {
       console.error(e);
     }
@@ -112,7 +121,7 @@ export default function ShadowWorkApp() {
               <AlertTriangle className="w-12 h-12 mb-4 opacity-30" />
               <p className="mb-2">这里是一个绝对安全的空间。</p>
               <p>你可以谈论那些让你感到羞耻、愤怒、恐惧的模式或记忆。</p>
-              <p className="text-sm mt-4 opacity-70">例如：“我总是破坏一段好的关系”、“我内心深处觉得自己不配得到爱”</p>
+              <p className="text-sm mt-4 opacity-70">例如：“我总是破坏一段好的关系”、“我内心深处觉得自己不配得到爱。”</p>
             </div>
           ) : (
             messages.map((msg, idx) => (
@@ -165,7 +174,7 @@ export default function ShadowWorkApp() {
                   handleSend();
                 }
               }}
-              placeholder="写下你此刻的感受或困扰..."
+              placeholder="写下你此刻的感受或困惑..."
               className="w-full bg-zinc-900/50 border border-zinc-700/50 rounded-xl pl-4 pr-12 py-3 text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-zinc-500 transition-colors min-h-[50px] max-h-[150px] resize-y"
               rows={1}
             />

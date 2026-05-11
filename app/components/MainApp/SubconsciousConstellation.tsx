@@ -1,127 +1,61 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+"use client";
 
-interface SubconsciousConstellationProps {
-  onDecodeComplete: () => void;
-}
+import { motion } from "motion/react";
 
-// Generate random star positions once per component mount
-const generateStars = (count: number) => {
-  return Array.from({ length: count }).map(() => ({
-    x: Math.random() * 80 + 10, // 10% to 90%
-    y: Math.random() * 80 + 10,
-    size: Math.random() * 3 + 2, // 2px to 5px
+export default function SubconsciousConstellation() {
+  const stars = [...Array(40)].map((_, i) => ({
+    id: i,
+    x: Math.random() * 100,
+    y: Math.random() * 100,
+    size: Math.random() * 2 + 1,
+    duration: Math.random() * 3 + 2,
+    delay: Math.random() * 5
   }));
-};
-
-export const SubconsciousConstellation: React.FC<SubconsciousConstellationProps> = ({
-  onDecodeComplete
-}) => {
-  const [isDecoding, setIsDecoding] = useState(false);
-  const [stars] = useState(() => generateStars(8));
-
-  const handleDecode = () => {
-    setIsDecoding(true);
-    setTimeout(() => {
-      onDecodeComplete();
-    }, 4000); // 4 seconds for the lines to draw and glow
-  };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-12">
-      <div className="text-center space-y-4">
-        <h2 className="text-3xl font-serif text-mystic-ink tracking-[0.2em]">符号解码</h2>
-        <p className="text-mystic-ink/40 text-sm">
-          {isDecoding ? "正在串联潜意识碎片..." : "点击以连接孤立的意象"}
-        </p>
-      </div>
-
-      <div className="relative w-full max-w-md h-80 sm:h-96 rounded-3xl border border-mystic-gold/10 overflow-hidden bg-[#0a0a0f] shadow-inner shadow-mystic-gold/5">
-        {/* Ambient background */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-900/10 via-transparent to-transparent opacity-50" />
-
-        <svg width="100%" height="100%" className="absolute inset-0">
-          {/* Draw lines between stars if decoding */}
-          {isDecoding && (
-            <motion.path
-              d={stars.reduce((acc, star, i) => {
-                if (i === 0) return `M ${star.x}% ${star.y}%`;
-                return `${acc} L ${star.x}% ${star.y}%`;
-              }, "")}
-              fill="none"
-              stroke="#C9A84C"
-              strokeWidth="1.5"
-              strokeDasharray="4 4"
-              initial={{ pathLength: 0, opacity: 0 }}
-              animate={{ pathLength: 1, opacity: 0.6 }}
-              transition={{ duration: 2.5, ease: "easeInOut" }}
-            />
-          )}
-
-          {/* Render Stars */}
-          {stars.map((star, i) => (
-            <motion.circle
-              key={i}
-              cx={`${star.x}%`}
-              cy={`${star.y}%`}
-              r={star.size}
-              fill="#E8DFB8"
-              initial={{ opacity: 0, scale: 0 }}
-              animate={{ 
-                opacity: [0.2, 1, 0.2], 
-                scale: [1, 1.2, 1] 
-              }}
-              transition={{ 
-                duration: Math.random() * 2 + 2, 
-                repeat: Infinity,
-                delay: Math.random() * 2
-              }}
-            />
-          ))}
-
-          {/* Star Halos when decoded */}
-          {isDecoding && stars.map((star, i) => (
-            <motion.circle
-              key={`halo-${i}`}
-              cx={`${star.x}%`}
-              cy={`${star.y}%`}
-              r={star.size * 4}
-              fill="url(#goldGlow)"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.5 }}
-              transition={{ delay: 2, duration: 1 }}
-            />
-          ))}
-
-          <defs>
-            <radialGradient id="goldGlow">
-              <stop offset="0%" stopColor="#C9A84C" />
-              <stop offset="100%" stopColor="transparent" />
-            </radialGradient>
-          </defs>
-        </svg>
-
-        {/* Constellation overlay glow */}
-        {isDecoding && (
-          <motion.div
-            className="absolute inset-0 bg-mystic-gold/5 mix-blend-screen"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: [0, 0.5, 0] }}
-            transition={{ delay: 2.5, duration: 1.5 }}
+    <div className="relative w-full h-[400px] bg-[#050308] rounded-3xl overflow-hidden border border-white/5">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.1)_0%,transparent_70%)]" />
+      
+      <svg className="absolute inset-0 w-full h-full opacity-30">
+        {stars.map((star, i) => i < stars.length - 1 && (
+          <line
+            key={i}
+            x1={`${stars[i].x}%`}
+            y1={`${stars[i].y}%`}
+            x2={`${stars[i+1].x}%`}
+            y2={`${stars[i+1].y}%`}
+            stroke="rgba(147,197,253,0.1)"
+            strokeWidth="0.5"
           />
-        )}
-      </div>
+        ))}
+      </svg>
 
-      {!isDecoding && (
-        <motion.button
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          onClick={handleDecode}
-          className="px-12 py-4 rounded-full border border-mystic-gold/40 text-mystic-gold font-bold tracking-widest hover:bg-mystic-gold/10 transition-all duration-300"
-        >
-          连接意象
-        </motion.button>
-      )}
+      {stars.map((star) => (
+        <motion.div
+          key={star.id}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: [0.2, 1, 0.2] }}
+          transition={{ duration: star.duration, repeat: Infinity, delay: star.delay }}
+          className="absolute bg-blue-200 rounded-full shadow-[0_0_8px_white]"
+          style={{ 
+            left: `${star.x}%`, 
+            top: `${star.y}%`, 
+            width: star.size, 
+            height: star.size 
+          }}
+        />
+      ))}
+      
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <motion.div
+          animate={{ 
+            scale: [1, 1.1, 1],
+            opacity: [0.05, 0.1, 0.05]
+          }}
+          transition={{ duration: 10, repeat: Infinity }}
+          className="w-96 h-96 bg-blue-500 rounded-full blur-[100px]"
+        />
+      </div>
     </div>
   );
-};
+}

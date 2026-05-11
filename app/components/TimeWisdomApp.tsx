@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Clock, Moon, Sun, Star, Globe, Zap, AlertTriangle, Activity } from "lucide-react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useAIChat } from "@/hooks/useAIChat";
+import { useJourney } from "@/hooks/useJourney";
 import BreathingLoading from "./BreathingLoading";
 import MysticMarkdown from "./MysticMarkdown";
 import { MODELS } from "@/lib/ai";
@@ -12,8 +13,7 @@ import { MODELS } from "@/lib/ai";
 // Dynamic Global Context instruction
 const GLOBAL_CONTEXT_INSTRUCTION = `
 <dynamic_context_instruction>
-  你必须使用 Google Search 工具来获取【此时此刻】的全球核心时事、地缘政治动态以及最新的占星学相位（星历数据）。
-  将这些实时抓取的信息作为“大环境背景”，与用户的个人档案进行深度共振分析。
+  你必须使用 Google Search 工具来获取【此时此刻】的全球核心时事、地缘政治动态以及最新的占星学相位（星历数据）。将这些实时抓取的信息作为“大环境背景”，与用户的个人档案进行深度共振分析。
 </dynamic_context_instruction>
 `;
 
@@ -46,6 +46,7 @@ function getMoonPhase(date: Date) {
 
 export default function TimeWisdomApp() {
   const { profile, getProfileContext } = useUserProfile();
+  const { addEntry } = useJourney();
   const [reading, setReading] = useState("");
   const [hasGenerated, setHasGenerated] = useState(false);
   const today = useMemo(() => new Date(), []);
@@ -53,9 +54,7 @@ export default function TimeWisdomApp() {
 
   const { sendMessage, isLoading, error } = useAIChat({
     model: MODELS.FLASH,
-    systemInstruction: `你是一位精通宇宙时空节律的「时间智者」。
-你的使命是将宏观的全球局势（时事）、剧烈的天体相位与个体的灵魂档案进行深度对齐。
-你拒绝给出平庸的运势描述，必须指出当下这一刻在整个人类进化史和用户个体生命史中的独特性。`,
+    systemInstruction: `你是一位精通宇宙时空节律的「时间智者」。你的使命是将宏观的全球局势（时事）、剧烈的天体相位与个体的灵魂档案进行深度对齐。你拒绝给出平庸的运势描述，必须指出当下这一刻在整个人类进化史和用户个体生命史中的独特性。`,
   });
 
   const generateReading = useCallback(async () => {
@@ -63,12 +62,7 @@ export default function TimeWisdomApp() {
     
     const prompt = `
 <instruction>
-请基于以下【全球时空脉动】背景，结合今天的月相能量以及用户的【灵魂档案】，撰写一份极具深度的时间智慧报告。
-要求：
-1. 分析全球局势（如地缘张力、变革趋势）如何作为一种“背景低音”影响着用户的心理状态。
-2. 结合冥王星在水瓶座逆行等星象，给出用户在这个五月进行“权力重构”或“自我变革”的深度建议。
-3. 最后的输出必须符合 <output_format> 的 Markdown 要求。
-</instruction>
+请基于以下【全球时空脉动】背景，结合今天的月相能量以及用户的【灵魂档案】，撰写一份极具深度的时间智慧报告。要求：1. 分析全球局势（如地缘张力、变革趋势）如何作为一种“背景低音”影响着用户的心理状态。2. 结合冥王星在水瓶座逆行等星象，给出用户在这个五月进行“权力重构”或“自我变革”的深度建议。3. 最后的输出必须符合 <output_format> 的 Markdown 要求。</instruction>
 
 <current_context>
   <iso_time>${today.toISOString()}</iso_time>
@@ -82,17 +76,24 @@ export default function TimeWisdomApp() {
 </user_profile>
 
 <output_format>
-使用极具专业感的Markdown排版：
-- 使用 ### 作为主要标题。
-- 使用 **粗体** 强调关键词。
-- 必须包含：【🌌 宏观能量场】、【🧬 个体共振】、【⏳ 时间之礼：今日行动指南】。
-</output_format>
+使用极具专业感的Markdown排版：- 使用 ### 作为主要标题。- 使用 **粗体** 强调关键词。- 必须包含：【🌌 宏观能量场】、【🧬 个体共振】、【⏳ 时间之礼：今日行动指南】。</output_format>
 `;
 
     try {
       const response = await sendMessage(prompt);
       setReading(response);
       setHasGenerated(true);
+
+      await addEntry({
+        type: "time",
+        title: `时间智慧：${today.toLocaleDateString()}`,
+        summary: response.substring(0, 100) + "...",
+        details: {
+          type: 'time',
+          text: response,
+          messages: [{ role: 'model', content: response }]
+        }
+      });
     } catch (e) {
       console.error(e);
     }
@@ -135,7 +136,7 @@ export default function TimeWisdomApp() {
             </div>
             <div className="flex items-start gap-2 text-xs text-blue-200/50">
               <Activity className="w-3 h-3 mt-0.5 text-blue-400 shrink-0" />
-              <span>正在检索今日核心共振节点</span>
+              <span>正在检索今日核心共振节点...</span>
             </div>
           </div>
         </div>
@@ -165,7 +166,7 @@ export default function TimeWisdomApp() {
           </div>
         ) : isLoading ? (
           <div className="py-20">
-            <BreathingLoading text="正在读取 2026年5月 的全球时空记录..." />
+            <BreathingLoading text="正在读取全球时空记录..." />
           </div>
         ) : (
           <AnimatePresence mode="wait">

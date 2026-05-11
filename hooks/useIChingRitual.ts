@@ -28,7 +28,7 @@ export function useIChingRitual() {
     setCurrentToss(newToss);
 
     setTimeout(() => {
-      const sum = newToss.reduce((acc, curr) => acc + (curr === 'heads' ? 3 : 2), 0) as LineResult;
+      const sum = newToss.reduce((acc, curr) => acc + (curr === 'heads' ? 3 : 2), 0) as unknown as LineResult;
       setLines(prev => [...prev, sum]);
       setIsTossing(false);
       setCurrentToss([]);
@@ -91,8 +91,11 @@ export function useIChingRitual() {
       details: {
         type: 'iching',
         text: fullResponse,
-        lines,
-        question,
+        data: {
+          method: 'coins',
+          question: question,
+          hexagrams: lines
+        },
         messages: [{ role: 'model', content: fullResponse }]
       }
     });

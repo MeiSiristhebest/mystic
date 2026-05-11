@@ -39,7 +39,7 @@ export default function SoulCard({ question, cards, motto, date, fullReading }: 
           灵魂卡片
         </h1>
         <div className="px-8 py-3 bg-amber-950/10 border-y border-amber-500/10 backdrop-blur-[2px] inline-block">
-          <p className="text-amber-200/90 text-base font-serif italic tracking-wide">「 {question || "探索未知的命运"} 」</p>
+          <p className="text-amber-200/90 text-base font-serif italic tracking-wide">「{question || "探索未知的命运"}」</p>
         </div>
       </div>
 
@@ -125,10 +125,10 @@ export default function SoulCard({ question, cards, motto, date, fullReading }: 
         
         <div className="text-center">
           <p className="text-[10px] text-amber-500/50 font-mono uppercase tracking-[0.2em] mb-1">
-            Akasha&apos;s Eye · AI Divination
+            Akasha's Eye · AI Divination
           </p>
           <p className="text-[9px] text-amber-700/60 font-mono mb-2">
-            {date} · {new Array(5).fill('✧').join(' ')}
+            {date} · {new Array(5).fill('•').join(' ')}
           </p>
           <div className="flex items-center justify-center gap-2 mt-2 opacity-40">
             <div className="w-8 h-8 border border-amber-500/50 flex items-center justify-center">

@@ -52,6 +52,8 @@ const DEFAULT_PROFILE: UserProfile = {
 interface AppState {
   activeTab: string;
   setActiveTab: (tab: string) => void;
+  activeSubTab: string | null;
+  setActiveSubTab: (subTab: string | null) => void;
   isProfileModalOpen: boolean;
   setIsProfileModalOpen: (isOpen: boolean) => void;
   isMoreMenuOpen: boolean;
@@ -71,6 +73,8 @@ export const useAppStore = create<AppState>()(
     (set) => ({
       activeTab: 'today',
       setActiveTab: (activeTab) => set({ activeTab }),
+      activeSubTab: null,
+      setActiveSubTab: (activeSubTab) => set({ activeSubTab }),
       isProfileModalOpen: false,
       setIsProfileModalOpen: (isProfileModalOpen) => set({ isProfileModalOpen }),
       isMoreMenuOpen: false,

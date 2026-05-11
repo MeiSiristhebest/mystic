@@ -3,25 +3,21 @@ import { motion } from "motion/react";
 import { Moon, MessageCircle, Send } from "lucide-react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useAIChat } from "@/hooks/useAIChat";
+import { useJourney } from "@/hooks/useJourney";
 import BreathingLoading from "./BreathingLoading";
 import { MODELS } from "@/lib/ai";
 
 export default function SubconsciousApp() {
   const { getProfileContext } = useUserProfile();
+  const { addEntry } = useJourney();
   const [mode, setMode] = useState<'dream' | 'imagination'>('dream');
   const [input, setInput] = useState("");
   
   const { messages, sendMessage, isLoading, error, clearMessages } = useAIChat({
     model: MODELS.PRO,
     systemInstruction: mode === 'dream' 
-      ? `你是一位精通荣格心理学和符号学的梦境解析师。
-请基于用户的灵魂档案，解析他们梦境中的意象（如水、坠落、追逐、特定人物等）。
-不要给出迷信的“吉凶”判断，而是将梦境视为潜意识的信使，引导用户理解梦境在提示他们什么核心议题或被压抑的阴影（Shadow）。
-语气：深邃、洞察、充满同理心。`
-      : `你现在化身为塔罗牌中的【愚者 (The Fool)】原型。
-用户正在进行「主动想象 (Active Imagination)」练习。
-请以愚者的口吻与用户对话，不要给出直接的答案，而是用隐喻、反问、甚至带点戏谑和天真的方式，引导用户打破现有的思维局限，接触他们真实的内在。
-结合用户的灵魂档案，直击他们不敢面对的核心议题。`,
+      ? `你是一位精通荣格心理学和符号学的梦境解析师。请基于用户的灵魂档案，解析他们梦境中的意象（如水、坠落、追逐、特定人物等）。不要给出迷信的“吉凶”判断，而是将梦境视为潜意识的信使，引导用户理解梦境在提示他们什么核心议题或被压抑的阴影（Shadow）。语气：深邃、洞察、充满同理心。`
+      : `你现在化身为塔罗牌中的【愚者(The Fool)】原型。用户正在进行「主动想象(Active Imagination)」练习。请以愚者的口吻与用户对话，不要给出直接的答案，而是用隐喻、反问、甚至带点戏谑和天真的方式，引导用户打破现有的思维局限，接触他们真实的内在。结合用户的灵魂档案，直击他们不敢面对的核心议题。`,
   });
 
   const handleSend = async () => {
@@ -42,7 +38,23 @@ ${currentInput}
       : currentInput;
 
     try {
-      await sendMessage(prompt);
+      const response = await sendMessage(prompt);
+      
+      await addEntry({
+        type: "subconscious",
+        title: `${mode === 'dream' ? '梦境解析' : '主动想象'}：${currentInput.substring(0, 15)}...`,
+        summary: response.substring(0, 100) + "...",
+        details: {
+          type: 'subconscious',
+          text: response,
+          content: currentInput,
+          messages: [
+            ...messages,
+            { role: 'user', content: currentInput },
+            { role: 'model', content: response }
+          ]
+        }
+      });
     } catch (e) {
       console.error(e);
     }

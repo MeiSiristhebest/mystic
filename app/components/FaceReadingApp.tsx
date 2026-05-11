@@ -72,9 +72,7 @@ export default function FaceReadingApp({
 
     const prompt = `
 <instruction>
-这是一次传统的东方${type === "face" ? "面相" : "手相"}分析。请作为一位精通中国传统相术的大师，仔细观察照片中的特征，并用中文提供一份专业、深刻、严谨的相学解读报告。
-请注意：这仅作为娱乐和文化探讨，请保持积极、客观、建设性的语气，避免绝对化或令人恐慌的断言。
-</instruction>
+这是一次传统的东方${type === "face" ? "面相" : "手相"}分析。请作为一位精通中国传统相术的大师，仔细观察照片中的特征，并用中文提供一份专业、深刻、严谨的相学解读报告。请注意：这仅作为娱乐和文化探讨，请保持积极、客观、建设性的语气，避免绝对化或令人恐慌的断言。</instruction>
 
 <divination_context>
   <method>${type === "face" ? "面相骨相分析" : "手相掌纹分析"}</method>
@@ -92,12 +90,10 @@ export default function FaceReadingApp({
 请使用Markdown排版，必须且只能包含以下三个二级标题（##）：
 ## ☯️ 整体相理特征
 （描述你观察到的主要${type === "face" ? "面部轮廓、五官特点（如三停五眼、十二宫等）" : "手型、主要掌纹（如生命线、智慧线、感情线等）及掌丘"}特征）
-
 ## 🔍 运势深度解析
 （结合观察到的特征，分析其在性格、事业财运、感情婚姻、健康等方面的传统相学寓意）
 
-## 🌟 破局与开运建议
-（针对用户的关注点和相理特征，给出改善运势、扬长避短的具体生活建议和心态调整指南）
+## 🌟 破局与开运建议（针对用户的关注点和相理特征，给出改善运势、扬长避短的具体生活建议和心态调整指南）
 </output_format>
     `;
 
@@ -168,7 +164,7 @@ export default function FaceReadingApp({
       }
       
       const finalMsgs = [...newMessages, { role: 'model', content: fullResponse } as const];
-      const fullText = finalMsgs.map(m => m.role === 'user' ? `**你**：${m.content}` : `**阿卡夏**：${m.content}`).join('\n\n---\n\n');
+      const fullText = finalMsgs.map(m => m.role === 'user' ? `**问**：${m.content}` : `**阿卡夏**：${m.content}`).join('\n\n---\n\n');
       
       updateEntry(currentEntryId, { 
         details: { 
@@ -188,7 +184,7 @@ export default function FaceReadingApp({
 
   const onGeneratePoster = useCallback(() => {
     if (!posterRef.current) return;
-    handleGeneratePoster(posterRef.current, `阿卡夏之眼-${type === "face" ? "面相" : "手相"}分析.jpg`);
+    handleGeneratePoster(posterRef.current, `阿卡夏之窗-${type === "face" ? "面相" : "手相"}分析.jpg`);
   }, [handleGeneratePoster, type]);
 
   return (
@@ -318,7 +314,7 @@ export default function FaceReadingApp({
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">
                   <Sparkles size={20} className="text-amber-300" />
-                  开始相学解析
+                  开始相学解读
                 </span>
                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out"></div>
               </button>
@@ -343,7 +339,7 @@ export default function FaceReadingApp({
                   <div className="flex items-center justify-between">
                     <div>
                       <h2 className="text-2xl font-serif text-amber-300 mb-2">
-                        阿卡夏之眼 · {type === "face" ? "面相骨相" : "手相掌纹"}
+                        阿卡夏之窗 · {type === "face" ? "面相骨相" : "手相掌纹"}
                       </h2>
                       <p className="text-amber-200/60 text-sm">
                         {new Date().toLocaleDateString("zh-CN", {
@@ -394,7 +390,7 @@ export default function FaceReadingApp({
                   ))}
                   {isStreaming && messages.length > 0 && (
                     <div className="text-amber-200/60 italic animate-pulse">
-                      阿卡夏正在感知...
+                      阿卡夏正在感应...
                     </div>
                   )}
                 </div>

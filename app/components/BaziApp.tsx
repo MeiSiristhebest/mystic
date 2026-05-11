@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, Send, X, Calendar, Clock, User, ChevronRight, Star, Download } from 'lucide-react';
 import MysticMarkdown from './MysticMarkdown';
 import BreathingLoading from './BreathingLoading';
-import { AKASHA_PERSONA, DEFAULT_MODEL } from '@/lib/ai';
+import { AKASHA_PERSONA } from '@/lib/ai';
 import { usePosterGenerator } from '@/hooks/usePosterGenerator';
 import { useAIStream } from '@/hooks/useAIStream';
 import { getBaziData, getZiweiServerData } from '@/app/actions/aiActions';
@@ -20,31 +20,28 @@ const BAZI_MODES = [
 
 function ZiweiLoading() {
   const palaces = [
-    { name: '巳', pos: 'top-0 left-0' },
-    { name: '午', pos: 'top-0 left-[33.33%]' },
-    { name: '未', pos: 'top-0 left-[66.66%]' },
-    { name: '申', pos: 'top-0 right-0' },
+    { name: '子', pos: 'top-0 left-0' },
+    { name: '丑', pos: 'top-0 left-[33.33%]' },
+    { name: '寅', pos: 'top-0 left-[66.66%]' },
+    { name: '卯', pos: 'top-0 right-0' },
     { name: '辰', pos: 'top-[33.33%] left-0' },
-    { name: '酉', pos: 'top-[33.33%] right-0' },
-    { name: '卯', pos: 'top-[66.66%] left-0' },
-    { name: '戌', pos: 'top-[66.66%] right-0' },
-    { name: '寅', pos: 'bottom-0 left-0' },
-    { name: '丑', pos: 'bottom-0 left-[33.33%]' },
-    { name: '子', pos: 'bottom-0 left-[66.66%]' },
+    { name: '巳', pos: 'top-[33.33%] right-0' },
+    { name: '午', pos: 'top-[66.66%] left-0' },
+    { name: '未', pos: 'top-[66.66%] right-0' },
+    { name: '申', pos: 'bottom-0 left-0' },
+    { name: '酉', pos: 'bottom-0 left-[33.33%]' },
+    { name: '戌', pos: 'bottom-0 left-[66.66%]' },
     { name: '亥', pos: 'bottom-0 right-0' },
   ];
 
   return (
     <div className="flex flex-col items-center justify-center py-12 space-y-8">
       <div className="relative w-64 h-64 md:w-80 md:h-80 border border-amber-500/10 p-2">
-        {/* Center */}
         <div className="absolute top-[33.33%] left-[33.33%] w-[33.33%] h-[33.33%] flex items-center justify-center border border-amber-500/20 bg-black/40">
           <div className="text-amber-500/80 font-serif text-xl tracking-widest animate-pulse">
             紫微星盘
           </div>
         </div>
-        
-        {/* Palaces */}
         {palaces.map((p, i) => (
           <motion.div
             key={i}
@@ -66,7 +63,7 @@ function ZiweiLoading() {
         ))}
       </div>
       <p className="text-amber-200/80 font-serif italic animate-pulse">
-        正在排布十二宫位与满天星斗...
+        正在排布十二宫位与满天星宿...
       </p>
     </div>
   );
@@ -74,13 +71,11 @@ function ZiweiLoading() {
 
 export default function BaziApp({ mode = 'bazi', onReadingChange }: { mode?: string, onReadingChange?: (reading: boolean) => void }) {
   const [question, setQuestion] = useState('');
-  
   const { profile, getProfileContext } = useUserProfile();
   const { addEntry, updateEntry } = useJourney();
   const { isGeneratingPoster, handleGeneratePoster } = usePosterGenerator();
   const { stream, isLoading: isReading, error: streamError, abort } = useAIStream();
 
-  // User Info
   const [birthDate, setBirthDate] = useState(profile.birthDate || '');
   const [birthTime, setBirthTime] = useState(profile.birthTime || '');
   const [gender, setGender] = useState(profile.gender === '女' ? 'female' : 'male');
@@ -94,7 +89,6 @@ export default function BaziApp({ mode = 'bazi', onReadingChange }: { mode?: str
 
   const [prevProfile, setPrevProfile] = useState(profile);
 
-  // Sync state when profile loads/changes (React 19 pattern)
   if (profile !== prevProfile) {
     if (profile.birthDate) setBirthDate(profile.birthDate);
     if (profile.birthTime) setBirthTime(profile.birthTime);
@@ -126,8 +120,6 @@ export default function BaziApp({ mode = 'bazi', onReadingChange }: { mode?: str
     try {
       const { baziString, lunarDateString } = await getBaziData(birthDate, birthTime);
       const profileContext = getProfileContext();
-
-      // Sanitize question to prevent injection
       const sanitizedQuestion = (question || '').replace(/[<>]/g, '').substring(0, 500);
 
       let prompt = '';
@@ -149,7 +141,6 @@ export default function BaziApp({ mode = 'bazi', onReadingChange }: { mode?: str
           性别：${gender === 'male' ? '男 (乾造)' : '女 (坤造)'}
           出生地：${birthPlace || '未提供'}
           
-          【系统已通过专业历法库计算出准确排盘数据，请严格基于以下数据进行解读，切勿自行推算天干地支】：
           农历：${lunarDateString}
           八字（四柱）：${baziString}
           
@@ -176,7 +167,6 @@ export default function BaziApp({ mode = 'bazi', onReadingChange }: { mode?: str
           性别：${gender === 'male' ? '男 (乾造)' : '女 (坤造)'}
           出生地：${birthPlace || '未提供'}
           
-          【系统已通过专业历法库计算出准确排盘数据，请严格基于以下数据进行解读，切勿自行推算天干地支】：
           农历：${lunarDateString}
           八字（四柱）：${baziString}
           
@@ -194,7 +184,7 @@ export default function BaziApp({ mode = 'bazi', onReadingChange }: { mode?: str
           ### 🛡️ 趋吉避凶与化解之道
           （给出具体、可操作的化解建议。包括但不限于：行为风水调整、心态建设、人际关系防范、适合的方位或颜色、以及在关键月份需要特别注意的事项）
           
-          ### 🌟 最终的走向与期许
+          ### 🌟 最终的走向与展望
           （在度过这些难关后，运势将迎来怎样的转机，给予用户信心与力量）${nameAnalysisPrompt}
         `;
       } else {
@@ -210,7 +200,6 @@ export default function BaziApp({ mode = 'bazi', onReadingChange }: { mode?: str
           性别：${gender === 'male' ? '男' : '女'}
           出生地：${birthPlace || '未提供'}
           
-          【系统已通过专业历法库计算出准确排盘数据，请严格基于以下数据进行解读，切勿自行推算天干地支】：
           农历：${lunarDateString}
           八字（四柱）：${baziString}
           紫微斗数星盘数据：
@@ -225,19 +214,7 @@ export default function BaziApp({ mode = 'bazi', onReadingChange }: { mode?: str
           （请根据出生时间，推算出命宫主星、身宫位置，以及主要的吉星与煞星分布，定出紫微星盘的基本格局）
           
           ### 🔍 十二宫位全盘深度解析
-          （请务必逐一详细解析以下十二个宫位，分析其中的星曜组合与吉凶影响：
-          1. **命宫**：性格特质与先天格局
-          2. **兄弟宫**：手足关系与合伙运势
-          3. **夫妻宫**：感情婚姻与伴侣特质
-          4. **子女宫**：晚辈缘分与生育情况
-          5. **财帛宫**：理财观念与正偏财运
-          6. **疾厄宫**：身体健康与潜在隐患
-          7. **迁移宫**：外出发展与人际机遇
-          8. **仆役宫(交友宫)**：朋友助力与职场人际
-          9. **官禄宫(事业宫)**：事业发展与适合行业
-          10. **田宅宫**：房产运势与家庭环境
-          11. **福德宫**：精神世界与晚年福分
-          12. **父母宫**：长辈缘分与原生家庭）
+          （请务必逐一详细解析以下十二个宫位，分析其中的星曜组合与吉凶影响）
           
           ### 🌟 运势起伏与核心指引
           （分析当前的大限与流年运势，并针对用户的问题给出客观、具有启发性和建设性的最终建议）${nameAnalysisPrompt}
@@ -252,7 +229,6 @@ export default function BaziApp({ mode = 'bazi', onReadingChange }: { mode?: str
         setMessages([{ role: 'model', content: fullResponse }]);
       }
       
-      // Save to Journey
       try {
         let titlePrefix = '命理排盘';
         if (mode === 'liunian') titlePrefix = '流年避坑';
@@ -279,13 +255,7 @@ export default function BaziApp({ mode = 'bazi', onReadingChange }: { mode?: str
         console.error('Failed to save journey', e);
       }
     } catch (err: unknown) {
-      if (err instanceof Error && err.name !== 'AbortError') {
-        console.error(err);
-        setError('推演命理时遇到了星象干扰，请稍后再试。');
-      } else if (!(err instanceof Error)) {
-        console.error(err);
-        setError('推演命理时遇到了星象干扰，请稍后再试。');
-      }
+      setError('推演命理时遇到了星象干扰，请稍后再试。');
     }
   };
 
@@ -309,7 +279,7 @@ export default function BaziApp({ mode = 'bazi', onReadingChange }: { mode?: str
 
       const finalMessages = [...newMessages, { role: 'model', content: fullResponse } as const];
       const fullText = finalMessages
-        .map(m => m.role === 'user' ? `**你**：${m.content}` : `**阿卡夏**：${m.content}`)
+        .map(m => m.role === 'user' ? `**问**：${m.content}` : `**阿卡夏**：${m.content}`)
         .join('\n\n---\n\n');
       
       updateEntry(currentEntryId, { 
@@ -342,12 +312,10 @@ export default function BaziApp({ mode = 'bazi', onReadingChange }: { mode?: str
         >
           <div className="w-full flex flex-col gap-8 mb-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* User Info */}
               <div className="flex flex-col gap-4 md:col-span-2 max-w-2xl mx-auto w-full">
                 <label className="block text-sm font-medium text-amber-200/80 mb-1 font-serif uppercase tracking-widest">
                   1. 您的出生信息 (公历)
                 </label>
-                
                 <div className="flex gap-4">
                   <div className="flex-1">
                     <label className="block text-xs text-amber-500/60 mb-1">出生日期</label>
@@ -368,7 +336,6 @@ export default function BaziApp({ mode = 'bazi', onReadingChange }: { mode?: str
                     />
                   </div>
                 </div>
-
                 <div className="flex gap-4 mt-2">
                   <div className="flex-1">
                     <label className="block text-xs text-amber-500/60 mb-1">性别</label>
@@ -397,7 +364,7 @@ export default function BaziApp({ mode = 'bazi', onReadingChange }: { mode?: str
                     <label className="block text-xs text-amber-500/60 mb-1">您的姓名 (选填)</label>
                     <input
                       type="text"
-                      placeholder="例如：李明"
+                      placeholder="例如：李华"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       className="w-full bg-black/40 border border-amber-500/30 rounded-xl p-3 text-amber-100 placeholder-amber-700/50 focus:ring-2 focus:ring-amber-500/50 focus:border-transparent transition-all"
@@ -406,8 +373,6 @@ export default function BaziApp({ mode = 'bazi', onReadingChange }: { mode?: str
                 </div>
               </div>
             </div>
-
-            {/* Question */}
             <div className="w-full flex flex-col max-w-2xl mx-auto">
               <label htmlFor="question" className="block text-sm font-medium text-amber-200/80 mb-3 font-serif uppercase tracking-widest mt-4">
                 2. 您的关注点（选填）
@@ -421,19 +386,15 @@ export default function BaziApp({ mode = 'bazi', onReadingChange }: { mode?: str
                 onChange={(e) => setQuestion(e.target.value)}
               />
             </div>
-
-            {/* Action Area */}
             <div className="w-full flex flex-col items-center mt-4">
-              {error && (
-                <p className="text-red-400 text-sm mb-4 font-serif">{error}</p>
-              )}
+              {error && <p className="text-red-400 text-sm mb-4 font-serif">{error}</p>}
               <button
                 onClick={handleGenerate}
                 className="group relative px-10 py-4 w-full md:w-1/2 bg-gradient-to-r from-amber-700 to-amber-900 hover:from-amber-600 hover:to-amber-800 text-amber-100 rounded-full font-serif text-lg tracking-wider shadow-[0_0_20px_rgba(180,110,20,0.4)] hover:shadow-[0_0_30px_rgba(200,130,30,0.6)] transition-all duration-300 overflow-hidden"
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">
                   <Sparkles size={20} className="text-amber-300" />
-                  开始排盘解析
+                  开始排盘解读
                 </span>
                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out"></div>
               </button>
@@ -449,16 +410,12 @@ export default function BaziApp({ mode = 'bazi', onReadingChange }: { mode?: str
             className="w-full max-w-4xl relative"
           >
             <div ref={posterRef} className="w-full glass-panel p-8 md:p-12 rounded-3xl relative pb-8">
-              {/* Poster Header */}
               <div className="hidden show-in-poster w-full text-center mb-8 pt-4">
-                <h2 className="text-4xl font-serif text-amber-400 mb-4 tracking-widest">阿卡夏之眼 · {mode === 'bazi' ? '八字排盘' : mode === 'ziwei' ? '紫微斗数' : '流年避坑'}</h2>
+                <h2 className="text-4xl font-serif text-amber-400 mb-4 tracking-widest">阿卡夏之窗 · {mode === 'bazi' ? '八字排盘' : mode === 'ziwei' ? '紫微斗数' : '流年避坑'}</h2>
                 <p className="text-amber-500/80 text-lg">
                   {birthDate} {birthTime} {gender === 'male' ? '乾造' : '坤造'} {birthPlace} {fullName ? ` | ${fullName}` : ''}
                 </p>
               </div>
-
-
-              
               {isReading ? (
                 mode === 'ziwei' ? <ZiweiLoading /> : (
                   <BreathingLoading text="正在推演天干地支与星宿轨迹..." />
@@ -478,22 +435,19 @@ export default function BaziApp({ mode = 'bazi', onReadingChange }: { mode?: str
                       </div>
                     </div>
                   ))}
-                  
                   {isAskingFollowUp && (
                     <div className="flex items-start hide-in-poster">
                       <div className="glass-panel bg-black/40 rounded-2xl p-6 w-full">
-                        <BreathingLoading text="正在倾听星辰的回应..." />
+                        <BreathingLoading text="正在倾听星辰的回答..." />
                       </div>
                     </div>
                   )}
                 </div>
               )}
-
-              {/* Poster Footer */}
               <div className="hidden show-in-poster w-full text-center mt-12 pt-8 border-t border-amber-500/20">
                 <div className="flex items-center justify-center gap-2 text-amber-500/60 mb-2">
                   <Sparkles size={16} />
-                  <span className="font-serif tracking-widest text-sm">阿卡夏之眼 AI 命理</span>
+                  <span className="font-serif tracking-widest text-sm">阿卡夏之窗 AI 命理</span>
                   <Sparkles size={16} />
                 </div>
                 <p className="text-xs text-amber-500/40 font-mono">
@@ -501,7 +455,6 @@ export default function BaziApp({ mode = 'bazi', onReadingChange }: { mode?: str
                 </p>
               </div>
             </div>
-
             {!isReading && !error && (
               <form onSubmit={handleSendMessage} className="mt-8 relative">
                 <input
@@ -520,14 +473,13 @@ export default function BaziApp({ mode = 'bazi', onReadingChange }: { mode?: str
                 </button>
               </form>
             )}
-            
             {!isReading && (
               <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4 hide-in-poster">
                 <button
                   onClick={() => { setMessages([]); setCurrentEntryId(null); abort(); }}
                   className="px-6 py-2 border border-amber-500/30 text-amber-400 hover:bg-amber-500/10 rounded-full font-serif transition-colors"
                 >
-                  结束排盘，合上命书
+                  结束排盘，合上命册
                 </button>
                 <button
                   onClick={() => handleGeneratePoster(posterRef.current, `akashic-${mode}.jpg`)}

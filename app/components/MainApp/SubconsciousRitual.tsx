@@ -1,76 +1,60 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Cloud, Zap } from 'lucide-react';
-import { OracleInput } from './OracleInput';
+"use client";
 
-interface SubconsciousRitualProps {
-  step: 'input' | 'parsing';
-  content: string;
-  setContent: (val: string) => void;
-  onStart: () => void;
-  isParsing: boolean;
-}
+import { motion } from "motion/react";
+import { Moon, Sparkles } from "lucide-react";
+import { useEffect, useState } from "react";
 
-export const SubconsciousRitual: React.FC<SubconsciousRitualProps> = ({
-  step,
-  content,
-  setContent,
-  onStart,
-  isParsing
-}) => {
+export default function SubconsciousRitual({ onComplete }: { onComplete: () => void }) {
+  const [pulse, setPulse] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => setPulse(p => (p + 1) % 100), 50);
+    const finish = setTimeout(onComplete, 6000);
+    return () => { clearInterval(timer); clearTimeout(finish); };
+  }, [onComplete]);
+
   return (
-    <div className="max-w-4xl mx-auto">
-      {step === 'input' && (
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="space-y-12"
-        >
-          <div className="text-center space-y-6">
-            <div className="flex justify-center relative">
-              <motion.div 
-                animate={{ 
-                  scale: [1, 1.4, 1],
-                  rotate: 360
-                }}
-                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                className="w-32 h-32 rounded-full border border-mystic-gold/10 absolute opacity-20"
-              />
-              <motion.div 
-                animate={{ 
-                  scale: [1.2, 1, 1.2],
-                  opacity: [0.2, 0.4, 0.2]
-                }}
-                transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-                className="w-40 h-40 rounded-full bg-blue-500/10 blur-3xl absolute"
-              />
-              <Cloud className="w-12 h-12 text-mystic-ink/40 relative z-10" />
-            </div>
-            <h2 className="text-3xl font-serif text-mystic-ink tracking-[0.2em]">解析潜意识之语</h2>
-            <p className="text-mystic-ink/40 text-sm max-w-lg mx-auto leading-relaxed">
-              记录那些破碎的梦境、突如其来的直觉，或是脑海中挥之不去的画面。
-            </p>
-          </div>
+    <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-16">
+      <div className="relative w-40 h-40">
+        <motion.div
+          animate={{ scale: [1, 1.5, 1], opacity: [0.1, 0.4, 0.1] }}
+          transition={{ duration: 4, repeat: Infinity }}
+          className="absolute inset-0 bg-blue-500/20 rounded-full blur-2xl"
+        />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+            className="relative"
+          >
+            <Moon className="w-16 h-16 text-blue-300/60" />
+            <motion.div 
+              animate={{ opacity: [0, 1, 0] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="absolute -top-4 -right-4"
+            >
+              <Sparkles className="w-6 h-6 text-amber-200" />
+            </motion.div>
+          </motion.div>
+        </div>
+      </div>
 
-          <OracleInput 
-            value={content}
-            onChange={setContent}
-            onSend={onStart}
-            placeholder="捕捉那些轻飘的意象碎片..."
-            buttonText="解码潜意识"
-            disabled={isParsing}
-          />
-
-          <div className="flex justify-center gap-8 text-[10px] text-mystic-ink/20 uppercase tracking-[0.5em] pt-12">
-            <div className="flex items-center gap-2">
-              <Zap className="w-3 h-3" />
-              <span>直觉触发</span>
-            </div>
-            <span>•</span>
-            <span>符号解码</span>
-          </div>
-        </motion.div>
-      )}
+      <div className="text-center space-y-6">
+        <h3 className="text-2xl font-serif text-blue-100 tracking-[0.5em] uppercase">正在潜入潜意识深海</h3>
+        <div className="flex gap-1 justify-center h-1 items-center">
+          {[...Array(20)].map((_, i) => (
+            <motion.div
+              key={i}
+              animate={{ height: [4, 12, 4], opacity: [0.2, 0.8, 0.2] }}
+              transition={{ duration: 1, repeat: Infinity, delay: i * 0.1 }}
+              className="w-1 bg-blue-400 rounded-full"
+            />
+          ))}
+        </div>
+        <p className="text-[10px] font-serif text-blue-400/40 tracking-widest uppercase">
+          Deep Dive Synchronizing: {Math.floor(pulse)}%
+        </p>
+      </div>
     </div>
   );
-};
+}

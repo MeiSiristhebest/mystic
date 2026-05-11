@@ -1,153 +1,113 @@
-import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, HelpCircle } from 'lucide-react';
-import { OracleInput } from './OracleInput';
-import { CrystalBallLoader } from './CrystalBallLoader';
-import { TarotCard } from './TarotComponents';
-import { TarotCard as TarotCardType } from '@/lib/tarot-data';
+"use client";
+
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { Sparkles } from "lucide-react";
 
 interface TarotRitualManagerProps {
-  step: 'input' | 'shuffling' | 'selecting' | 'revealing';
-  question: string;
-  setQuestion: (val: string) => void;
-  isRecommending: boolean;
-  recommendError: string;
-  handleRecommendMode: () => void;
-  startShuffle: () => void;
-  isShuffling: boolean;
-  deckCards: TarotCardType[];
-  selectedIndices: number[];
-  selectCard: (index: number) => void;
-  drawnCards: TarotCardType[];
-  revealedCards: boolean[];
-  revealCard: (index: number) => void;
-  cardCount: number;
-  modeName: string;
+  cards: any[];
+  onComplete: () => void;
 }
 
-export const TarotRitualManager: React.FC<TarotRitualManagerProps> = ({
-  step,
-  question,
-  setQuestion,
-  isRecommending,
-  recommendError,
-  handleRecommendMode,
-  startShuffle,
-  isShuffling,
-  deckCards,
-  selectedIndices,
-  selectCard,
-  drawnCards,
-  revealedCards,
-  revealCard,
-  cardCount,
-  modeName
-}) => {
+export default function TarotRitualManager({ cards, onComplete }: TarotRitualManagerProps) {
+  const [phase, setPhase] = useState<"shuffling" | "dealing" | "revealing">("shuffling");
+  const [revealedCount, setRevealedCount] = useState(0);
+
+  useEffect(() => {
+    if (phase === "shuffling") {
+      const timer = setTimeout(() => setPhase("dealing"), 3000);
+      return () => clearTimeout(timer);
+    }
+    
+    if (phase === "dealing") {
+      const timer = setTimeout(() => setPhase("revealing"), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [phase]);
+
+  const handleRevealCard = () => {
+    if (revealedCount < cards.length) {
+      setRevealedCount(prev => prev + 1);
+      if (revealedCount + 1 === cards.length) {
+        setTimeout(onComplete, 2000);
+      }
+    }
+  };
+
   return (
-    <AnimatePresence mode="wait">
-      {step === 'input' && (
-        <motion.div 
-          key="input"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          className="space-y-12"
-        >
-          <div className="text-center space-y-4">
-            <h2 className="text-3xl font-serif gold-gradient-text tracking-[0.2em]">冥想并输入您的疑问</h2>
-            <p className="text-mystic-ink/60 text-sm max-w-lg mx-auto">
-              在心中默念您的困惑，让宇宙的能量流经您的指尖。
+    <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-12">
+      <AnimatePresence mode="wait">
+        {phase === "shuffling" && (
+          <motion.div
+            key="shuffle"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex flex-col items-center gap-8"
+          >
+            <div className="relative w-48 h-64">
+              {[0, 1, 2, 3, 4].map(i => (
+                <motion.div
+                  key={i}
+                  animate={{ 
+                    x: [0, (i - 2) * 40, 0],
+                    rotate: [0, (i - 2) * 10, 0],
+                    y: [0, Math.abs(i - 2) * 10, 0]
+                  }}
+                  transition={{ duration: 2, repeat: Infinity, delay: i * 0.1 }}
+                  className="absolute inset-0 bg-[#1a1033] border border-amber-500/30 rounded-xl shadow-xl"
+                  style={{ zIndex: 5 - i }}
+                >
+                  <div className="w-full h-full opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
+                </motion.div>
+              ))}
+            </div>
+            <p className="font-serif text-amber-200/60 tracking-[0.4em] animate-pulse">正在洗牌，混入时空波动...</p>
+          </motion.div>
+        )}
+
+        {(phase === "dealing" || phase === "revealing") && (
+          <motion.div
+            key="deal"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex flex-col items-center gap-12"
+          >
+            <div className="flex flex-wrap justify-center gap-6">
+              {cards.map((card, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ scale: 0, y: 100, rotate: -20 }}
+                  animate={{ scale: 1, y: 0, rotate: 0 }}
+                  transition={{ delay: i * 0.2, type: "spring" }}
+                  onClick={() => phase === "revealing" && i === revealedCount && handleRevealCard()}
+                  className={`relative w-32 h-52 md:w-40 md:h-64 rounded-2xl border-2 transition-all duration-700 cursor-pointer overflow-hidden ${
+                    i < revealedCount ? "border-amber-500/60 shadow-[0_0_30px_rgba(180,110,20,0.3)]" : 
+                    i === revealedCount && phase === "revealing" ? "border-amber-500 animate-pulse scale-105" :
+                    "border-white/10"
+                  }`}
+                >
+                  {/* Card Back */}
+                  <div className={`absolute inset-0 bg-[#080510] transition-transform duration-1000 preserve-3d ${i < revealedCount ? 'rotate-y-180' : ''}`}>
+                    <div className="absolute inset-4 border border-amber-500/20 rounded-xl flex items-center justify-center">
+                       <Sparkles className="w-8 h-8 text-amber-500/20" />
+                    </div>
+                  </div>
+                  
+                  {/* Card Front (Placeholder until revealed fully in result) */}
+                  <div className={`absolute inset-0 bg-[#1a1033] flex items-center justify-center p-4 text-center transition-transform duration-1000 backface-hidden rotate-y-180 ${i < revealedCount ? 'rotate-y-0' : ''}`}>
+                    <span className="font-serif text-amber-200 text-sm tracking-widest">{card.name}</span>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+            
+            <p className="font-serif text-amber-200/60 tracking-[0.2em]">
+              {phase === "dealing" ? "正在布阵..." : revealedCount < cards.length ? `请点击翻开第 ${revealedCount + 1} 张牌` : "阵法已成，正在解读..."}
             </p>
-          </div>
-
-          <OracleInput 
-            value={question}
-            onChange={setQuestion}
-            onSend={startShuffle}
-            buttonText="开始洗牌"
-            disabled={isShuffling}
-          />
-
-          <div className="flex flex-col items-center gap-4">
-            <button
-              onClick={handleRecommendMode}
-              disabled={isRecommending || isShuffling}
-              className="text-mystic-gold/60 hover:text-mystic-gold text-sm transition-colors flex items-center gap-2 group"
-            >
-              <HelpCircle className="w-4 h-4 group-hover:rotate-12 transition-transform" />
-              <span>不确定选择什么牌阵？点此由阿卡夏为您推荐</span>
-            </button>
-            {isRecommending && <span className="text-xs text-mystic-gold animate-pulse">正在感应最契合您的能量路径...</span>}
-            {recommendError && <span className="text-xs text-red-400/80">{recommendError}</span>}
-          </div>
-        </motion.div>
-      )}
-
-      {step === 'shuffling' && (
-        <motion.div 
-          key="shuffling"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-        >
-          <CrystalBallLoader text="正在洗炼命运之牌..." />
-        </motion.div>
-      )}
-
-      {step === 'selecting' && (
-        <motion.div 
-          key="selecting"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="space-y-8"
-        >
-          <div className="text-center">
-            <h3 className="text-xl font-serif text-mystic-gold mb-2">凭直觉选择 {cardCount} 张牌</h3>
-            <p className="text-mystic-ink/40 text-xs">已选择 {selectedIndices.length} / {cardCount}</p>
-          </div>
-
-          <div className="flex flex-wrap justify-center gap-2 max-w-4xl mx-auto">
-            {deckCards.map((card, i) => (
-              <TarotCard
-                key={i}
-                card={card}
-                isRevealed={false}
-                isSelected={selectedIndices.includes(i)}
-                onClick={() => selectCard(i)}
-                size="sm"
-              />
-            ))}
-          </div>
-        </motion.div>
-      )}
-
-      {step === 'revealing' && (
-        <motion.div 
-          key="revealing"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="space-y-12"
-        >
-          <div className="text-center">
-            <h3 className="text-2xl font-serif text-mystic-gold tracking-widest">{modeName}</h3>
-            <p className="text-mystic-ink/40 text-xs mt-2">点击卡牌，揭示命运的伏笔</p>
-          </div>
-
-          <div className="flex flex-wrap justify-center gap-6">
-            {drawnCards.map((card, i) => (
-              <div key={i} className="flex flex-col items-center gap-4">
-                <TarotCard
-                  card={card}
-                  isRevealed={revealedCards[i]}
-                  onClick={() => revealCard(i)}
-                  size="lg"
-                />
-              </div>
-            ))}
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
-};
+}

@@ -1,198 +1,200 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "motion/react";
-import { Moon, Star, X } from "lucide-react";
-import Image from "next/image";
-import MysticMarkdown from "../MysticMarkdown";
-import { generateContent } from "@/lib/ai";
-import { TarotCard as TarotCardType } from "@/lib/tarot-data";
+import { motion } from "motion/react";
+import { X } from "lucide-react";
 
-export function TarotCardBack({ size = "large", className = "" }: { size?: "small" | "medium" | "large", className?: string }) {
-  const iconSize = size === 'large' ? 32 : size === 'medium' ? 20 : 12;
-  const showDetail = size !== "small";
-
-  return (
-    <div className={`absolute inset-0 rounded-xl border-2 border-[#C9A84C]/60 bg-[#080510] overflow-hidden shadow-[0_0_30px_rgba(201,168,76,0.3)] group/back ${className}`}>
-      {/* Sacred Geometry SVG Pattern */}
-      <div className="absolute inset-0 opacity-[0.07] group-hover/back:opacity-10 transition-opacity duration-700">
-        <svg width="100%" height="100%" className="text-[#C9A84C]">
-          <defs>
-            <pattern id={`sacred-pattern-${size}`} x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
-              <path d="M20 0 L40 20 L20 40 L0 20 Z" fill="none" stroke="currentColor" strokeWidth="0.5" />
-              <circle cx="20" cy="20" r="10" fill="none" stroke="currentColor" strokeWidth="0.5" />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill={`url(#sacred-pattern-${size})`} />
-        </svg>
-      </div>
-
-      <div className={`absolute inset-1.5 sm:inset-3 border border-[#C9A84C]/30 rounded-lg flex items-center justify-center overflow-hidden`}>
-        {/* Ambient Glow */}
-        <div className="absolute w-24 h-24 sm:w-32 sm:h-32 bg-[#C9A84C]/5 rounded-full blur-3xl animate-pulse" />
-        
-        <div className="relative z-10 flex flex-col items-center">
-          {/* Central Ornate Medallion */}
-          <div className="relative flex items-center justify-center">
-            {/* Rotating Rings */}
-            {showDetail && (
-              <>
-                <div className="absolute w-20 h-20 sm:w-28 sm:h-28 border border-[#C9A84C]/30 rounded-full animate-[spin_10s_linear_infinite]" />
-                <div className="absolute w-16 h-16 sm:w-24 sm:h-24 border border-[#C9A84C]/10 rounded-full animate-[spin_15s_linear_infinite_reverse]" />
-              </>
-            )}
-            
-            <div className={`${size === 'small' ? 'w-6 h-6' : 'w-12 h-12 sm:w-16 sm:h-16'} rounded-full bg-gradient-to-br from-[#1a1508] to-[#080510] border border-[#C9A84C]/40 flex items-center justify-center shadow-[0_0_20px_rgba(201,168,76,0.3)] z-20`}>
-              <Moon className="text-[#C9A84C] drop-shadow-[0_0_8px_rgba(201,168,76,0.5)]" size={iconSize} />
-            </div>
-          </div>
-
-          {showDetail && (
-            <div className="mt-4 sm:mt-6 flex gap-1.5 sm:gap-3 opacity-40">
-              <Star size={8} className="text-[#C9A84C] animate-pulse" />
-              <Star size={8} className="text-[#C9A84C] animate-pulse delay-500" />
-              <Star size={8} className="text-[#C9A84C] animate-pulse delay-1000" />
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Decorative Corner Filigree - Only for larger cards */}
-      {showDetail && (
-        <>
-          <div className="absolute top-0 left-0 w-6 h-6 sm:w-10 sm:h-10 border-t-[1.5px] border-l-[1.5px] border-[#C9A84C]/50 rounded-tl-xl m-1" />
-          <div className="absolute top-0 right-0 w-6 h-6 sm:w-10 sm:h-10 border-t-[1.5px] border-r-[1.5px] border-[#C9A84C]/50 rounded-tr-xl m-1" />
-          <div className="absolute bottom-0 left-0 w-6 h-6 sm:w-10 sm:h-10 border-b-[1.5px] border-l-[1.5px] border-[#C9A84C]/50 rounded-bl-xl m-1" />
-          <div className="absolute bottom-0 right-0 w-6 h-6 sm:w-10 sm:h-10 border-b-[1.5px] border-r-[1.5px] border-[#C9A84C]/50 rounded-br-xl m-1" />
-        </>
-      )}
-      
-      {/* Subtle Shine Layer */}
-      <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.03] to-transparent pointer-events-none" />
-    </div>
-  );
-}
-
-export function TarotCardView({ card, isRevealed, onReveal, onSelect, size = "large" }: any) {
-  let dims = "w-36 h-60 sm:w-48 sm:h-80";
-  if (size === "small") dims = "w-24 h-40 sm:w-32 sm:h-56";
-  else if (size === "medium") dims = "w-28 h-48 sm:w-40 sm:h-64";
-
-  return (
-    <div className={`${dims} relative perspective-1200 cursor-pointer hover:-translate-y-2 transition-transform duration-300`} onClick={() => isRevealed ? onSelect() : onReveal()}>
-      <motion.div animate={{ rotateY: isRevealed ? 0 : 180 }} transition={{ duration: 0.8 }} className="w-full h-full relative preserve-3d">
-        {/* Card Back - Reusable Component */}
-        <TarotCardBack size={size} className="backface-hidden rotate-y-180" />
-        <div className="absolute inset-0 rounded-xl border-2 border-amber-400 bg-black backface-hidden flex flex-col p-2 shadow-[0_0_15px_rgba(201,168,76,0.3)]">
-          <div className="flex-1 relative w-full">
-            <Image 
-              src={`https://www.trustedtarot.com/img/cards/${card.englishName.toLowerCase().replace(/ /g, "-")}.png`} 
-              alt={card.name} 
-              fill 
-              sizes="200px" 
-              className={`object-contain ${card.isReversed ? 'rotate-180' : ''}`} 
-              referrerPolicy="no-referrer" 
-            />
-          </div>
-          <div className="text-center bg-black/60 rounded-b-lg py-1 mt-1"><h3 className="text-amber-300 font-serif text-sm">{card.name}</h3>{card.isReversed && <span className="text-red-400 text-xs">逆位</span>}</div>
-        </div>
-      </motion.div>
-    </div>
-  );
-}
-
-export function CardMeaningModal({ card, onClose, cache, setCache }: any) {
-  const [loading, setLoading] = useState(false);
-  const [meaning, setMeaning] = useState("");
-  useEffect(() => {
-    const fetchMeaning = async () => {
-      const key = `${card.id}-${card.isReversed ? "rev" : "up"}`;
-      if (cache[key]) { setMeaning(cache[key]); return; }
-      setLoading(true);
-      try {
-        const text = await generateContent(`解释塔罗牌【${card.name}】在【${card.isReversed ? "逆位" : "正位"}】时的含义。使用Markdown排版。重点讲解其象征意义和启示。`);
-        setMeaning(text || "");
-        setCache((prev: any) => ({ ...prev, [key]: text }));
-      } finally { setLoading(false); }
-    };
-    fetchMeaning();
-  }, [card, cache, setCache]);
-
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" onClick={onClose}>
-      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="glass-panel rounded-2xl w-full max-w-2xl max-h-[85vh] overflow-y-auto p-8 border border-amber-500/30 shadow-[0_0_40px_rgba(201,168,76,0.15)] relative" onClick={e => e.stopPropagation()}>
-        <div className="flex justify-between items-start mb-6 border-b border-amber-500/20 pb-4">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-24 relative rounded border border-amber-500/30 overflow-hidden shrink-0">
-              <Image 
-                src={`https://www.trustedtarot.com/img/cards/${card.englishName.toLowerCase().replace(/ /g, "-")}.png`} 
-                alt={card.name} 
-                fill 
-                sizes="100px" 
-                className={`object-contain ${card.isReversed ? 'rotate-180' : ''}`} 
-                referrerPolicy="no-referrer" 
-              />
-            </div>
-            <div>
-              <h3 className="text-2xl font-serif text-amber-300">{card.name}</h3>
-              <div className="flex items-center gap-2 mt-2">
-                <span className="text-xs text-amber-100/50 bg-amber-900/20 px-2 py-1 rounded">{card.arcana} Arcana</span>
-                {card.isReversed ? <span className="text-xs text-red-400 bg-red-900/20 px-2 py-1 rounded">逆位 (Reversed)</span> : <span className="text-xs text-amber-400 bg-amber-900/20 px-2 py-1 rounded">正位 (Upright)</span>}
-              </div>
-            </div>
-          </div>
-          <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors text-amber-100/50 hover:text-amber-100"><X /></button>
-        </div>
-        {loading ? (
-          <div className="py-12 flex flex-col items-center justify-center space-y-4">
-            <div className="w-8 h-8 border-2 border-amber-500/20 border-t-amber-500 rounded-full animate-spin" />
-            <p className="animate-pulse text-amber-500/60 font-serif">正在感应阿卡夏记录...</p>
-          </div>
-        ) : (
-          <div className="prose prose-invert prose-amber max-w-none font-serif">
-            <MysticMarkdown content={meaning} />
-          </div>
-        )}
-      </motion.div>
-    </div>
-  );
-}
-
-export function SpreadLayoutRenderer({ mode, cards, revealedCards, handleRevealCard, setSelectedCard, cardSize, positions }: any) {
-  return (
-    <div className="flex flex-wrap gap-x-8 gap-y-12 justify-center py-8">
-      {cards.map((c: any, i: number) => (
-        <div key={i} className="flex flex-col items-center group">
-          <div className="text-sm text-amber-500 mb-4 px-4 py-1.5 bg-black/40 border border-amber-500/30 rounded-full shadow-[0_0_10px_rgba(201,168,76,0.1)] whitespace-nowrap z-10">{positions[i]}</div>
-          <div className="relative">
-            <TarotCardView card={c} isRevealed={revealedCards[i]} onReveal={() => handleRevealCard(i)} onSelect={() => setSelectedCard(c)} size={cardSize} />
-            {revealedCards[i] && (
-              <div className="absolute -inset-4 bg-amber-500/20 blur-2xl -z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            )}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/**
- * A shared ambient cosmic background that uses fixed CSS rendering instead of stretched images.
- * Safe to use inside scrollable containers.
- */
 export function AmbientCosmicBackground() {
   return (
-    <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
-      {/* Deep space base */}
-      <div className="absolute inset-0 bg-[#080510]" />
+    <div className="fixed inset-0 w-full h-full pointer-events-none overflow-hidden">
+      {/* Deep Space Base */}
+      <div className="absolute inset-0 bg-[#050308]" />
       
-      {/* Ambient Orbs */}
-      <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-amber-900/10 rounded-full blur-[120px] mix-blend-screen animate-pulse" style={{ animationDuration: '8s' }} />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[60vw] h-[60vw] bg-purple-900/10 rounded-full blur-[150px] mix-blend-screen animate-pulse" style={{ animationDuration: '12s' }} />
-      <div className="absolute top-[40%] left-[20%] w-[30vw] h-[30vw] bg-blue-900/5 rounded-full blur-[100px] mix-blend-screen animate-pulse" style={{ animationDuration: '10s' }} />
+      {/* Nebulas */}
+      <motion.div 
+        animate={{ 
+          opacity: [0.1, 0.2, 0.1],
+          scale: [1, 1.1, 1],
+        }}
+        transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute -top-[20%] -left-[10%] w-[80%] h-[80%] rounded-full bg-purple-900/20 blur-[120px]"
+      />
+      <motion.div 
+        animate={{ 
+          opacity: [0.1, 0.15, 0.1],
+          scale: [1, 1.2, 1],
+        }}
+        transition={{ duration: 20, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+        className="absolute bottom-[10%] -right-[10%] w-[70%] h-[70%] rounded-full bg-amber-900/10 blur-[100px]"
+      />
+      
+      {/* Floating Particles */}
+      <div className="absolute inset-0">
+        {[...Array(30)].map((_, i) => (
+          <motion.div
+            key={i}
+            initial={{ 
+              x: Math.random() * 100 + "%", 
+              y: Math.random() * 100 + "%",
+              opacity: Math.random() * 0.5 + 0.1
+            }}
+            animate={{ 
+              y: ["0%", "100%"],
+              opacity: [0.1, 0.5, 0.1]
+            }}
+            transition={{ 
+              duration: Math.random() * 20 + 10, 
+              repeat: Infinity, 
+              ease: "linear",
+              delay: Math.random() * 10
+            }}
+            className="absolute w-[1px] h-[1px] bg-white rounded-full shadow-[0_0_8px_white]"
+          />
+        ))}
+      </div>
+      
+      {/* Subtle Grid / Texture */}
+      <div className="absolute inset-0 opacity-[0.03] bg-[url('/noise.svg')] mix-blend-overlay" />
+    </div>
+  );
+}
 
-      {/* Floating particles/stars overlay */}
-      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20 mix-blend-screen" />
+export function CardFrame({ children, className = "" }: { children: React.ReactNode, className?: string }) {
+  return (
+    <div className={`relative p-[2px] rounded-2xl overflow-hidden group ${className}`}>
+      <div className="absolute inset-0 bg-gradient-to-br from-amber-500/40 via-amber-200/20 to-amber-700/40 opacity-50 group-hover:opacity-100 transition-opacity duration-700" />
+      <div className="relative bg-[#080510] rounded-[14px] overflow-hidden h-full">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+interface SpreadLayoutRendererProps {
+  cards: any[];
+  mode?: string;
+  revealedCards?: boolean[];
+  handleRevealCard?: (idx: number) => void;
+  setSelectedCard?: (card: any) => void;
+  cardSize?: "small" | "medium" | "large";
+  positions?: string[];
+}
+
+export function SpreadLayoutRenderer({ 
+  cards, 
+  mode, 
+  revealedCards, 
+  handleRevealCard, 
+  setSelectedCard, 
+  cardSize = "medium", 
+  positions 
+}: SpreadLayoutRendererProps) {
+  const isSmall = cardSize === "small";
+  
+  return (
+    <div className={`flex flex-wrap justify-center gap-4 md:gap-8 py-8 ${isSmall ? 'scale-90' : ''}`}>
+      {cards.map((card, i) => {
+        // Use card.image (GitHub) as primary, trustedtarot as fallback
+        const imageUrl = card.image || `https://www.trustedtarot.com/img/cards/${card.englishName?.toLowerCase().replace(/ /g, "-") || card.id?.toLowerCase()}.png`;
+        const isRevealed = revealedCards ? revealedCards[i] : true;
+        
+        return (
+          <motion.div 
+            key={i} 
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: i * 0.1 }}
+            className={`flex flex-col items-center gap-3`}
+            onClick={() => setSelectedCard?.(card)}
+          >
+            {positions && positions[i] && (
+              <span className="text-[10px] font-serif text-amber-500/60 uppercase tracking-widest text-center max-w-[100px]">
+                {positions[i]}
+              </span>
+            )}
+            <div 
+              className={`relative ${isSmall ? 'w-20 h-32 md:w-24 md:h-40' : 'w-24 h-40 md:w-32 md:h-52'} rounded-xl border border-amber-500/30 overflow-hidden shadow-2xl cursor-pointer group hover:border-amber-500/60 transition-all`}
+            >
+              <img 
+                src={imageUrl} 
+                alt={card.name} 
+                className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 ${card.isReversed ? 'rotate-180' : ''}`} 
+                crossOrigin="anonymous"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60" />
+              <div className="absolute bottom-0 left-0 right-0 p-2 text-center">
+                 <span className="text-[10px] font-serif text-amber-100 drop-shadow-md">{card.name}</span>
+                 {card.isReversed && <div className="text-[8px] text-amber-500/80">逆位</div>}
+              </div>
+            </div>
+          </motion.div>
+        );
+      })}
+    </div>
+  );
+}
+
+interface CardMeaningModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  card: any;
+  cache?: Record<string, string>;
+  setCache?: (cache: Record<string, string>) => void;
+}
+
+export function CardMeaningModal({ isOpen, onClose, card, cache, setCache }: CardMeaningModalProps) {
+  if (!isOpen || !card) return null;
+  
+  const imageUrl = card.image || `https://www.trustedtarot.com/img/cards/${card.englishName?.toLowerCase().replace(/ /g, "-") || card.id?.toLowerCase()}.png`;
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md" onClick={onClose}>
+       <motion.div 
+         initial={{ opacity: 0, scale: 0.9, y: 20 }}
+         animate={{ opacity: 1, scale: 1, y: 0 }}
+         className="glass-panel max-w-2xl w-full p-8 md:p-12 rounded-[32px] space-y-8 relative overflow-hidden"
+         onClick={(e) => e.stopPropagation()}
+       >
+          <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none">
+            <X className="w-64 h-64 text-amber-500" />
+          </div>
+
+          <button onClick={onClose} className="absolute top-6 right-6 p-2 text-amber-200/40 hover:text-amber-200 hover:bg-white/5 rounded-full transition-all">
+             <X className="w-6 h-6" />
+          </button>
+
+          <div className="flex flex-col md:flex-row gap-10 relative z-10">
+             <div className="w-40 h-64 md:w-48 md:h-80 shrink-0 mx-auto shadow-[0_20px_50px_rgba(0,0,0,0.8)] rounded-2xl overflow-hidden border-2 border-amber-500/40">
+                <img 
+                  src={imageUrl} 
+                  alt={card.name} 
+                  className={`w-full h-full object-cover ${card.isReversed ? 'rotate-180' : ''}`} 
+                />
+             </div>
+             <div className="flex-1 space-y-6">
+                <div>
+                  <h3 className="text-3xl md:text-4xl font-serif text-amber-100 mb-2">
+                    {card.name} <span className="text-amber-500/60 font-light">{card.isReversed ? "· 逆位" : "· 正位"}</span>
+                  </h3>
+                  <p className="text-amber-200/40 text-xs font-serif tracking-[0.3em] uppercase">{card.arcana} Arcana</p>
+                </div>
+
+                <div className="p-6 bg-white/5 rounded-2xl border border-white/10 italic text-amber-100/80 font-serif leading-relaxed">
+                  {card.coreTheme || "此牌象征着宇宙中一段未被言说的真理，等待着你去领悟。"}
+                </div>
+
+                <div className="space-y-4">
+                   <h4 className="text-[10px] font-serif text-amber-500/40 uppercase tracking-[0.4em] mb-2">核心启示</h4>
+                   <div className="flex flex-wrap gap-2">
+                      {(card.isReversed ? card.keywords?.reversed : card.keywords?.upright || []).map((k: string) => (
+                        <span key={k} className="px-4 py-1.5 bg-amber-500/10 border border-amber-500/20 rounded-full text-xs text-amber-200/80 font-serif">
+                          {k}
+                        </span>
+                      ))}
+                   </div>
+                </div>
+             </div>
+          </div>
+       </motion.div>
     </div>
   );
 }

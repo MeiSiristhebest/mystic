@@ -418,3 +418,9 @@ export function shuffleDeck(deck: TarotCard[]): TarotCard[] {
   shuffled[0].isReversed = getRandom() > 0.5;
   return shuffled;
 }
+
+export function getDailyTarotCards(count: number): TarotCard[] {
+  const deck = generateDeck();
+  const shuffled = shuffleDeck(deck);
+  return shuffled.slice(0, count);
+}

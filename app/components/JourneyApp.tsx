@@ -4,7 +4,7 @@ import { useJourney, JourneyEntry } from "@/hooks/useJourney";
 import { Trash2, Book, Sparkles, Compass, Star, Sun, Moon, X, ChevronRight, Send, Download, Maximize2, Minimize2 } from "lucide-react";
 import MysticMarkdown from "./MysticMarkdown";
 import BreathingLoading from "./BreathingLoading";
-import { AKASHA_PERSONA, DEFAULT_MODEL } from "@/lib/ai";
+import { AKASHA_PERSONA } from "@/lib/ai";
 import { usePosterGenerator } from "@/hooks/usePosterGenerator";
 import { useAIStream } from "@/hooks/useAIStream";
 import { SpreadLayoutRenderer, CardMeaningModal, AmbientCosmicBackground } from "./MainApp/TarotComponents";
@@ -30,7 +30,7 @@ export default function JourneyApp() {
   const [selectedCard, setSelectedCard] = useState<TarotCard | null>(null);
   const [cardMeaningsCache, setCardMeaningsCache] = useState<Record<string, string>>({});
 
-  // Sync chat messages when selected entry changes (React 19 pattern)
+  // Sync chat messages when selected entry changes
   const currentId = selectedEntry?.id || null;
   if (currentId !== prevSelectedEntryId) {
     setChatMessages(selectedEntry?.details?.messages || []);
@@ -71,7 +71,7 @@ export default function JourneyApp() {
       const finalMsgs = [...newMsgs, { role: "model", content: fullResponse } as const];
       
       // Update entry
-      const fullText = finalMsgs.map(m => m.role === 'user' ? `**你**：${m.content}` : `**阿卡夏**：${m.content}`).join('\n\n---\n\n');
+      const fullText = finalMsgs.map(m => m.role === 'user' ? `**问**：${m.content}` : `**阿卡夏**：${m.content}`).join('\n\n---\n\n');
       updateEntry(selectedEntry.id, {
         details: {
           ...selectedEntry.details,
@@ -80,7 +80,7 @@ export default function JourneyApp() {
         } as JourneyEntry['details']
       });
       
-      // Update local selected entry so it doesn't revert if closed and reopened
+      // Update local selected entry
       setSelectedEntry({
         ...selectedEntry,
         details: {
@@ -143,7 +143,6 @@ export default function JourneyApp() {
       const tarotDetails = entry.details as any;
       const modeData = SPREAD_MODES.find(m => m.name === tarotDetails.mode) || SPREAD_MODES[1];
       const positions = modeData.positions;
-      // All cards are revealed in diary view
       const revealedCards = new Array(tarotDetails.cards.length).fill(true);
 
       metadataContent = (
@@ -214,7 +213,7 @@ export default function JourneyApp() {
       <div className="flex justify-between items-center mb-8">
         <h2 className="text-3xl font-serif text-amber-100 flex items-center">
           <Book className="w-8 h-8 mr-3 text-amber-400" />
-          命运日记本
+          命运日记
         </h2>
         {entries.length > 0 && (
           <button
@@ -338,7 +337,7 @@ export default function JourneyApp() {
                     </>
                   )}
                 </button>
-                <div className="w-[1px] h-4 bg-amber-500/20 mx-1" /> {/* Subtle Divider */}
+                <div className="w-[1px] h-4 bg-amber-500/20 mx-1" />
                 <button
                   onClick={() => setIsFullScreen(!isFullScreen)}
                   className="p-2 text-amber-100/50 hover:text-amber-100 bg-black/40 hover:bg-black/60 rounded-full transition-colors"
@@ -366,7 +365,6 @@ export default function JourneyApp() {
                 </div>
               </div>
 
-              {/* Chat Input for Follow-up */}
               <div className={`mt-4 pt-4 border-t border-amber-500/20 relative z-10 ${isFullScreen ? 'max-w-3xl mx-auto w-full' : ''}`}>
                 <form onSubmit={handleSendMessage} className="relative">
                   <input
@@ -375,7 +373,7 @@ export default function JourneyApp() {
                     onChange={(e) => setInputMessage(e.target.value)}
                     placeholder="继续追问阿卡夏..."
                     disabled={isAskingFollowUp}
-                    className="w-full bg-black/60 backdrop-blur-md border border-amber-500/30 rounded-xl py-4 pl-6 pr-12 text-amber-100 placeholder-amber-100/30 focus:outline-none focus:border-amber-500/60 transition-colors disabled:opacity-50 text-lg shadow-[0_0_20px_rgba(0,0,0,0.5)]"
+                    className="w-full bg-black/60 backdrop-blur-md border border-amber-500/30 rounded-xl py-4 pl-6 pr-12 text-amber-100 placeholder-amber-100/30 focus:outline-none focus:border-amber-500/60 transition-all disabled:opacity-50 text-lg shadow-[0_0_20px_rgba(0,0,0,0.5)]"
                   />
                   <button
                     type="submit"
@@ -398,6 +396,7 @@ export default function JourneyApp() {
       <AnimatePresence>
         {selectedCard && (
           <CardMeaningModal 
+            isOpen={!!selectedCard}
             card={selectedCard} 
             onClose={() => setSelectedCard(null)} 
             cache={cardMeaningsCache} 

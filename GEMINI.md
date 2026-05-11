@@ -70,3 +70,32 @@
 - **Decision: Boundary Enforcement (Guardrails)**
   - **Reason**: The personas lacked instructions on how to handle malicious, violent, or nonsensical input.
   - **Action**: Added `<boundary_enforcement>` to `AKASHA_PERSONA` detailing the strategy for handling "无意义输入" (meaningless input) and "恶意提问" (malicious questions).
+
+## [2026-05-11] Phase 8: Production Stabilization & Navigation Consolidation
+
+- **Decision: Production Build Cleanup**
+  - **Reason**: `MainApp_old` and other conflicting artifacts caused path ambiguity and build failures.
+  - **Action**: Removed `MainApp_old`. Fixed ambiguous imports in `MainApp.tsx` by using explicit index paths.
+- **Decision: Recovery of Corrupted System Files**
+  - **Reason**: `app/layout.tsx` and `app/not-found.tsx` suffered from binary corruption and parsing errors.
+  - **Action**: Restored both files with clean Next.js 14+ structures, including Inter/Playfair font support and PWA metadata.
+- **Decision: Navigation Consolidation (ExploreView)**
+  - **Reason**: Redundant app lists in `ExploreView` and `MoreView` caused UX fragmentation.
+  - **Action**: Consolidated all divination sub-apps into `ExploreView`. Implemented a global `activeSubTab` in `lib/store.ts` to manage multi-level navigation across the app.
+- **Decision: Journey Persistence Parity**
+  - **Reason**: Several modules (`Synastry`, `Shadow Work`, etc.) were missing logic to save results to the user's journey.
+  - **Action**: Integrated `addEntry` calls across all 10+ divination modules. Updated `JourneyDetails` type in `useJourney.ts` for full schema coverage.
+- **Decision: Lint-Driven Stabilization**
+  - **Reason**: "setState in effect" and missing dependency warnings were destabilizing the production build process.
+  - **Action**: Refactored `UserProfileModal`, `DiscoveryView`, and AI hooks to adhere to strict React patterns and Next.js production standards.
+
+- **Decision: Modular Component Reconstruction**
+  - **Reason**: Widespread binary corruption in `MainApp/` made the codebase unbuildable.
+  - **Action**: Created a clean `app/components/MainApp/` registry. Reconstructed 25+ files (Views, Rituals, Visuals) with UTF-8 encoding.
+- **Decision: App-Wide String Sanitation**
+  - **Reason**: Chinese characters were corrupted in multiple top-level app components.
+  - **Action**: Restored `AstrologyApp`, `BaziApp`, `IChingApp`, `JourneyApp`, and `DiscoveryView` with verified UTF-8 literals.
+- **Decision: Build Dependency Resolution**
+  - **Reason**: Production build failures caused by missing exports in `tarot-data.ts` and `TarotComponents.tsx`.
+  - **Action**: Implemented `getDailyTarotCards`, `SpreadLayoutRenderer`, and `CardMeaningModal`.
+- **Security Note**: Final `pnpm run build` verification requires manual deletion of the corrupted `MainApp_old` directory by the user due to filesystem permission locks.

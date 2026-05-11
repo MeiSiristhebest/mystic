@@ -28,10 +28,11 @@ function HexagramDisplay({ lines }: { lines: number[] }) {
             const isYang = val === 7 || val === 9;
             const isChanging = showChanging && (val === 6 || val === 9);
             const originalIndex = 5 - idx;
+            const lineNames = ["初", "二", "三", "四", "五", "上"];
             return (
               <div key={idx} className="flex items-center gap-3 w-full">
                 <span className="text-amber-500/40 font-serif text-[10px] w-6 text-right">
-                  {originalIndex === 0 ? '初' : originalIndex === 5 ? '上' : ['二','三','四','五'][originalIndex - 1]}
+                  {lineNames[originalIndex]}
                 </span>
                 <div className="flex-1 flex items-center justify-center gap-1.5 h-4 relative">
                   {isYang ? (
@@ -191,8 +192,7 @@ export default function IChingApp({ mode = 'liuyao', onReadingChange }: { mode?:
       const qimenData = await getQiMenServerData(new Date());
       prompt = `
 <instruction>
-这是一次正式的奇门遁甲（时家奇门）排盘与预测。请严格基于系统提供的基础数据进行排盘与解读。
-</instruction>
+这是一次正式的奇门遁甲（时家奇门）排盘与预测。请严格基于系统提供的基础数据进行排盘与解读。</instruction>
 
 <divination_context>
   <time>${new Date().toLocaleString('zh-CN')}</time>
@@ -210,16 +210,11 @@ export default function IChingApp({ mode = 'liuyao', onReadingChange }: { mode?:
 </user_question>
 
 <output_format>
-请使用Markdown排版，必须且只能包含以下结构：
-## ☯️ 奇门排盘局象
-（请根据提供的基础数据推算阴阳遁局数，定地盘、天盘、人盘八门、神盘八神、九星，并简述当前格局，如伏吟、反吟、吉凶格等）
+请使用Markdown排版，必须且只能包含以下结构：## ☯️ 奇门排盘局数（请根据提供的基础数据推算阴阳遁局数，定地盘、天盘、人盘八门、神盘八神、九星，并简述当前格局，如伏吟、反吟、吉凶格等）
 
-## 🔍 用神与多维分析
-（根据用户的问题提取用神，分析日干、时干的落宫生克关系，结合八门、九星、八神分析天时、地利、人和、神助）
+## 🔍 用神与多维分析（根据用户的问题提取用神，分析日干、时干的落宫生克关系，结合八门、九星、八神分析天时、地利、人和、神助）
 
-## 🌟 破局与行动指引
-（给出具体的趋吉避凶建议，包括有利方位、时机、策略等）
-</output_format>
+## 🌟 破局与行动指南（给出具体的趋吉避凶建议，包括有利方位、时机、策略等）</output_format>
       `;
     } else if (type === 'liuyao') {
       const lineNames = (data.lines || []).map((l: number, i: number) => {
@@ -229,8 +224,7 @@ export default function IChingApp({ mode = 'liuyao', onReadingChange }: { mode?:
       
       prompt = `
 <instruction>
-这是一次正式的六爻金钱卦占卜。请用中文提供一份专业、深刻、严谨的易经六爻排盘与解读报告。
-</instruction>
+这是一次正式的六爻金钱卦占卜。请用中文提供一份专业、深刻、严谨的易经六爻排盘与解读报告。</instruction>
 
 <divination_context>
   <method>六爻起卦法</method>
@@ -248,22 +242,16 @@ ${lineNames}
 </user_question>
 
 <output_format>
-请使用Markdown排版，必须且只能包含以下结构：
-## ☯️ 卦象解析（本卦与变卦）
-（请排盘出本卦与变卦，并解析卦名、卦辞、爻辞的含义）
-
+请使用Markdown排版，必须且只能包含以下结构：## ☯️ 卦象解析（本卦与变卦）（请排盘出本卦与变卦，并解析卦名、卦辞、爻辞的含义）
 ## 🔍 六爻动静分析
 （分析世应关系、用神、动爻与变爻的作用，以及五行生克制化）
-
 ## 🌟 最终断语与指引
-（结合卦象与用户的问题，给出客观、具有启发性和建设性的最终建议）
-</output_format>
+（结合卦象与用户的问题，给出客观、具有启发性和建设性的最终建议）</output_format>
       `;
     } else {
       prompt = `
 <instruction>
-这是一次正式的梅花易数占卜。请用中文提供一份专业、深刻、严谨的梅花易数排盘与解读报告。
-</instruction>
+这是一次正式的梅花易数占卜。请用中文提供一份专业、深刻、严谨的梅花易数排盘与解读报告。</instruction>
 
 <divination_context>
   <method>梅花易数起卦法（数字起卦）</method>
@@ -282,16 +270,12 @@ ${lineNames}
 </user_question>
 
 <output_format>
-请使用Markdown排版，必须且只能包含以下结构：
-## ☯️ 卦象解析（本卦、互卦、变卦）
+请使用Markdown排版，必须且只能包含以下结构：## ☯️ 卦象解析（本卦、互卦、变卦）
 （根据数字起卦法：第一个数除以8余数为上卦，第二个数除以8余数为下卦，两数之和加当前时辰数除以6余数为动爻。请假设当前时辰为随机，或仅用两数之和除以6取动爻。解析卦名与卦象）
-
 ## 🔍 体用生克分析
 （分析体卦与用卦的五行生克关系，以及互卦、变卦的影响）
-
 ## 🌟 最终断语与指引
-（结合卦象与用户的问题，给出客观、具有启发性和建设性的最终建议）
-</output_format>
+（结合卦象与用户的问题，给出客观、具有启发性和建设性的最终建议）</output_format>
       `;
     }
 
@@ -354,7 +338,7 @@ ${lineNames}
       }
       
       const finalMsgs = [...newMessages, { role: 'model', content: fullResponse } as const];
-      const fullText = finalMsgs.map(m => m.role === 'user' ? `**你**：${m.content}` : `**阿卡夏**：${m.content}`).join('\n\n---\n\n');
+      const fullText = finalMsgs.map(m => m.role === 'user' ? `**问**：${m.content}` : `**阿卡夏**：${m.content}`).join('\n\n---\n\n');
       
       updateEntry(currentEntryId, { 
         details: { 
@@ -525,7 +509,7 @@ ${lineNames}
                   >
                     <span className="relative z-10 flex items-center justify-center gap-2">
                       <Sparkles size={20} className="text-amber-300" />
-                      起卦并解析
+                      起卦并解读
                     </span>
                   </button>
                 </div>
@@ -570,7 +554,7 @@ ${lineNames}
               {/* Poster Header */}
               <div className="hidden show-in-poster w-full text-center mb-8 pt-4">
                 <h2 className="text-4xl font-serif text-amber-400 mb-4 tracking-widest">
-                  阿卡夏之眼 · {mode === 'liuyao' ? '六爻排盘' : '梅花易数'}
+                  阿卡夏之窗 · {mode === 'liuyao' ? '六爻排盘' : '梅花易数'}
                 </h2>
                 {question && (
                   <p className="text-amber-500/80 text-lg italic">
@@ -603,7 +587,7 @@ ${lineNames}
                   {isStreaming && messages.length > 0 && (
                     <div className="flex items-start hide-in-poster">
                       <div className="glass-panel bg-black/40 rounded-2xl p-6 w-full">
-                        <BreathingLoading text="正在倾听星辰的回应..." />
+                        <BreathingLoading text="正在倾听星辰的回答..." />
                       </div>
                     </div>
                   )}
@@ -614,7 +598,7 @@ ${lineNames}
               <div className="hidden show-in-poster w-full text-center mt-12 pt-8 border-t border-amber-500/20">
                 <div className="flex items-center justify-center gap-2 text-amber-500/60 mb-2">
                   <Sparkles size={16} />
-                  <span className="font-serif tracking-widest text-sm">阿卡夏之眼 AI 命理</span>
+                  <span className="font-serif tracking-widest text-sm">阿卡夏之窗 AI 命理</span>
                   <Sparkles size={16} />
                 </div>
                 <p className="text-xs text-amber-500/40 font-mono">

@@ -6,7 +6,7 @@ interface BreathingLoadingProps {
   text?: string;
 }
 
-export default function BreathingLoading({ text = "阿卡夏正在感知..." }: BreathingLoadingProps) {
+export default function BreathingLoading({ text = "阿卡夏正在感�?.." }: BreathingLoadingProps) {
   return (
     <div className="flex flex-col items-center justify-center py-16 space-y-8">
       <div className="relative w-32 h-32 flex items-center justify-center">

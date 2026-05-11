@@ -51,7 +51,7 @@ export function useAIStream(options: { model?: string } = {}) {
       setIsLoading(false);
       abortControllerRef.current = null;
     }
-  }, []);
+  }, [options.model]);
 
   const abort = useCallback(() => {
     if (abortControllerRef.current) {

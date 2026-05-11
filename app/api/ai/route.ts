@@ -1,9 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 import { NextRequest } from "next/server";
-import { AKASHA_PERSONA } from "@/lib/ai";
+import { AKASHA_PERSONA, DEFAULT_MODEL } from "@/lib/ai";
 import { getCachedResponse, setCachedResponse, generateCacheKey } from "@/lib/ai-cache";
-
-const DEFAULT_MODEL = "gemini-3.1-flash-lite";
 
 export async function POST(req: NextRequest) {
   try {

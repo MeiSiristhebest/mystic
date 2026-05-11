@@ -1,204 +1,319 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Globe, Users, Activity, Sparkles, TrendingUp, Info, AlertTriangle } from "lucide-react";
-import { useAIChat } from "@/hooks/useAIChat";
-import BreathingLoading from "./BreathingLoading";
+import { Sparkles, Send, X, Users, Globe, Zap, MessageSquare, Heart, Shield, Download } from "lucide-react";
 import MysticMarkdown from "./MysticMarkdown";
-import { MODELS } from "@/lib/ai";
+import BreathingLoading from "./BreathingLoading";
+import { useJourney } from "@/hooks/useJourney";
+import { useUserProfile } from "@/hooks/useUserProfile";
+import { useAIStream } from "@/hooks/useAIStream";
+import { usePosterGenerator } from "@/hooks/usePosterGenerator";
+import { AKASHA_PERSONA } from "@/lib/ai";
 
-// Dynamic Global Psyche instruction
-const DYNAMIC_PSYCHE_INSTRUCTION = `
-<dynamic_psyche_instruction>
-  你必须使用 Google Search 工具来获取【此时此刻】全球范围内最重要的 3-5 条新闻（社会、科技、地缘）。
-  将这些新闻视为人类集体意识的“显化征兆”，结合今日卦象，分析全球集体心理的底层涌动与阴影。
-</dynamic_psyche_instruction>
-`;
+export default function CollectiveMirrorApp({ onReadingChange }: { onReadingChange?: (reading: boolean) => void }) {
+  const [question, setQuestion] = useState("");
+  const [inputMessage, setInputMessage] = useState("");
+  const [currentEntryId, setCurrentEntryId] = useState<string | null>(null);
+  const [showRitual, setShowRitual] = useState(false);
+  const [ritualStep, setRitualStep] = useState(0);
 
-function getDailyHexagram(date: Date) {
-  const dateString = date.toISOString().split('T')[0];
-  let hash = 0;
-  for (let i = 0; i < dateString.length; i++) {
-    const char = dateString.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash;
-  }
-  const hexagrams = [
-    { num: 1, name: "乾为天", meaning: "创造、刚健、自强不息" },
-    { num: 2, name: "坤为地", meaning: "包容、柔顺、厚德载物" },
-    { num: 11, name: "地天泰", meaning: "通达、和谐、阴阳交融" },
-    { num: 12, name: "天地否", meaning: "闭塞、阻隔、需要耐心" },
-    { num: 24, name: "地雷复", meaning: "复苏、转机、一阳来复" },
-    { num: 43, name: "泽天夬", meaning: "决断、突破、消除隐患" },
-    { num: 63, name: "水火既济", meaning: "完成、成功、防微杜渐" },
-    { num: 64, name: "火水未济", meaning: "未完成、希望、重新开始" },
-    { num: 29, name: "坎为水", meaning: "重险、历练、守信笃行" },
-    { num: 30, name: "离为火", meaning: "光明、依附、柔顺中正" }
-  ];
-  const index = Math.abs(hash) % hexagrams.length;
-  return hexagrams[index];
-}
+  const posterRef = useRef<HTMLDivElement>(null);
 
-export default function CollectiveMirrorApp() {
-  const [reading, setReading] = useState("");
-  const [hasGenerated, setHasGenerated] = useState(false);
-  const today = useMemo(() => new Date(), []);
-  const hexagram = useMemo(() => getDailyHexagram(today), [today]);
+  const { addEntry, updateEntry } = useJourney();
+  const { profile, getProfileContext } = useUserProfile();
+  const { stream, isLoading: isStreaming, error: streamError, abort } = useAIStream();
+  const { isGeneratingPoster, handleGeneratePoster } = usePosterGenerator();
 
-  const { sendMessage, isLoading, error } = useAIChat({
-    model: MODELS.PRO,
-    systemInstruction: `你是一位融合了《易经》辩证哲学与荣格分析心理学的「集体镜像观测者」。
-你的任务是透过每日卦象，解析此时此刻全球集体潜意识的底层波动。
-你不仅是在解卦，更是在为全人类进行一场心理分析。
-你的回复应当充满宏大的慈悲、敏锐看社会洞察以及对人类命运的深度关怀。`,
-  });
-
-  const generateReading = useCallback(async () => {
-    if (hasGenerated) return;
-    
-    const prompt = `
-<instruction>
-请基于今日的【全球共振卦象】以及提供的【全球集体潜意识脉动】，为全人类提供一份今日的集体镜像报告。
-要求：
-1. 分析卦象 ${hexagram.name} (${hexagram.num}) 在当前全球动荡背景下的象征意义。
-2. 指出我们作为个体，如何在这种波动的集体海洋中保持觉察，而不被群体的恐惧或狂热卷走。
-3. 必须包含对当前“美伊危机”或“核审议”所映射的集体阴影的深度洞察。
-</instruction>
-
-<divination_context>
-  <iso_time>${today.toISOString()}</iso_time>
-  <hexagram_energy>
-    <name>${hexagram.name}</name>
-    <archetype>${hexagram.meaning}</archetype>
-  </hexagram_energy>
-  ${DYNAMIC_PSYCHE_INSTRUCTION}
-</divination_context>
-
-<output_format>
-使用结构严谨的Markdown排版：
-- 使用 ### 为章节标题。
-- 必须包含：【📡 集体频率监测】、【🌑 阴影与投射】、【🧘 全球处方：今日自处之道】。
-</output_format>
-`;
-
-    try {
-      const response = await sendMessage(prompt);
-      setReading(response);
-      setHasGenerated(true);
-    } catch (e) {
-      console.error(e);
-    }
-  }, [hasGenerated, today, hexagram, sendMessage]);
+  const [messages, setMessages] = useState<{ role: 'user' | 'model'; content: string }[]>([]);
+  const [isAskingFollowUp, setIsAskingFollowUp] = useState(false);
 
   useEffect(() => {
-    if (!hasGenerated && !isLoading) {
-      generateReading();
+    if (onReadingChange) {
+      onReadingChange(isStreaming || isAskingFollowUp);
     }
-  }, [generateReading, hasGenerated, isLoading]);
+  }, [isStreaming, isAskingFollowUp, onReadingChange]);
+
+  const startRitual = () => {
+    if (!question.trim()) return;
+    setShowRitual(true);
+    setRitualStep(1);
+    
+    // Simulate ritual steps
+    setTimeout(() => setRitualStep(2), 2000);
+    setTimeout(() => setRitualStep(3), 4000);
+    setTimeout(() => {
+      setShowRitual(false);
+      handleGenerate();
+    }, 6000);
+  };
+
+  const handleGenerate = async () => {
+    const profileContext = getProfileContext();
+    const sanitizedQuestion = question.replace(/["'{}[\]]/g, "").substring(0, 200);
+
+    const prompt = `
+<instruction>
+你现在正连接着“集体无意识之镜（Collective Mirror）”。请根据用户的问题，从人类共有的原型、当下的全球集体意识能量以及深层社会心理学的角度，进行一次宏大、深刻、具有启示性的解读。
+请不要局限于个人层面的琐事，而要将其与更广阔的生命律动、时代精神和集体共鸣联系起来。</instruction>
+
+<divination_context>
+  <method>集体镜像感应（Collective Resonance）</method>
+  <timestamp>${new Date().toISOString()}</timestamp>
+</divination_context>
+
+<user_profile>
+  ${profileContext}
+</user_profile>
+
+<user_question>
+  ${sanitizedQuestion}
+</user_question>
+
+<output_format>
+请使用Markdown排版，必须且只能包含以下三个章节：
+## 🌐 集体共鸣场域
+（描述当下的集体潜意识能量状态，以及它是如何与用户的问题产生宏观共振的）
+
+## 🔍 原型之镜解析
+（从荣格的原型理论或人类共同的神话逻辑出发，深度剖析该问题在人类集体灵魂中的深层映像）
+
+## 🌟 觉醒与同步指引
+（给出如何超越个体局限，与更高层次的集体智慧同步的具体指引和心态调整）
+</output_format>
+    `;
+
+    try {
+      let fullResponse = "";
+      setMessages([{ role: 'model', content: "" }]);
+      
+      const systemInstruction = `${AKASHA_PERSONA}\n你现在是“集体无意识之镜”的引路人。你的语言应当宏大、深邃、充满慈悲与洞见。`;
+      
+      for await (const chunk of stream(prompt, systemInstruction)) {
+        fullResponse += chunk;
+        setMessages([{ role: 'model', content: fullResponse }]);
+      }
+
+      const id = await addEntry({
+        type: "collective_mirror",
+        title: `集体镜像：${sanitizedQuestion}`,
+        summary: fullResponse.substring(0, 100) + "...",
+        details: { 
+          type: 'collective_mirror',
+          text: fullResponse, 
+          question: sanitizedQuestion, 
+          messages: [{ role: 'model', content: fullResponse }] 
+        },
+      });
+      setCurrentEntryId(id || null);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inputMessage.trim() || isStreaming || !currentEntryId) return;
+
+    const userMsg = inputMessage.trim();
+    setInputMessage("");
+    setIsAskingFollowUp(true);
+
+    const newMessages = [...messages, { role: 'user', content: userMsg } as const];
+    setMessages([...newMessages, { role: 'model', content: "" }]);
+
+    try {
+      let fullResponse = "";
+      const systemInstruction = `${AKASHA_PERSONA}\n你现在是“集体无意识之镜”的引路人。你的语言应当宏大、深邃、充满慈悲与洞见。`;
+      
+      for await (const chunk of stream(userMsg, systemInstruction)) {
+        fullResponse += chunk;
+        setMessages([...newMessages, { role: 'model', content: fullResponse }]);
+      }
+      
+      const finalMsgs = [...newMessages, { role: 'model', content: fullResponse } as const];
+      updateEntry(currentEntryId, { 
+        details: { 
+          type: 'collective_mirror',
+          text: finalMsgs.map(m => m.role === 'user' ? `**问**：${m.content}` : `**阿卡夏**：${m.content}`).join('\n\n---\n\n'), 
+          question, 
+          messages: finalMsgs 
+        }
+      });
+    } catch (error) {
+      console.error("Chat error:", error);
+    } finally {
+      setIsAskingFollowUp(false);
+    }
+  };
+
+  const ritualSteps = [
+    { text: "正在闭目感应...", icon: Users },
+    { text: "正在触碰集体潜意识脉动...", icon: Globe },
+    { text: "镜像已开启，万物皆有共鸣...", icon: Zap }
+  ];
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="text-center mb-12">
-        <motion.div
-          animate={{ 
-            boxShadow: ["0 0 0px rgba(16,185,129,0)", "0 0 30px rgba(16,185,129,0.2)", "0 0 0px rgba(16,185,129,0)"]
-          }}
-          transition={{ duration: 4, repeat: Infinity }}
-          className="inline-block p-4 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-6"
-        >
-          <Globe className="w-10 h-10 text-emerald-400" />
-        </motion.div>
-        <h1 className="text-4xl font-serif gold-gradient-text mb-4 tracking-widest">集体镜像</h1>
-        <p className="text-emerald-200/60 font-serif italic text-sm md:text-base">
-          “我们皆是集体意识之洋的一滴水，通过万物的共时性，观测波浪的去向。”
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        <div className="md:col-span-2 luxury-card p-8 border-emerald-500/30 bg-emerald-500/5 flex flex-col justify-center items-center text-center">
-          <div className="flex items-center gap-2 text-emerald-400/60 mb-2 uppercase tracking-widest text-[10px]">
-            <Sparkles className="w-3 h-3" />
-            <span>今日全球共振卦象</span>
-            <Sparkles className="w-3 h-3" />
-          </div>
-          <div className="text-5xl font-serif text-emerald-100 mb-4 tracking-[0.2em]">{hexagram.name}</div>
-          <div className="p-1 px-4 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-sm">
-            {hexagram.meaning}
-          </div>
-        </div>
-
-        <div className="luxury-card p-6 border-emerald-500/20 bg-black/20">
-          <h3 className="text-xs font-serif text-emerald-400/70 mb-4 uppercase tracking-widest flex items-center gap-2">
-            <Activity className="w-4 h-4" />
-            意识波动指数
-          </h3>
-          <div className="space-y-4">
-            <div>
-              <div className="flex justify-between text-[10px] text-emerald-200/40 mb-1">
-                <span>集体焦虑度</span>
-                <span>HIGH</span>
-              </div>
-              <div className="h-1 bg-emerald-950 rounded-full overflow-hidden">
-                <motion.div initial={{ width: 0 }} animate={{ width: "75%" }} className="h-full bg-red-400/50" />
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between text-[10px] text-emerald-200/40 mb-1">
-                <span>变革渴求度</span>
-                <span>URGENT</span>
-              </div>
-              <div className="h-1 bg-emerald-950 rounded-full overflow-hidden">
-                <motion.div initial={{ width: 0 }} animate={{ width: "90%" }} className="h-full bg-blue-400/50" />
-              </div>
-            </div>
-          </div>
-          <div className="mt-6 flex items-center gap-2 text-[10px] text-emerald-200/30 bg-white/5 p-2 rounded-lg">
-            <Info className="w-3 h-3" />
-            <span>基于实时全球时事脉动深度估算</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="relative min-h-[500px] luxury-card p-8 md:p-12 border-emerald-500/10 bg-black/60">
-        <div className="flex items-center gap-3 mb-10 border-b border-emerald-500/20 pb-6">
-          <Users className="w-6 h-6 text-emerald-500 opacity-60" />
-          <h2 className="text-xl font-serif text-emerald-200 tracking-wider">集体潜意识深度观测报告</h2>
-        </div>
-
-        {isLoading ? (
-          <div className="py-20">
-            <BreathingLoading text="正在穿梭于集体无意识的深海，捕获关键共识..." />
-          </div>
-        ) : error ? (
-          <div className="text-center text-red-400 p-8 border border-red-500/20 rounded-2xl bg-red-500/5">
-            <AlertTriangle className="w-8 h-8 mx-auto mb-4" />
-            {error}
-          </div>
-        ) : (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
+    <div className="w-full flex flex-col items-center">
+      <AnimatePresence>
+        {showRitual && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-xl"
           >
-            <MysticMarkdown content={reading} />
-            
-            {reading && (
-              <div className="mt-16 pt-8 border-t border-emerald-500/10 flex flex-col items-center gap-4">
-                <div className="text-[10px] text-emerald-500/30 font-serif tracking-[0.2em] uppercase">
-                  End of Observation - Synchronicity Established
+            <div className="flex flex-col items-center space-y-8 text-center max-w-md px-6">
+              <motion.div
+                animate={{ scale: [1, 1.2, 1], rotate: [0, 360] }}
+                transition={{ duration: 4, repeat: Infinity }}
+                className="w-24 h-24 rounded-full border-2 border-emerald-500/30 flex items-center justify-center relative"
+              >
+                <div className="absolute inset-0 bg-emerald-500/10 rounded-full blur-xl animate-pulse" />
+                {ritualSteps[ritualStep - 1]?.icon && (
+                  <div className="relative">
+                    {React.createElement(ritualSteps[ritualStep - 1].icon, { className: "w-10 h-10 text-emerald-400" })}
+                  </div>
+                )}
+              </motion.div>
+              <div className="space-y-4">
+                <h3 className="text-2xl font-serif text-emerald-100 tracking-widest">
+                  {ritualSteps[ritualStep - 1]?.text}
+                </h3>
+                <div className="flex justify-center gap-2">
+                  {[1, 2, 3].map(i => (
+                    <div key={i} className={`w-2 h-2 rounded-full ${i <= ritualStep ? 'bg-emerald-500' : 'bg-emerald-900/50'}`} />
+                  ))}
                 </div>
-                <button 
-                  onClick={() => { setHasGenerated(false); generateReading(); }}
-                  className="text-xs font-serif text-emerald-400/40 hover:text-emerald-400 transition-colors uppercase tracking-widest"
-                >
-                  重新感知集体脉动
-                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {messages.length === 0 && !isStreaming ? (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-5xl glass-panel p-8 md:p-12 rounded-3xl flex flex-col items-center text-center space-y-12"
+        >
+          <div className="relative">
+            <div className="absolute -inset-8 bg-emerald-500/10 blur-3xl rounded-full" />
+            <Globe className="w-20 h-20 text-emerald-500 relative" />
+          </div>
+          
+          <div className="space-y-4">
+            <h2 className="text-4xl font-serif text-emerald-100 tracking-widest">集体无意识之镜</h2>
+            <p className="text-emerald-200/60 max-w-2xl mx-auto leading-relaxed">
+              在这个场域中，个人的困惑被置于全人类的命运坐标系。
+              请写下你内心深处的共鸣或疑惑，阿卡夏将为你揭示集体潜意识中的镜像。
+            </p>
+          </div>
+
+          <div className="w-full max-w-2xl space-y-8">
+            <textarea
+              value={question}
+              onChange={(e) => setQuestion(e.target.value)}
+              placeholder="例如：我为什么总是感到一种莫名的群体疏离感？或者 这个时代的变革对我们灵魂的意义是什么？"
+              className="w-full bg-black/40 border border-emerald-500/20 rounded-2xl p-6 text-emerald-100 placeholder-emerald-900/40 focus:ring-2 focus:ring-emerald-500/30 focus:border-transparent transition-all h-32 resize-none"
+            />
+            
+            <button
+              onClick={startRitual}
+              disabled={!question.trim()}
+              className="px-12 py-4 bg-gradient-to-r from-emerald-700 to-emerald-900 hover:from-emerald-600 hover:to-emerald-800 text-emerald-100 rounded-full font-serif text-lg tracking-widest shadow-[0_0_30px_rgba(16,185,129,0.2)] hover:shadow-[0_0_40px_rgba(16,185,129,0.4)] transition-all disabled:opacity-30 disabled:cursor-not-allowed group"
+            >
+              开启镜像感应 <Sparkles className="inline-block ml-2 w-5 h-5 group-hover:rotate-12 transition-transform" />
+            </button>
+          </div>
+        </motion.div>
+      ) : (
+        <AnimatePresence>
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="w-full max-w-4xl space-y-8"
+          >
+            <div 
+              ref={posterRef}
+              className="w-full glass-panel p-8 md:p-12 rounded-3xl space-y-12 relative overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 p-8 opacity-5">
+                <Globe className="w-64 h-64 text-emerald-500" />
+              </div>
+
+              {isStreaming && messages.length === 0 ? (
+                <div className="py-20">
+                  <BreathingLoading text="正在采集集体无意识波段..." />
+                </div>
+              ) : (
+                <div className="space-y-12 relative z-10">
+                  {messages.map((msg, idx) => (
+                    <div key={idx} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-center'}`}>
+                      <div className={`max-w-[95%] md:max-w-[85%] rounded-2xl p-8 ${
+                        msg.role === 'user' 
+                          ? 'bg-emerald-900/30 border border-emerald-500/20 text-emerald-100' 
+                          : 'bg-black/20 markdown-body w-full'
+                      }`}>
+                        {msg.role === 'model' ? (
+                          <MysticMarkdown content={msg.content} />
+                        ) : (
+                          <p className="text-xl font-serif">{msg.content}</p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Poster Footer */}
+              <div className="hidden show-in-poster pt-12 border-t border-emerald-500/20 text-center">
+                <p className="text-emerald-500/40 text-xs font-mono tracking-widest uppercase">
+                  Collective Mirror Insights · Akasha Window · {new Date().toLocaleDateString()}
+                </p>
+              </div>
+            </div>
+
+            {!isStreaming && (
+              <div className="flex flex-col gap-6 hide-in-poster">
+                <form onSubmit={handleSendMessage} className="relative">
+                  <input
+                    type="text"
+                    value={inputMessage}
+                    onChange={(e) => setInputMessage(e.target.value)}
+                    placeholder="继续与集体智慧对话..."
+                    className="w-full bg-black/40 border border-emerald-500/20 rounded-full py-5 pl-8 pr-20 text-emerald-100 placeholder-emerald-900/40 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all font-serif text-lg"
+                  />
+                  <button
+                    type="submit"
+                    disabled={!inputMessage.trim() || isAskingFollowUp}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-full transition-all disabled:opacity-30"
+                  >
+                    <Send size={20} />
+                  </button>
+                </form>
+
+                <div className="flex justify-center gap-4">
+                  <button
+                    onClick={() => { setMessages([]); setQuestion(""); setCurrentEntryId(null); abort(); }}
+                    className="px-8 py-3 border border-emerald-500/20 text-emerald-400/60 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-full font-serif transition-all"
+                  >
+                    合上镜像
+                  </button>
+                  <button
+                    onClick={() => handleGeneratePoster(posterRef.current, 'collective-mirror.jpg')}
+                    disabled={isGeneratingPoster}
+                    className="px-8 py-3 bg-emerald-600/20 border border-emerald-500/30 text-emerald-200 rounded-full font-serif hover:bg-emerald-600/40 transition-all flex items-center gap-2 disabled:opacity-50"
+                  >
+                    <Download size={18} />
+                    保存镜像海报
+                  </button>
+                </div>
               </div>
             )}
           </motion.div>
-        )}
-      </div>
+        </AnimatePresence>
+      )}
     </div>
   );
 }

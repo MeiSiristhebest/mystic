@@ -65,16 +65,14 @@ export default function MysticMarkdown({ content, cards, hideCards }: MysticMark
       {!hideCards && cards && cards.length > 0 && (
         <div className="flex flex-wrap justify-center gap-4 md:gap-6 mb-12 mt-4 relative z-10">
           {cards.map((card, idx) => {
-            const imageUrl = `https://www.trustedtarot.com/img/cards/${card.englishName.toLowerCase().replace(/ /g, "-")}.png`;
+            const imageUrl = card.image || `https://www.trustedtarot.com/img/cards/${card.englishName.toLowerCase().replace(/ /g, "-")}.png`;
             return (
               <div key={idx} className="relative w-24 h-40 md:w-32 md:h-52 rounded-xl overflow-hidden border-2 border-[#C9A84C]/40 shadow-[0_10px_30px_rgba(0,0,0,0.8)] hover:scale-105 transition-transform duration-500 group">
-                <Image
+                <img
                   src={imageUrl}
                   alt={card.name}
-                  width={128}
-                  height={208}
                   className={`w-full h-full object-cover ${card.isReversed ? 'rotate-180' : ''}`}
-                  referrerPolicy="no-referrer"
+                  crossOrigin="anonymous"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#080510]/90 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity"></div>
                 <div className="absolute bottom-2 left-0 right-0 text-center px-1 pointer-events-none">
@@ -88,61 +86,58 @@ export default function MysticMarkdown({ content, cards, hideCards }: MysticMark
       )}
       <ReactMarkdown
         components={{
-          h1: ({ node, ...props }) => (
+          h1: ({ ...props }) => (
             <div className="relative w-full flex flex-col items-center justify-center mb-16 mt-20">
               <div className="absolute top-0 w-32 h-[1px] bg-gradient-to-r from-transparent via-amber-500/50 to-transparent"></div>
               <h1
                 className="text-3xl md:text-4xl font-serif text-transparent bg-clip-text bg-gradient-to-b from-amber-100 to-amber-400 text-center tracking-[0.2em] drop-shadow-[0_0_15px_rgba(252,211,77,0.5)] py-8"
-                {...props}
               >
                 {props.children}
               </h1>
               <div className="absolute bottom-0 w-32 h-[1px] bg-gradient-to-r from-transparent via-amber-500/50 to-transparent"></div>
-              <span className="absolute -top-3 text-amber-500/40 text-lg">✧</span>
-              <span className="absolute -bottom-3 text-amber-500/40 text-lg">✧</span>
+              <span className="absolute -top-3 text-amber-500/40 text-lg">✦</span>
+              <span className="absolute -bottom-3 text-amber-500/40 text-lg">✦</span>
             </div>
           ),
-          h2: ({ node, ...props }) => (
+          h2: ({ ...props }) => (
             <div className="w-full flex flex-col items-center mb-10 mt-16">
               <h2
                 className="text-2xl md:text-3xl font-serif text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-500 pb-4 flex items-center gap-4 drop-shadow-[0_0_10px_rgba(252,211,77,0.3)] relative text-center"
-                {...props}
               >
-                <span className="text-amber-500/60 text-xl drop-shadow-none">✦</span>
+                <span className="text-amber-500/60 text-xl drop-shadow-none">◈</span>
                 {props.children}
-                <span className="text-amber-500/60 text-xl drop-shadow-none">✦</span>
+                <span className="text-amber-500/60 text-xl drop-shadow-none">◈</span>
               </h2>
               <div className="w-48 h-[1px] bg-gradient-to-r from-transparent via-amber-500/40 to-transparent mt-1"></div>
             </div>
           ),
-          h3: ({ node, ...props }) => (
+          h3: ({ ...props }) => (
             <div className="w-full flex justify-center mb-8 mt-12">
               <h3
                 className="text-xl md:text-2xl font-serif text-amber-300/90 flex items-center gap-3 tracking-wide text-center"
-                {...props}
               >
-                <span className="text-amber-600/70 text-base">⋆</span>
+                <span className="text-amber-600/70 text-base">◇</span>
                 {props.children}
-                <span className="text-amber-600/70 text-base">⋆</span>
+                <span className="text-amber-600/70 text-base">◇</span>
               </h3>
             </div>
           ),
-          p: ({ node, ...props }) => (
+          p: ({ ...props }) => (
             <p
               className="text-amber-50/90 leading-[2.2] mb-8 last:mb-0 text-[16px] md:text-[17px] tracking-[0.02em] font-light text-left"
               {...props}
             />
           ),
-          strong: ({ node, ...props }) => (
+          strong: ({ ...props }) => (
             <strong
               className="font-semibold text-amber-200 bg-amber-500/10 px-1.5 py-0.5 rounded-md drop-shadow-[0_0_8px_rgba(252,211,77,0.4)] border border-amber-500/20"
               {...props}
             />
           ),
-          em: ({ node, ...props }) => (
+          em: ({ ...props }) => (
             <em className="italic text-amber-200/90 font-serif tracking-wide" {...props} />
           ),
-          blockquote: ({ node, ...props }) => (
+          blockquote: ({ ...props }) => (
             <blockquote
               className="relative border-l-4 border-amber-500/50 pl-8 py-6 my-10 bg-gradient-to-r from-amber-900/30 via-amber-900/10 to-transparent italic text-amber-100/90 rounded-r-xl shadow-[inset_0_0_30px_rgba(252,211,77,0.05)] text-left"
               {...props}
@@ -155,27 +150,27 @@ export default function MysticMarkdown({ content, cards, hideCards }: MysticMark
               </div>
             </blockquote>
           ),
-          ul: ({ node, ...props }) => (
+          ul: ({ ...props }) => (
             <ul className="space-y-4 mb-10 ml-2 text-left" {...props} />
           ),
-          ol: ({ node, ...props }) => (
+          ol: ({ ...props }) => (
             <ol
               className="space-y-4 mb-10 ml-6 list-decimal text-amber-200/80 marker:text-amber-500/70 font-serif text-[16px] md:text-[17px] text-left"
               {...props}
             />
           ),
-          li: ({ node, ...props }) => (
-            <li className="text-amber-50/90 leading-[2.2] mb-4 last:mb-0 pl-6 relative before:content-['✧'] before:absolute before:left-0 before:top-[8px] before:text-amber-500/60 before:text-xs tracking-[0.02em] font-light text-left" {...props} />
+          li: ({ ...props }) => (
+            <li className="text-amber-50/90 leading-[2.2] mb-4 last:mb-0 pl-6 relative before:content-['✦'] before:absolute before:left-0 before:top-[8px] before:text-amber-500/60 before:text-xs tracking-[0.02em] font-light text-left" {...props} />
           ),
-          hr: ({ node, ...props }) => (
+          hr: () => (
             <div className="w-full flex items-center justify-center my-14 relative">
               <div className="absolute w-full h-[1px] bg-gradient-to-r from-transparent via-amber-500/20 to-transparent"></div>
               <div className="px-6 bg-[#0a0502] text-amber-500/50 text-sm tracking-[0.5em] relative z-10 font-serif">
-                ✦ ✧ ✦
+                ✦ ✦ ✦
               </div>
             </div>
           ),
-          a: ({ node, ...props }) => (
+          a: ({ ...props }) => (
             <a
               className="text-amber-400 underline decoration-amber-500/30 underline-offset-4 hover:decoration-amber-400 transition-colors"
               target="_blank"
@@ -183,13 +178,13 @@ export default function MysticMarkdown({ content, cards, hideCards }: MysticMark
               {...props}
             />
           ),
-          code: ({ node, inline, ...props }: React.ComponentPropsWithoutRef<'code'> & { inline?: boolean, node?: unknown }) => 
+          code: ({ inline, ...props }: React.ComponentPropsWithoutRef<'code'> & { inline?: boolean }) => 
             inline ? (
               <code className="bg-amber-900/30 text-amber-200 px-1.5 py-0.5 rounded text-sm font-mono border border-amber-500/20" {...props} />
             ) : (
               <code className="block bg-[#0a0502] text-amber-100/90 p-4 rounded-xl text-sm font-mono border border-amber-500/20 overflow-x-auto shadow-[inset_0_0_15px_rgba(0,0,0,0.5)] text-left" {...props} />
             ),
-          pre: ({ node, ...props }) => (
+          pre: ({ ...props }) => (
             <pre className="my-6" {...props} />
           ),
         }}

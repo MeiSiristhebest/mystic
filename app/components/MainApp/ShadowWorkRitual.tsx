@@ -1,68 +1,57 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Moon, EyeOff } from 'lucide-react';
-import { OracleInput } from './OracleInput';
+"use client";
 
-interface ShadowWorkRitualProps {
-  step: 'input' | 'exploring';
-  issue: string;
-  setIssue: (val: string) => void;
-  onStart: () => void;
-  isExploring: boolean;
-}
+import { motion } from "motion/react";
+import { Ghost, ShieldAlert } from "lucide-react";
+import { useEffect, useState } from "react";
 
-export const ShadowWorkRitual: React.FC<ShadowWorkRitualProps> = ({
-  step,
-  issue,
-  setIssue,
-  onStart,
-  isExploring
-}) => {
+export default function ShadowWorkRitual({ onComplete }: { onComplete: () => void }) {
+  const [stage, setStage] = useState(0);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (stage < 3) setStage(s => s + 1);
+      else onComplete();
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [stage, onComplete]);
+
+  const messages = [
+    "正在映照深层阴影...",
+    "直面被压抑的情绪...",
+    "整合真实的自我碎片...",
+    "灵魂光影调和中..."
+  ];
+
   return (
-    <div className="max-w-4xl mx-auto">
-      {step === 'input' && (
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="space-y-12"
-        >
-          <div className="text-center space-y-6">
-            <div className="flex justify-center">
-              <motion.div 
-                animate={{ 
-                  scale: [1, 1.1, 1],
-                  opacity: [0.3, 0.6, 0.3]
-                }}
-                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                className="w-24 h-24 rounded-full bg-mystic-purple/30 blur-2xl absolute"
-              />
-              <Moon className="w-12 h-12 text-mystic-purple relative z-10" />
-            </div>
-            <h2 className="text-3xl font-serif text-mystic-ink tracking-[0.2em]">直面内心的阴影</h2>
-            <p className="text-mystic-ink/40 text-sm max-w-lg mx-auto leading-relaxed">
-              阴影并非邪恶，而是被我们遗忘的生命力。在这里，请诚实地表达那些令你感到不安、羞耻或难以面对的情绪。
-            </p>
-          </div>
+    <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-12">
+      <div className="relative w-48 h-48">
+        <motion.div
+          animate={{ 
+            scale: [1, 1.1, 1],
+            opacity: [0.3, 0.6, 0.3],
+            rotate: [0, 180, 360]
+          }}
+          transition={{ duration: 10, repeat: Infinity }}
+          className="absolute inset-0 bg-gradient-to-br from-zinc-800 to-black rounded-full border border-zinc-700/50 shadow-[0_0_50px_rgba(0,0,0,0.8)]"
+        />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <Ghost className="w-16 h-16 text-zinc-500/40" />
+        </div>
+      </div>
 
-          <OracleInput 
-            value={issue}
-            onChange={setIssue}
-            onSend={onStart}
-            placeholder="描述那个让你感到沉重或困惑的阴影..."
-            buttonText="深入潜意识"
-            disabled={isExploring}
-          />
-
-          <div className="flex justify-center gap-8 text-[10px] text-mystic-ink/20 uppercase tracking-[0.5em] pt-12">
-            <div className="flex items-center gap-2">
-              <EyeOff className="w-3 h-3" />
-              <span>完全隐私</span>
-            </div>
-            <span>•</span>
-            <span>深度整合</span>
-          </div>
-        </motion.div>
-      )}
+      <div className="text-center space-y-4">
+        <h3 className="text-xl font-serif text-zinc-400 tracking-[0.4em] uppercase">
+          {messages[stage]}
+        </h3>
+        <div className="flex gap-2 justify-center">
+          {[0, 1, 2, 3].map(i => (
+            <div 
+              key={i} 
+              className={`w-2 h-2 rounded-full transition-all duration-500 ${i === stage ? 'bg-zinc-400 scale-125 shadow-[0_0_8px_white]' : 'bg-zinc-800'}`} 
+            />
+          ))}
+        </div>
+      </div>
     </div>
   );
-};
+}

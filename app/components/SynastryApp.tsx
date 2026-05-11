@@ -4,11 +4,14 @@ import { Sparkles, AlertCircle, Send } from "lucide-react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useAIChat } from "@/hooks/useAIChat";
 import { generateDeck } from "@/lib/tarot-data";
+import { useJourney } from "@/hooks/useJourney";
 import BreathingLoading from "./BreathingLoading";
 import MysticMarkdown from "./MysticMarkdown";
 import { MODELS } from "@/lib/ai";
+
 export default function SynastryApp() {
   const { profile, getProfileContext } = useUserProfile();
+  const { addEntry } = useJourney();
   const [question, setQuestion] = useState("");
   const [reading, setReading] = useState("");
   const [drawnCards, setDrawnCards] = useState<any[]>([]);
@@ -16,12 +19,9 @@ export default function SynastryApp() {
     model: MODELS.PRO,
     systemInstruction: `<system>
 <role>
-你是一位精通东西方神秘学的「三才合参」大师。
-你能够将用户的【八字命理】、【星象人格】与当下的【塔罗潜意识投射】完美融合，给出一份不矛盾、高维度的综合解读。
-</role>
+你是一位精通东西方神秘学的「三才合参」大师。你能够将用户的【八字命理】、【星象人格】与当下的【塔罗潜意识投射】完美融合，给出一份不矛盾、高维度的综合解读。</role>
 <tone_and_style>
-深邃、包容、充满智慧，像一位认识用户多年的荣格派分析师。
-</tone_and_style>
+深邃、包容、充满智慧，像一位认识用户多年的荣格派分析师。</tone_and_style>
 </system>`,
   });
 
@@ -38,13 +38,11 @@ export default function SynastryApp() {
     }));
     setDrawnCards(selected);
 
-    const cardsText = selected.map((c, i) => `第${i+1}张: ${c.name} (${c.isReversed ? '逆位' : '正位'})`).join(', ');
+    const cardsText = selected.map((c, i) => `[${i+1}] ${c.name} (${c.isReversed ? '逆位' : '正位'})`).join(', ');
     
     const prompt = `
 <instruction>
-请基于用户的灵魂档案（包含八字、星象、荣格原型等）以及刚刚抽取的塔罗牌，进行深度「三才合参」解读。
-请不要生硬地罗列三种体系，而是将它们交织在一起，像一面跨越时间的镜子，照出用户当下的处境和未来的方向。
-</instruction>
+请基于用户的灵魂档案（包含八字、星象、荣格原型等）以及刚刚抽取的塔罗牌，进行深度「三才合参」解读。请不要生硬地罗列三种体系，而是将它们交织在一起，像一面跨越时间的镜子，照出用户当下的处境和未来的方向。</instruction>
 
 <user_profile>
 ${getProfileContext()}
@@ -63,20 +61,30 @@ ${getProfileContext()}
 
 <thinking_process>
 在给出最终解读前，请先在内部进行思考，并以 <thinking> 标签包裹你的思考过程（这部分对用户隐藏）：
-1. 提取八字核心五行喜忌与当前流年/流月的影响。
-2. 提取星象中与用户问题最相关的行运（Transit）或本命相位。
-3. 结合抽出的三张塔罗牌（过去、现在、未来或身心灵），看看牌面如何具象化了八字与星象的抽象能量。
-4. 寻找这三种体系的“共振点”，即它们都在指向的同一个核心议题。
-</thinking_process>
+1. 提取八字核心五行喜忌与当前流年流月的影响。2. 提取星象中与用户问题最相关的行运（Transit）或本命相位。3. 结合抽出的三张塔罗牌（过去、现在、未来或身心灵），看看牌面如何具象化了八字与星象的抽象能量。4. 寻找这三种体系的“共振点”，即它们都在指向的同一个核心议题。</thinking_process>
 
 <output_format>
-完成思考后，请输出最终的解读报告（使用Markdown，直接输出正文内容，无需将最终内容包裹在特定标签中，只要确保前面有<thinking>即可）。
-</output_format>
+完成思考后，请输出最终的解读报告（使用Markdown，直接输出正文内容，无需将最终内容包裹在特定标签中，只要确保前面有 <thinking> 即可）。</output_format>
 `;
 
     try {
       const response = await sendMessage(prompt);
       setReading(response);
+      
+      await addEntry({
+        type: "synastry",
+        title: `三才合参：${question.substring(0, 15)}...`,
+        summary: response.substring(0, 100) + "...",
+        details: {
+          type: 'synastry',
+          text: response,
+          question,
+          messages: [
+            { role: 'user', content: question },
+            { role: 'model', content: response }
+          ]
+        }
+      });
     } catch (e) {
       console.error(e);
     }

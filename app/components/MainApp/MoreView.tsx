@@ -52,7 +52,7 @@ export function MoreView() {
     { id: "time", name: "时间智慧", icon: Clock, desc: "在时间的流动中寻找智慧，洞察过去、现在与未来的连接。", component: TimeWisdomApp, prompt: "Ancient clockwork in space, floating gears, golden light, cosmic time flow" },
     { id: "collective", name: "集体镜像", icon: Users, desc: "连接集体潜意识，探索人类共同的命运与原型力量。", component: CollectiveMirrorApp, prompt: "Many glowing souls connected, cosmic web, ethereal light, collective consciousness" },
     { id: "face", name: "灵气面相", icon: User, desc: "通过面部特征洞察性格与命运，探索灵气在面容上的显化。", component: FaceReadingApp, prompt: "Ethereal glowing face, sacred geometry patterns, golden light, mystical portrait" },
-    { id: "iching", name: "周易六爻", icon: Layers, desc: "古老的东方占卜智慧，通过卦象推演事物的演化规律。", component: IChingApp, prompt: "Ancient Chinese hexagrams, golden ink wash, cosmic clouds, mystical symbols" },
+    { id: "iching", name: "周易六爻", icon: Layers, desc: "古老的东方占卜智慧，通过卦象推演事物的发展规律。", component: IChingApp, prompt: "Ancient Chinese hexagrams, golden ink wash, cosmic clouds, mystical symbols" },
     { id: "bazi", name: "八字排盘", icon: Star, desc: "精准的东方命理推算，揭示人生的起伏与天命所在。", component: BaziApp, prompt: "Chinese zodiac signs, golden energy flow, cosmic background, ancient wisdom" },
   ];
 
@@ -85,7 +85,7 @@ export function MoreView() {
   return (
     <div className="max-w-7xl mx-auto px-6 py-12 md:py-20 space-y-16">
       <header className="max-w-2xl space-y-6">
-        <h1 className="editorial-title">更多<span className="gold-gradient-text">奥秘</span></h1>
+        <h1 className="text-4xl md:text-6xl font-serif text-amber-100 tracking-widest uppercase">更多<span className="gold-gradient-text">奥秘</span></h1>
         <p className="text-xl text-[#E8DFB8]/60 font-serif leading-relaxed">
           深入探索宇宙的每一个角落，发现隐藏在星辰背后的更多智慧与力量。
         </p>

@@ -81,7 +81,7 @@ export function useAIChat(options: UseAIChatOptions = {}) {
       setIsLoading(false);
       abortControllerRef.current = null;
     }
-  }, [messages, options.systemInstruction]);
+  }, [messages, options.systemInstruction, options.model]);
 
   const clearMessages = useCallback(() => {
     setMessages([]);

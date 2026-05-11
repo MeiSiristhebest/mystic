@@ -1,288 +1,208 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, User, Save, Trash2 } from "lucide-react";
-import { useUserProfile, UserProfile } from "@/hooks/useUserProfile";
+import { X, User, Calendar, MapPin, Brain, Save, Sparkles, LogOut, ChevronRight } from "lucide-react";
+import { useUserProfile } from "@/hooks/useUserProfile";
+import { calculateBazi, getZodiac, getSunSign } from "@/lib/metaphysics";
 
-interface UserProfileModalProps {
+export default function UserProfileModal({
+  isOpen,
+  onClose,
+}: {
   isOpen: boolean;
   onClose: () => void;
-}
+}) {
+  const { profile, updateProfile, isLoaded, clearProfile } = useUserProfile();
+  const [formData, setFormData] = useState(profile);
+  const [isSaving, setIsSaving] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
-export default function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
-  const { profile, updateProfile, clearProfile, isLoaded } = useUserProfile();
-  const [localProfile, setLocalProfile] = useState<UserProfile>(profile);
-  const [prevProfile, setPrevProfile] = useState<UserProfile>(profile);
+  useEffect(() => {
+    if (isLoaded && JSON.stringify(profile) !== JSON.stringify(formData)) {
+      setFormData(profile);
+    }
+  }, [profile, isLoaded, formData]);
 
-  // Sync local profile when external profile changes (React 19 pattern)
-  if (profile !== prevProfile) {
-    setLocalProfile(profile);
-    setPrevProfile(profile);
-  }
+  const handleSave = async () => {
+    setIsSaving(true);
+    
+    // Auto-calculate metaphysical data if birth info changed
+    const bazi = calculateBazi(formData.birthDate || "", formData.birthTime || "");
+    const zodiac = formData.birthDate ? getZodiac(new Date(formData.birthDate).getFullYear()) : "";
+    
+    updateProfile({
+      ...formData,
+      bazi,
+      zodiac
+    });
 
-  const handleSave = () => {
-    updateProfile(localProfile);
+    setTimeout(() => {
+      setIsSaving(false);
+      onClose();
+    }, 800);
+  };
+
+  const handleClear = () => {
+    clearProfile();
     onClose();
   };
 
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
-        >
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md">
           <motion.div
-            initial={{ scale: 0.95, opacity: 0, y: 20 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.95, opacity: 0, y: 20 }}
-            className="relative w-full max-w-md bg-zinc-900 border border-amber-500/30 rounded-2xl shadow-2xl overflow-hidden"
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-2xl bg-[#120b0e] border border-amber-500/20 rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]"
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-amber-500/20 bg-black/40">
-              <div className="flex items-center gap-2 text-amber-300">
-                <User className="w-5 h-5" />
-                <h2 className="font-serif font-bold tracking-widest text-lg">个人档案</h2>
+            <div className="p-6 border-b border-amber-500/10 flex items-center justify-between bg-gradient-to-r from-amber-500/5 to-transparent">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-amber-500/10 rounded-lg">
+                  <User className="w-5 h-5 text-amber-500" />
+                </div>
+                <h2 className="text-xl font-serif text-amber-100 tracking-widest">灵魂档案</h2>
               </div>
               <button
                 onClick={onClose}
-                className="p-1 text-amber-100/60 hover:text-amber-300 transition-colors rounded-full hover:bg-amber-500/10"
+                className="p-2 hover:bg-white/5 rounded-full transition-colors text-amber-100/40 hover:text-amber-100"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Body */}
-            <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
-              <p className="text-xs text-amber-200/60 mb-4">
-                预填写的个人信息将仅保存在本地浏览器中，用于为占卜和解析提供更精准的背景参考。
-              </p>
-
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-amber-200/80">称呼 / 姓名</label>
-                <input
-                  type="text"
-                  value={localProfile.name}
-                  onChange={(e) => setLocalProfile({ ...localProfile, name: e.target.value })}
-                  className="w-full bg-black/50 border border-amber-500/20 rounded-lg px-3 py-2 text-sm text-amber-100 placeholder-amber-100/30 focus:outline-none focus:border-amber-500/50 transition-colors"
-                  placeholder="例如：小明 / Alice"
-                />
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
+              {/* Summary Stats */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <StatCard label="MBTI" value={`${formData.mbti || "未测"}${formData.mbtiIdentity || ""}`} />
+                <StatCard label="九型" value={formData.enneagram?.split(" ")[0] || "未测"} />
+                <StatCard label="原型" value={formData.jungianArchetype?.split(" ")[0] || "未探"} />
+                <StatCard label="星座" value={formData.birthDate ? getSunSign(new Date(formData.birthDate)) : "未知"} />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-amber-200/80">性别</label>
-                  <select
-                    value={localProfile.gender}
-                    onChange={(e) => setLocalProfile({ ...localProfile, gender: e.target.value })}
-                    className="w-full bg-black/50 border border-amber-500/20 rounded-lg px-3 py-2 text-sm text-amber-100 focus:outline-none focus:border-amber-500/50 transition-colors appearance-none"
-                  >
-                    <option value="">未选择</option>
-                    <option value="男">男</option>
-                    <option value="女">女</option>
-                    <option value="其他">其他</option>
-                  </select>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-amber-200/80">MBTI</label>
-                  <input
-                    type="text"
-                    value={localProfile.mbti}
-                    onChange={(e) => setLocalProfile({ ...localProfile, mbti: e.target.value.toUpperCase() })}
-                    className="w-full bg-black/50 border border-amber-500/20 rounded-lg px-3 py-2 text-sm text-amber-100 placeholder-amber-100/30 focus:outline-none focus:border-amber-500/50 transition-colors"
-                    placeholder="例如：INTJ"
-                    maxLength={4}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-amber-200/80">出生日期</label>
-                  <input
-                    type="date"
-                    value={localProfile.birthDate}
-                    onChange={(e) => setLocalProfile({ ...localProfile, birthDate: e.target.value })}
-                    className="w-full bg-black/50 border border-amber-500/20 rounded-lg px-3 py-2 text-sm text-amber-100 focus:outline-none focus:border-amber-500/50 transition-colors [color-scheme:dark]"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-amber-200/80">出生时间</label>
-                  <input
-                    type="time"
-                    value={localProfile.birthTime}
-                    onChange={(e) => setLocalProfile({ ...localProfile, birthTime: e.target.value })}
-                    className="w-full bg-black/50 border border-amber-500/20 rounded-lg px-3 py-2 text-sm text-amber-100 focus:outline-none focus:border-amber-500/50 transition-colors [color-scheme:dark]"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-amber-200/80">出生地点</label>
-                <input
-                  type="text"
-                  value={localProfile.birthPlace || ''}
-                  onChange={(e) => setLocalProfile({ ...localProfile, birthPlace: e.target.value })}
-                  className="w-full bg-black/50 border border-amber-500/20 rounded-lg px-3 py-2 text-sm text-amber-100 placeholder-amber-100/30 focus:outline-none focus:border-amber-500/50 transition-colors"
-                  placeholder="例如：北京, 上海"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-amber-200/80">当前状态 / 核心诉求</label>
-                <textarea
-                  value={localProfile.currentStatus}
-                  onChange={(e) => setLocalProfile({ ...localProfile, currentStatus: e.target.value })}
-                  className="w-full bg-black/50 border border-amber-500/20 rounded-lg px-3 py-2 text-sm text-amber-100 placeholder-amber-100/30 focus:outline-none focus:border-amber-500/50 transition-colors min-h-[60px] resize-none"
-                  placeholder="例如：正在考虑换工作，或者最近感情遇到瓶颈..."
-                />
-              </div>
-
-              <div className="pt-4 border-t border-amber-500/20 mt-4">
-                <h3 className="text-sm font-serif font-bold text-amber-300 mb-3">深度灵魂档案 (Soul Profile)</h3>
-                
-                <div className="space-y-4">
-                  <div className="space-y-1">
-                    <label className="text-xs font-medium text-amber-200/80">荣格原型 (Jungian Archetype)</label>
-                    <select
-                      value={localProfile.jungianArchetype || ''}
-                      onChange={(e) => setLocalProfile({ ...localProfile, jungianArchetype: e.target.value })}
-                      className="w-full bg-black/50 border border-amber-500/20 rounded-lg px-3 py-2 text-sm text-amber-100 focus:outline-none focus:border-amber-500/50 transition-colors appearance-none"
-                    >
-                      <option value="">未选择</option>
-                      <option value="天真者 (The Innocent)">天真者 (The Innocent)</option>
-                      <option value="孤儿/凡夫俗子 (The Orphan/Regular Guy)">孤儿/凡夫俗子 (The Orphan)</option>
-                      <option value="英雄 (The Hero)">英雄 (The Hero)</option>
-                      <option value="照顾者 (The Caregiver)">照顾者 (The Caregiver)</option>
-                      <option value="探索者 (The Explorer)">探索者 (The Explorer)</option>
-                      <option value="反叛者 (The Rebel)">反叛者 (The Rebel)</option>
-                      <option value="情人 (The Lover)">情人 (The Lover)</option>
-                      <option value="创造者 (The Creator)">创造者 (The Creator)</option>
-                      <option value="小丑/弄臣 (The Jester)">小丑/弄臣 (The Jester)</option>
-                      <option value="智者 (The Sage)">智者 (The Sage)</option>
-                      <option value="魔术师 (The Magician)">魔术师 (The Magician)</option>
-                      <option value="统治者 (The Ruler)">统治者 (The Ruler)</option>
-                    </select>
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-xs font-medium text-amber-200/80">核心人生议题 (Core Issues) - 用逗号分隔</label>
-                    <input
-                      type="text"
-                      value={(localProfile.coreIssues || []).join(', ')}
-                      onChange={(e) => setLocalProfile({ ...localProfile, coreIssues: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
-                      className="w-full bg-black/50 border border-amber-500/20 rounded-lg px-3 py-2 text-sm text-amber-100 placeholder-amber-100/30 focus:outline-none focus:border-amber-500/50 transition-colors"
-                      placeholder="例如：原生家庭, 亲密关系恐惧, 完美主义"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <div className="flex justify-between items-center">
-                      <label className="text-xs font-medium text-amber-200/80">重大人生节点 (Life Events)</label>
-                      <button 
-                        onClick={() => {
-                          const newEvents = [...(localProfile.lifeEvents || []), { id: Date.now().toString(), date: '', description: '', impact: 'transformative' as const }];
-                          setLocalProfile({ ...localProfile, lifeEvents: newEvents });
-                        }}
-                        className="text-xs text-amber-400 hover:text-amber-300"
+              {/* Form Groups */}
+              <div className="space-y-6">
+                <section className="space-y-4">
+                  <h3 className="text-xs font-bold text-amber-500/60 uppercase tracking-[0.2em] flex items-center gap-2">
+                    <Calendar className="w-3 h-3" /> 基础生命信息
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <InputGroup label="姓名/昵称" value={formData.name || ""} onChange={(v) => setFormData({ ...formData, name: v })} />
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] text-amber-100/40 ml-1">性别</label>
+                      <select 
+                        className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-amber-100 outline-none focus:border-amber-500/40 transition-all appearance-none"
+                        value={formData.gender}
+                        onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
                       >
-                        + 添加节点
-                      </button>
+                        <option value="">未知</option>
+                        <option value="男">男 (乾造)</option>
+                        <option value="女">女 (坤造)</option>
+                      </select>
                     </div>
-                    <div className="space-y-2 mt-2">
-                      {(localProfile.lifeEvents || []).map((event, index) => (
-                        <div key={event.id} className="flex gap-2 items-start bg-black/30 p-2 rounded border border-amber-500/10">
-                          <div className="flex-1 space-y-2">
-                            <div className="flex gap-2">
-                              <input 
-                                type="date" 
-                                value={event.date}
-                                onChange={(e) => {
-                                  const newEvents = [...(localProfile.lifeEvents || [])];
-                                  newEvents[index].date = e.target.value;
-                                  setLocalProfile({ ...localProfile, lifeEvents: newEvents });
-                                }}
-                                className="bg-black/50 border border-amber-500/20 rounded px-2 py-1 text-xs text-amber-100 [color-scheme:dark] w-1/2"
-                              />
-                              <select
-                                value={event.impact}
-                                onChange={(e) => {
-                                  const newEvents = [...(localProfile.lifeEvents || [])];
-                                  newEvents[index].impact = e.target.value as any;
-                                  setLocalProfile({ ...localProfile, lifeEvents: newEvents });
-                                }}
-                                className="bg-black/50 border border-amber-500/20 rounded px-2 py-1 text-xs text-amber-100 w-1/2 appearance-none"
-                              >
-                                <option value="positive">正面影响</option>
-                                <option value="negative">负面创伤</option>
-                                <option value="transformative">重大蜕变</option>
-                              </select>
-                            </div>
-                            <input 
-                              type="text" 
-                              value={event.description}
-                              onChange={(e) => {
-                                const newEvents = [...(localProfile.lifeEvents || [])];
-                                newEvents[index].description = e.target.value;
-                                setLocalProfile({ ...localProfile, lifeEvents: newEvents });
-                              }}
-                              placeholder="事件描述 (如: 亲人离世, 换城市生活)"
-                              className="w-full bg-black/50 border border-amber-500/20 rounded px-2 py-1 text-xs text-amber-100 placeholder-amber-100/30"
-                            />
-                          </div>
-                          <button 
-                            onClick={() => {
-                              const newEvents = (localProfile.lifeEvents || []).filter((_, i) => i !== index);
-                              setLocalProfile({ ...localProfile, lifeEvents: newEvents });
-                            }}
-                            className="text-red-400/60 hover:text-red-400 p-1"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </div>
-                      ))}
-                      {(!localProfile.lifeEvents || localProfile.lifeEvents.length === 0) && (
-                        <p className="text-xs text-amber-200/40 italic text-center py-2">暂无记录，添加重大节点帮助 AI 更好地理解你的生命轨迹</p>
-                      )}
-                    </div>
+                    <InputGroup label="出生日期" type="date" value={formData.birthDate || ""} onChange={(v) => setFormData({ ...formData, birthDate: v })} />
+                    <InputGroup label="出生时间" type="time" value={formData.birthTime || ""} onChange={(v) => setFormData({ ...formData, birthTime: v })} />
                   </div>
-                </div>
+                </section>
+
+                <section className="space-y-4">
+                  <h3 className="text-xs font-bold text-amber-500/60 uppercase tracking-[0.2em] flex items-center gap-2">
+                    <MapPin className="w-3 h-3" /> 地理能量位
+                  </h3>
+                  <InputGroup label="出生地点" value={formData.birthPlace || ""} onChange={(v) => setFormData({ ...formData, birthPlace: v })} placeholder="省份、城市" />
+                </section>
+
+                <section className="space-y-4">
+                  <h3 className="text-xs font-bold text-amber-500/60 uppercase tracking-[0.2em] flex items-center gap-2">
+                    <Brain className="w-3 h-3" /> 心理图谱
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <InputGroup label="MBTI" value={formData.mbti || ""} onChange={(v) => setFormData({ ...formData, mbti: v })} placeholder="如 INFJ" />
+                    <InputGroup label="九型人格" value={formData.enneagram || ""} onChange={(v) => setFormData({ ...formData, enneagram: v })} placeholder="如 4号" />
+                    <InputGroup label="核心原型" value={formData.jungianArchetype || ""} onChange={(v) => setFormData({ ...formData, jungianArchetype: v })} placeholder="如 智者" />
+                  </div>
+                </section>
+              </div>
+
+              {/* Danger Zone */}
+              <div className="pt-8 border-t border-white/5">
+                {!showClearConfirm ? (
+                  <button 
+                    onClick={() => setShowClearConfirm(true)}
+                    className="text-xs text-red-500/40 hover:text-red-500 flex items-center gap-2 transition-colors ml-auto"
+                  >
+                    <LogOut className="w-3 h-3" /> 重置灵魂档案
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-4 justify-end">
+                    <span className="text-xs text-red-500 animate-pulse">确定要清除所有数据吗？</span>
+                    <button onClick={() => setShowClearConfirm(false)} className="text-xs text-amber-100/40 hover:text-amber-100">取消</button>
+                    <button onClick={handleClear} className="text-xs text-red-500 font-bold px-3 py-1 bg-red-500/10 rounded-lg">确定重置</button>
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Footer */}
-            <div className="p-4 border-t border-amber-500/20 bg-black/40 flex justify-between items-center">
+            <div className="p-6 bg-black/20 flex gap-4">
               <button
-                onClick={() => {
-                  if (window.confirm('确定要重置所有档案信息吗？此操作不可撤销。')) {
-                    clearProfile();
-                    onClose();
-                  }
-                }}
-                className="text-xs text-red-400/60 hover:text-red-400 transition-colors flex items-center gap-1"
+                onClick={onClose}
+                className="flex-1 px-6 py-3 rounded-2xl border border-white/10 text-amber-100/60 hover:bg-white/5 transition-all text-sm font-medium"
               >
-                <Trash2 className="w-3 h-3" /> 重置档案
+                取消
               </button>
-              <div className="flex gap-3">
-                <button
-                  onClick={onClose}
-                  className="px-4 py-2 text-sm font-medium text-amber-200/60 hover:text-amber-200 transition-colors"
-                >
-                  取消
-                </button>
-                <button
-                  onClick={handleSave}
-                  className="flex items-center gap-2 px-5 py-2 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 text-amber-300 text-sm font-medium rounded-lg transition-all shadow-[0_0_15px_rgba(245,158,11,0.1)] hover:shadow-[0_0_20px_rgba(245,158,11,0.2)]"
-                >
-                  <Save className="w-4 h-4" />
-                  保存档案
-                </button>
-              </div>
+              <button
+                onClick={handleSave}
+                disabled={isSaving}
+                className="flex-[2] px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-600 to-amber-500 text-white font-serif tracking-widest text-sm shadow-[0_0_20px_rgba(245,158,11,0.2)] hover:shadow-[0_0_30px_rgba(245,158,11,0.4)] transition-all flex items-center justify-center gap-2 group"
+              >
+                {isSaving ? (
+                  <Sparkles className="w-4 h-4 animate-spin" />
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" /> 封印档案
+                  </>
+                )}
+              </button>
             </div>
           </motion.div>
-        </motion.div>
+        </div>
       )}
     </AnimatePresence>
+  );
+}
+
+function StatCard({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="bg-black/40 border border-white/5 rounded-2xl p-3 flex flex-col items-center justify-center text-center">
+      <span className="text-[9px] uppercase tracking-widest text-amber-500/40 mb-1">{label}</span>
+      <span className="text-xs font-serif text-amber-100 line-clamp-1">{value}</span>
+    </div>
+  );
+}
+
+function InputGroup({ label, value, onChange, type = "text", placeholder = "" }: { 
+  label: string; 
+  value: string; 
+  onChange: (v: string) => void; 
+  type?: string;
+  placeholder?: string;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <label className="text-[10px] text-amber-100/40 ml-1">{label}</label>
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-amber-100 outline-none focus:border-amber-500/40 transition-all placeholder:text-white/5 text-sm [color-scheme:dark]"
+      />
+    </div>
   );
 }
