@@ -49,9 +49,9 @@ export function TarotCardBack({ size = "large", className = "" }: { size?: "smal
 
           {showDetail && (
             <div className="mt-4 sm:mt-6 flex gap-1.5 sm:gap-3 opacity-40">
-              <Star size={size === 'small' ? 4 : 8} className="text-[#C9A84C] animate-pulse" />
-              <Star size={size === 'small' ? 4 : 8} className="text-[#C9A84C] animate-pulse delay-500" />
-              <Star size={size === 'small' ? 4 : 8} className="text-[#C9A84C] animate-pulse delay-1000" />
+              <Star size={8} className="text-[#C9A84C] animate-pulse" />
+              <Star size={8} className="text-[#C9A84C] animate-pulse delay-500" />
+              <Star size={8} className="text-[#C9A84C] animate-pulse delay-1000" />
             </div>
           )}
         </div>
