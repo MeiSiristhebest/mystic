@@ -102,7 +102,7 @@ export default function DiscoveryView({ onComplete }: { onComplete?: () => void 
     birthTime: profile.birthTime || "",
     birthPlace: profile.birthPlace || ""
   });
-  const [prevProfile, setPrevProfile] = useState(profile);
+  const [prevProfile, setPrevProfile] = useState<any>(null);
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [archetypeAnalysis, setArchetypeAnalysis] = useState("");

@@ -33,7 +33,7 @@ import { CATEGORIES, SPREAD_MODES } from "./constants";
 import { MysticImage } from "./MysticImage";
 import BreathingLoading from "../BreathingLoading";
 import { useAppStore } from "@/lib/store";
-import { TarotCardView, CardMeaningModal, SpreadLayoutRenderer, AmbientCosmicBackground } from "./TarotComponents";
+import { TarotCardView, CardMeaningModal, SpreadLayoutRenderer, AmbientCosmicBackground, TarotCardBack } from "./TarotComponents";
 import { HandoffData } from "./OmniOracleGuide";
 
 export function MysticTarot({ initialHandoff, clearHandoff }: { initialHandoff?: HandoffData | null, clearHandoff?: () => void }) {
@@ -380,7 +380,18 @@ export function MysticTarot({ initialHandoff, clearHandoff }: { initialHandoff?:
           <div className="w-full max-w-2xl glass-panel p-12 rounded-3xl flex flex-col items-center justify-center min-h-[400px]">
             <div className="relative w-32 h-48 mb-8">
               {[0, 1, 2].map((i) => (
-                <motion.div key={i} animate={{ x: [0, i % 2 === 0 ? 40 : -40, 0], y: [0, -20, 0], rotateZ: [0, i % 2 === 0 ? 15 : -15, 0] }} transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.2 }} className="absolute inset-0 rounded-xl border border-amber-500/40 bg-black/80" />
+                <motion.div 
+                  key={i} 
+                  animate={{ 
+                    x: [0, i % 2 === 0 ? 40 : -40, 0], 
+                    y: [0, -20, 0], 
+                    rotateZ: [0, i % 2 === 0 ? 15 : -15, 0] 
+                  }} 
+                  transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.2 }} 
+                  className="absolute inset-0"
+                >
+                  <TarotCardBack />
+                </motion.div>
               ))}
             </div>
             <h2 className="text-2xl font-serif text-amber-300 mb-4 tracking-widest animate-pulse">正在洗牌与切牌...</h2>
@@ -393,28 +404,27 @@ export function MysticTarot({ initialHandoff, clearHandoff }: { initialHandoff?:
                 <div 
                   key={idx} 
                   onClick={() => handleSelectCardFromDeck(idx)} 
-                  className={`w-10 h-16 sm:w-16 sm:h-24 rounded-lg border cursor-pointer transition-all relative overflow-hidden ${
+                  className={`w-10 h-16 sm:w-16 sm:h-24 rounded-lg cursor-pointer transition-all relative ${
                     selectedIndices.includes(idx) 
                       ? "opacity-0 scale-50 pointer-events-none" 
-                      : "border-[#C9A84C]/30 hover:border-[#C9A84C] bg-[#080510] hover:shadow-[0_0_15px_rgba(201,168,76,0.3)] hover:-translate-y-1"
+                      : "hover:shadow-[0_0_20px_rgba(201,168,76,0.4)] hover:-translate-y-2"
                   }`}
                 >
-                  <div className="absolute inset-1 border border-[#C9A84C]/10 rounded flex items-center justify-center">
-                    <Moon className="text-[#C9A84C]/20" size={12} />
-                  </div>
+                  <TarotCardBack size="small" />
                 </div>
               ))}
             </div>
           </div>
         ) : drawnCards.length === 0 ? (
           <div className="w-full max-w-5xl space-y-8">
-              <div className="luxury-card p-8 rounded-2xl flex flex-col gap-8 relative overflow-hidden">
-                <div className="absolute inset-0 z-0">
+              <div className="luxury-card p-8 md:p-10 rounded-3xl flex flex-col gap-10 relative overflow-hidden backdrop-blur-3xl border-white/5">
+                <div className="absolute inset-0 z-0 pointer-events-none">
                   <AmbientCosmicBackground />
                 </div>
-                <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div>
-                    <label className="block text-sm font-serif uppercase tracking-widest mb-3">1. 选择占卜领域</label>
+                
+                <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-10">
+                  <div className="space-y-4 p-6 rounded-2xl bg-white/[0.02] border border-white/5">
+                    <label className="block text-xs font-serif uppercase tracking-[0.2em] text-[#C9A84C] mb-4">1. 选择占卜领域</label>
                     <div className="grid grid-cols-2 gap-3">
                       {CATEGORIES.map((cat) => {
                         const Icon = cat.icon;
@@ -431,14 +441,26 @@ export function MysticTarot({ initialHandoff, clearHandoff }: { initialHandoff?:
                       })}
                     </div>
                   </div>
-                  <div>
-                    <div className="flex justify-between mb-3"><label className="text-sm font-serif uppercase tracking-widest">2. 你的问题（选填）</label><button onClick={handleRecommendMode} disabled={isRecommending} className="text-xs text-[#C9A84C] bg-[#C9A84C]/10 px-3 py-1 rounded-full border border-[#C9A84C]/30 flex items-center gap-1 hover:bg-[#C9A84C]/20 transition-colors"><Wand2 size={12} />智能推荐牌阵</button></div>
-                    <textarea rows={4} className="glass-input w-full p-4 text-[#E8DFB8]" placeholder="例如：我最近的感情走向如何？或 我该如何突破事业瓶颈？" value={question} onChange={(e) => setQuestion(e.target.value)} />
+                  <div className="space-y-4 p-6 rounded-2xl bg-white/[0.02] border border-white/5 flex flex-col">
+                    <div className="flex justify-between items-center mb-4">
+                      <label className="text-xs font-serif uppercase tracking-[0.2em] text-[#C9A84C]">2. 你的问题（选填）</label>
+                      <button onClick={handleRecommendMode} disabled={isRecommending} className="text-[10px] text-[#C9A84C] bg-[#C9A84C]/10 px-3 py-1.5 rounded-full border border-[#C9A84C]/30 flex items-center gap-1.5 hover:bg-[#C9A84C]/20 transition-all hover:scale-105 active:scale-95">
+                        <Wand2 size={10} />
+                        智能推荐牌阵
+                      </button>
+                    </div>
+                    <textarea 
+                      rows={4} 
+                      className="glass-input-v2 w-full p-5 text-base text-[#E8DFB8] resize-none" 
+                      placeholder="例如：我最近的感情走向如何？或 我该如何突破事业瓶颈？" 
+                      value={question} 
+                      onChange={(e) => setQuestion(e.target.value)} 
+                    />
                   </div>
                 </div>
                 
-                <div className="relative z-10">
-                  <label className="block text-sm font-serif uppercase tracking-widest mb-3">3. 你的星座（选填，用于星象塔罗共振）</label>
+                <div className="relative z-10 space-y-4 p-6 rounded-2xl bg-white/[0.02] border border-white/5">
+                  <label className="block text-xs font-serif uppercase tracking-[0.2em] text-[#C9A84C] mb-4">3. 你的星座（选填，用于星象塔罗共振）</label>
                   <div className="flex flex-wrap gap-2">
                     {["白羊座", "金牛座", "双子座", "巨蟹座", "狮子座", "处女座", "天秤座", "天蝎座", "射手座", "摩羯座", "水瓶座", "双鱼座"].map((sign) => (
                       <button 
@@ -452,9 +474,9 @@ export function MysticTarot({ initialHandoff, clearHandoff }: { initialHandoff?:
                   </div>
                 </div>
 
-                <div className="relative z-10">
-                  <div className="flex justify-between items-center mb-3">
-                    <label className="text-sm font-serif uppercase tracking-widest">4. 选择牌阵模式</label>
+                <div className="relative z-10 space-y-4 p-6 rounded-2xl bg-white/[0.02] border border-white/5">
+                  <div className="flex justify-between items-center mb-6">
+                    <label className="text-xs font-serif uppercase tracking-[0.2em] text-[#C9A84C]">4. 选择牌阵模式</label>
                     <div className="flex gap-2 text-[#C9A84C]">
                       <button onClick={() => scroll("left")} className="p-1.5 hover:bg-[#C9A84C]/10 rounded-lg border border-[#C9A84C]/20 transition-colors" title="向左滑动">
                         <ChevronLeft size={16} />
