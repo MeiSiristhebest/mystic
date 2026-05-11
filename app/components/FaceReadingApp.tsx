@@ -446,7 +446,7 @@ export default function FaceReadingApp({
                 <button
                   onClick={onGeneratePoster}
                   disabled={isGeneratingPoster}
-                  className="px-6 py-2 bg-amber-600/20 hover:bg-amber-600/40 border border-amber-500/50 text-amber-300 rounded-full font-serif transition-colors flex items-center gap-2 disabled:opacity-50"
+                  className="px-6 py-2 bg-amber-600/20 hover:bg-amber-600/40 border border-amber-500/50 text-amber-300 rounded-full font-serif transition-colors flex flex-row items-center gap-2 disabled:opacity-50 whitespace-nowrap"
                 >
                   <Download size={16} className={isGeneratingPoster ? "animate-bounce" : ""} />
                   {isGeneratingPoster ? "生成中..." : "保存海报"}

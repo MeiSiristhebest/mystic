@@ -96,6 +96,8 @@ export const useAppStore = create<AppState>()(
       }),
       
       clearProfile: () => set({ profile: DEFAULT_PROFILE }),
+      handoff: null,
+      setHandoff: (handoff) => set({ handoff }),
     }),
     {
       name: 'mystic-app-storage',

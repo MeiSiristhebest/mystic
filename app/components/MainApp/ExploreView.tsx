@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Sparkles,
   Moon,
   Star,
   Compass,
+  Zap,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { MysticImage } from "./MysticImage";
@@ -21,18 +22,60 @@ const AstrologyApp = dynamic(() => import("../AstrologyApp"), {
 const EasternApp = dynamic(() => import("../EasternApp"), { 
   loading: () => <BreathingLoading text="正在对齐东方历法..." /> 
 });
+const SoulLab = dynamic(() => import("./SoulLab"), { 
+  loading: () => <BreathingLoading text="正在激活心灵实验室..." /> 
+});
 
 export function ExploreView() {
   const [subTab, setSubTab] = useState("");
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [handoffData, setHandoffData] = useState<HandoffData | null>(null);
   const setActiveTab = useAppStore((state) => state.setActiveTab);
+  const globalHandoff = useAppStore((state: any) => state.handoff);
+  const setGlobalHandoff = useAppStore((state: any) => state.setHandoff);
+
+  // Sync with global handoff (e.g. from TodayView)
+  useEffect(() => {
+    if (globalHandoff) {
+      setHandoffData(globalHandoff);
+      setSubTab(globalHandoff.system);
+      setGlobalHandoff(null); 
+      
+      setTimeout(() => {
+        window.scrollTo({ top: 800, behavior: 'smooth' });
+      }, 500);
+    }
+  }, [globalHandoff, setGlobalHandoff]);
 
   const systems = [
-    { id: "tarot", name: "塔罗占卜", icon: Sparkles, desc: "通过78张神秘卡片，洞察当下与未来的能量流动。" },
-    { id: "eastern", name: "东方命理", icon: Star, desc: "八字、紫微、六爻，传承千年的东方智慧推演。" },
-    { id: "astrology", name: "星象人格", icon: Moon, desc: "解读星盘与天象，探索灵魂的蓝图与性格底色。" },
-    { id: "discovery", name: "发现自我", icon: Compass, desc: "通过MBTI、八字与原型探索，开启你的深度灵魂发现之旅。", isSpecial: true },
+    { 
+      id: "tarot", 
+      name: "塔罗仪式", 
+      icon: Sparkles, 
+      desc: "西方神秘学的基石。通过78张卡片，洞察能量的微妙流动与潜意识投射。", 
+      prompt: "Mysterious tarot cards floating in a nebula, golden sacred geometry, ethereal light"
+    },
+    { 
+      id: "eastern", 
+      name: "东方命理", 
+      icon: Compass, 
+      desc: "融合八字、易经、紫微与相学。通过干支历法与古老卦象，推演人生起伏。", 
+      prompt: "Ancient Chinese astrology, bagua, yin yang, golden dragon in cosmic clouds, ink wash style"
+    },
+    { 
+      id: "astrology", 
+      name: "星象人格", 
+      icon: Moon, 
+      desc: "结合现代占星与心理学。解读星盘、合盘与MBTI，探索性格蓝图与命运契机。", 
+      prompt: "Zodiac wheel, constellations, glowing planets, nebula background, celestial map"
+    },
+    { 
+      id: "soul", 
+      name: "心灵实验室", 
+      icon: Zap, 
+      desc: "深层心理探索。包含阴影工作、灵魂合参、梦境解析等进阶神秘学工具。", 
+      prompt: "Ethereal soul discovery, glowing compass, sacred geometry, cosmic light"
+    },
   ];
 
   return (
@@ -44,22 +87,19 @@ export function ExploreView() {
         </p>
       </header>
 
-      {/* Prominent Omni-Oracle Entry Point */}
+      {/* Guide Entry Point */}
       <motion.div
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
+        whileHover={{ scale: 1.01 }}
         onClick={() => setIsGuideOpen(true)}
-        className="w-full relative luxury-card p-8 sm:p-12 cursor-pointer group overflow-hidden flex flex-col items-center justify-center text-center border-[#C9A84C]/40 bg-[#C9A84C]/5 shadow-[0_0_30px_rgba(201,168,76,0.15)]"
+        className="w-full relative luxury-card p-8 sm:p-12 cursor-pointer group overflow-hidden flex flex-col items-center justify-center text-center border-[#C9A84C]/20 bg-[#C9A84C]/5"
       >
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20 group-hover:opacity-40 transition-opacity duration-1000 mix-blend-screen" />
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#C9A84C]/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
-        
-        <Sparkles className="w-12 h-12 text-[#C9A84C] mb-6 animate-pulse" />
-        <h2 className="text-3xl sm:text-4xl font-serif gold-gradient-text mb-4 tracking-widest">
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10 mix-blend-screen" />
+        <Sparkles className="w-8 h-8 text-[#C9A84C] mb-4 opacity-50" />
+        <h2 className="text-2xl font-serif gold-gradient-text mb-2 tracking-widest">
           唤醒全知向导
         </h2>
-        <p className="text-[#E8DFB8]/70 text-lg sm:text-xl font-serif max-w-2xl">
-          &quot;迷茫的旅人，不知从何问起？让我通过深邃的对话，为你指引通往真理的阵法。&quot;
+        <p className="text-[#E8DFB8]/60 font-serif">
+          迷茫的旅人，不知从何问起？让我为你指引。
         </p>
       </motion.div>
 
@@ -67,44 +107,35 @@ export function ExploreView() {
         {systems.map((system) => {
           const Icon = system.icon;
           const isActive = subTab === system.id;
-          const prompts: Record<string, string> = {
-            tarot: "Mysterious tarot cards floating in a nebula, golden sacred geometry, ethereal light",
-            eastern: "Ancient Chinese astrology, bagua, yin yang, golden dragon in cosmic clouds, ink wash style",
-            astrology: "Zodiac wheel, constellations, glowing planets, nebula background, celestial map",
-            discovery: "Ethereal soul discovery, glowing compass, sacred geometry, cosmic light"
-          };
           return (
             <div
               key={system.id}
               role="button"
-              tabIndex={0}
               onClick={() => {
-                if (system.id === "discovery") {
-                  setActiveTab("discovery");
-                } else {
-                  setSubTab(system.id);
-                }
+                setSubTab(system.id);
+                setTimeout(() => {
+                  window.scrollTo({ top: 800, behavior: 'smooth' });
+                }, 300);
               }}
-              onKeyDown={(e) => e.key === 'Enter' && setSubTab(system.id)}
               className={`luxury-card p-10 text-left transition-all duration-700 group relative overflow-hidden min-h-[320px] flex flex-col justify-end cursor-pointer ${
-                isActive ? "border-[#C9A84C]/40 bg-[#C9A84C]/5" : "hover:bg-white/5"
+                isActive ? "border-[#C9A84C]/60 bg-[#C9A84C]/10" : "hover:bg-white/5"
               }`}
             >
               <div className="absolute inset-0 z-0">
                 <MysticImage 
-                  prompt={prompts[system.id]} 
+                  prompt={system.prompt} 
                   className={`w-full h-full transition-all duration-1000 ${isActive ? "opacity-60 scale-105" : "opacity-20 group-hover:opacity-40"}`}
                   aspectRatio="3:4"
                 />
               </div>
               <div className="relative z-10">
-                <Icon className={`w-12 h-12 mb-8 transition-all duration-700 ${
+                <Icon className={`w-10 h-10 mb-6 transition-all duration-700 ${
                   isActive ? "text-[#C9A84C] scale-110" : "text-[#E8DFB8]/20 group-hover:text-[#E8DFB8]/40"
                 }`} />
-                <h3 className={`text-3xl font-serif mb-4 transition-colors ${isActive ? "gold-gradient-text" : ""}`}>
+                <h3 className={`text-2xl font-serif mb-3 transition-colors ${isActive ? "gold-gradient-text" : ""}`}>
                   {system.name}
                 </h3>
-                <p className="text-[#E8DFB8]/40 leading-relaxed">{system.desc}</p>
+                <p className="text-[#E8DFB8]/40 text-sm leading-relaxed">{system.desc}</p>
               </div>
             </div>
           );
@@ -123,6 +154,7 @@ export function ExploreView() {
             {subTab === "tarot" && <MysticTarot initialHandoff={handoffData} clearHandoff={() => setHandoffData(null)} />}
             {subTab === "eastern" && <EasternApp initialHandoff={handoffData} clearHandoff={() => setHandoffData(null)} />}
             {subTab === "astrology" && <AstrologyApp />}
+            {subTab === "soul" && <SoulLab />}
           </motion.div>
         </AnimatePresence>
       </div>
@@ -135,7 +167,6 @@ export function ExploreView() {
               setIsGuideOpen(false);
               setHandoffData(data);
               setSubTab(data.system);
-              // Scroll down to the app area
               setTimeout(() => {
                 window.scrollTo({ top: 800, behavior: 'smooth' });
               }, 500);

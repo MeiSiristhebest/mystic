@@ -11,16 +11,24 @@ import {
   Download,
 } from "lucide-react";
 import { useUserProfile } from "@/hooks/useUserProfile";
+import { useJourney } from "@/hooks/useJourney";
 import { getSunSign } from "@/lib/astrology";
 import { AKASHA_PERSONA, generateContent } from "@/lib/ai";
 import { MysticImage } from "./MysticImage";
+import { TarotCardBack } from "./TarotComponents";
 import { saveToIndexedDB, getFromIndexedDB } from "@/lib/storage";
 import { useAppStore } from "@/lib/store";
 import * as htmlToImage from 'html-to-image';
 
 export function TodayView() {
-  const { profile, getProfileContext, isLoaded } = useUserProfile();
+  const { profile, getProfileContext, isLoaded: profileLoaded } = useUserProfile();
+  const { entries, isLoaded: journeyLoaded } = useJourney();
   const setActiveTab = useAppStore((state) => state.setActiveTab);
+  const setHandoff = useAppStore((state: any) => state.setHandoff);
+  
+  const isLoaded = profileLoaded && journeyLoaded;
+  const lastEntry = entries[0];
+  const isProfileComplete = profile.name && profile.mbti && profile.jungianArchetype;
   
   const today = new Date();
   const dateStr = today.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -223,15 +231,38 @@ export function TodayView() {
           <div className="h-px flex-1 mx-8 bg-white/5" />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <button onClick={() => setActiveTab("explore")} className="luxury-card p-10 text-left group hover:bg-[#C9A84C]/5">
-            <p className="micro-label mb-4">Tarot</p>
-            <h3 className="text-2xl font-serif mb-4 group-hover:gold-gradient-text transition-all">每日单牌占卜</h3>
-            <p className="text-[#E8DFB8]/40 text-sm leading-relaxed">抽取今日指引，洞察潜意识中的微光。</p>
+          <button 
+            onClick={() => {
+              setHandoff({ system: 'tarot', modeId: 'time', question: '我的今日运势指引' });
+              setActiveTab("explore");
+            }} 
+            className="luxury-card p-0 text-left group overflow-hidden relative flex flex-col md:flex-row items-stretch"
+          >
+            <div className="p-8 flex-1 relative z-10 flex flex-col justify-center">
+              <p className="micro-label mb-3 text-[#C9A84C]">Tarot Ritual</p>
+              <h3 className="text-2xl font-serif mb-4 group-hover:gold-gradient-text transition-all">每日单牌占卜</h3>
+              <p className="text-[#E8DFB8]/40 text-sm leading-relaxed max-w-[200px]">抽取今日指引，洞察潜意识中的微光。</p>
+            </div>
+            <div className="w-full md:w-48 bg-white/5 relative overflow-hidden flex items-center justify-center p-8 group-hover:bg-[#C9A84C]/5 transition-colors">
+              <div className="w-24 h-36 relative perspective-1000 group-hover:scale-110 transition-transform duration-700">
+                <TarotCardBack size="medium" className="shadow-[0_0_30px_rgba(201,168,76,0.2)]" />
+              </div>
+            </div>
           </button>
-          <button onClick={() => setActiveTab("journal")} className="luxury-card p-10 text-left group hover:bg-[#C9A84C]/5">
-            <p className="micro-label mb-4">Journal</p>
-            <h3 className="text-2xl font-serif mb-4 group-hover:gold-gradient-text transition-all">上次未读解读</h3>
-            <p className="text-[#E8DFB8]/40 text-sm leading-relaxed">你还有一份关于“事业发展”的解读尚未读完。</p>
+
+          <button 
+            onClick={() => setActiveTab(lastEntry ? "journal" : "discovery")} 
+            className="luxury-card p-10 text-left group hover:bg-[#C9A84C]/5 flex flex-col justify-center"
+          >
+            <p className="micro-label mb-4 text-[#C9A84C]">{lastEntry ? "LATEST JOURNEY" : "SOUL PROFILE"}</p>
+            <h3 className="text-2xl font-serif mb-4 group-hover:gold-gradient-text transition-all">
+              {lastEntry ? "上次占卜回溯" : (isProfileComplete ? "查阅灵魂档案" : "开启灵魂探索")}
+            </h3>
+            <p className="text-[#E8DFB8]/40 text-sm leading-relaxed">
+              {lastEntry 
+                ? `你关于“${lastEntry.title}”的解读记录仍在日记本中。` 
+                : (isProfileComplete ? "你的灵魂蓝图已绘就，随时可查阅深度解读。" : "完善你的出生信息与性格偏好，绘就完整的灵魂蓝图。")}
+            </p>
           </button>
         </div>
       </section>

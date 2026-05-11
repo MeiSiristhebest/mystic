@@ -306,7 +306,7 @@ export default function JourneyApp() {
             >
               {isFullScreen && <AmbientCosmicBackground />}
               
-              <div className="flex justify-between items-start mb-6 pr-16 relative z-10">
+              <div className="flex justify-between items-start mb-6 pr-40 relative z-10">
                 <div className="flex items-center space-x-4">
                   <div className="p-3 bg-amber-500/10 rounded-xl">
                     {getIcon(selectedEntry.type)}
@@ -321,25 +321,24 @@ export default function JourneyApp() {
                     </div>
                   </div>
                 </div>
-                <div className="flex space-x-2">
-                  <button
-                    onClick={onGeneratePoster}
-                    disabled={isGeneratingPoster}
-                    className="flex items-center px-3 py-1.5 text-sm bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 rounded-lg transition-colors disabled:opacity-50"
-                  >
-                    {isGeneratingPoster ? (
-                      "生成中..."
-                    ) : (
-                      <>
-                        <Download className="w-4 h-4 mr-1.5" />
-                        保存海报
-                      </>
-                    )}
-                  </button>
-                </div>
               </div>
 
-              <div className="absolute top-4 right-4 flex space-x-2 z-20">
+              <div className="absolute top-4 right-4 flex items-center space-x-3 z-20">
+                <button
+                  onClick={onGeneratePoster}
+                  disabled={isGeneratingPoster}
+                  className="flex flex-row items-center whitespace-nowrap px-4 py-2 text-sm bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 rounded-lg transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
+                >
+                  {isGeneratingPoster ? (
+                    <span className="animate-pulse">生成中...</span>
+                  ) : (
+                    <>
+                      <Download className="w-4 h-4 mr-1.5" />
+                      保存海报
+                    </>
+                  )}
+                </button>
+                <div className="w-[1px] h-4 bg-amber-500/20 mx-1" /> {/* Subtle Divider */}
                 <button
                   onClick={() => setIsFullScreen(!isFullScreen)}
                   className="p-2 text-amber-100/50 hover:text-amber-100 bg-black/40 hover:bg-black/60 rounded-full transition-colors"
