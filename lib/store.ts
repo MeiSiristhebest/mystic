@@ -62,6 +62,8 @@ interface AppState {
   updateProfile: (newProfile: Partial<UserProfile>) => void;
   clearProfile: () => void;
   setLoaded: (loaded: boolean) => void;
+  handoff: any;
+  setHandoff: (handoff: any) => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -97,7 +99,7 @@ export const useAppStore = create<AppState>()(
       
       clearProfile: () => set({ profile: DEFAULT_PROFILE }),
       handoff: null,
-      setHandoff: (handoff) => set({ handoff }),
+      setHandoff: (handoff: any) => set({ handoff }),
     }),
     {
       name: 'mystic-app-storage',

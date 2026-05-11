@@ -102,24 +102,6 @@ export function MysticTarot({ initialHandoff, clearHandoff }: { initialHandoff?:
 
   const [prevHandoff, setPrevHandoff] = useState<any>(null);
 
-  // Sync state when handoff data is received
-  useEffect(() => {
-    if (initialHandoff && initialHandoff.system === 'tarot' && initialHandoff !== prevHandoff) {
-      setQuestion(initialHandoff.question || "");
-      if (initialHandoff.modeId && SPREAD_MODES.some(m => m.id === initialHandoff.modeId)) {
-        setMode(initialHandoff.modeId);
-      }
-      setPrevHandoff(initialHandoff);
-      
-      // Auto trigger draw cards after a brief delay
-      const timer = setTimeout(() => {
-        handleDrawCards();
-        if (clearHandoff) clearHandoff();
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [initialHandoff, prevHandoff, clearHandoff, handleDrawCards, SPREAD_MODES]);
-
   const scroll = (direction: "left" | "right") => {
     if (scrollContainerRef.current) {
       const { current } = scrollContainerRef;
@@ -361,6 +343,24 @@ export function MysticTarot({ initialHandoff, clearHandoff }: { initialHandoff?:
       setIsAskingFollowUp(false);
     }
   };
+
+  // Sync state when handoff data is received (Auto-draw for Quick Start)
+  useEffect(() => {
+    if (initialHandoff && initialHandoff.system === 'tarot' && initialHandoff !== prevHandoff) {
+      setQuestion(initialHandoff.question || "");
+      if (initialHandoff.modeId && SPREAD_MODES.some(m => m.id === initialHandoff.modeId)) {
+        setMode(initialHandoff.modeId);
+      }
+      setPrevHandoff(initialHandoff);
+      
+      // Auto trigger draw cards after a brief delay
+      const timer = setTimeout(() => {
+        handleDrawCards();
+        if (clearHandoff) clearHandoff();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [initialHandoff, prevHandoff, clearHandoff, handleDrawCards, SPREAD_MODES]);
 
   let cardSize: "small" | "medium" | "large" = "large";
   if (currentMode.cardCount > 6) cardSize = "small";
