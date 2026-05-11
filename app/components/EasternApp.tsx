@@ -26,6 +26,7 @@ export default function EasternApp({ initialHandoff, clearHandoff }: { initialHa
   useEffect(() => {
     if (initialHandoff && initialHandoff.system === 'eastern') {
       if (initialHandoff.modeId) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setMode(initialHandoff.modeId);
       }
       if (clearHandoff) clearHandoff();

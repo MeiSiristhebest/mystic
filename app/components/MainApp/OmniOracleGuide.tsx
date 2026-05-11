@@ -113,7 +113,7 @@ export function OmniOracleGuide({ onClose, onHandoff }: OmniOracleGuideProps) {
               >
                 {msg.role === 'user' ? (
                   <div className="text-[#E8DFB8]/60 text-lg sm:text-xl font-serif italic tracking-wide">
-                    "{msg.content}"
+                    &quot;{msg.content}&quot;
                   </div>
                 ) : (
                   <div className="text-2xl sm:text-3xl text-[#E8DFB8] font-serif leading-relaxed tracking-widest drop-shadow-[0_0_15px_rgba(201,168,76,0.4)] whitespace-pre-line">

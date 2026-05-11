@@ -140,21 +140,22 @@ export default function JourneyApp() {
     let metadataContent = null;
 
     if (entry.type === 'tarot' && entry.details && 'cards' in entry.details) {
-      const modeData = SPREAD_MODES.find(m => m.name === entry.details?.mode) || SPREAD_MODES[1];
+      const tarotDetails = entry.details as any;
+      const modeData = SPREAD_MODES.find(m => m.name === tarotDetails.mode) || SPREAD_MODES[1];
       const positions = modeData.positions;
       // All cards are revealed in diary view
-      const revealedCards = new Array(entry.details.cards.length).fill(true);
+      const revealedCards = new Array(tarotDetails.cards.length).fill(true);
 
       metadataContent = (
         <div className="space-y-4 mb-6 pb-6 border-b border-amber-500/20 relative z-10">
           <div className="flex items-center justify-center mb-8">
             <span className="px-4 py-1.5 bg-amber-500/20 text-amber-300 rounded-full text-sm border border-amber-500/30">
-              {entry.details.mode || '未知牌阵'}
+              {tarotDetails.mode || '未知牌阵'}
             </span>
           </div>
           <SpreadLayoutRenderer 
             mode={modeData.id} 
-            cards={entry.details.cards} 
+            cards={tarotDetails.cards} 
             revealedCards={revealedCards} 
             handleRevealCard={() => {}} 
             setSelectedCard={setSelectedCard} 

@@ -175,8 +175,10 @@ export function MysticTarot({ initialHandoff, clearHandoff }: { initialHandoff?:
 
   useEffect(() => {
     if (initialHandoff && initialHandoff.system === 'tarot') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setQuestion(initialHandoff.question || "");
       if (initialHandoff.modeId && SPREAD_MODES.some(m => m.id === initialHandoff.modeId)) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setMode(initialHandoff.modeId);
       }
       
@@ -186,7 +188,7 @@ export function MysticTarot({ initialHandoff, clearHandoff }: { initialHandoff?:
         if (clearHandoff) clearHandoff();
       }, 500);
     }
-  }, [initialHandoff]);
+  }, [initialHandoff, clearHandoff, handleDrawCards]);
 
   const handleSelectCardFromDeck = (index: number) => {
     if (selectedIndices.includes(index)) return;
