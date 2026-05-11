@@ -20,7 +20,12 @@ const TarotReadingResult = dynamic(() => import("./TarotReadingResult"), {
   loading: () => <BreathingLoading text="正在感应塔罗能量..." />
 });
 
-export function MysticTarot() {
+interface MysticTarotProps {
+  initialHandoff?: any;
+  clearHandoff?: () => void;
+}
+
+export function MysticTarot({ initialHandoff, clearHandoff }: MysticTarotProps = {}) {
   const [step, setStep] = useState<"input" | "ritual" | "result">("input");
   const [question, setQuestion] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(CATEGORIES[0].id);
@@ -32,6 +37,19 @@ export function MysticTarot() {
   const { stream, isLoading: isStreaming, abort } = useAIStream();
   const { addEntry } = useJourney();
   const { getProfileContext } = useUserProfile();
+  const setHandoff = useAppStore((state: any) => state.setHandoff);
+
+  useEffect(() => {
+    if (initialHandoff) {
+      if (initialHandoff.question || initialHandoff.context) {
+        setQuestion(initialHandoff.question || initialHandoff.context);
+      }
+      if (initialHandoff.modeId) {
+        setSelectedSpread(initialHandoff.modeId);
+      }
+      clearHandoff?.();
+    }
+  }, [initialHandoff, clearHandoff]);
 
   const handleStartRitual = () => {
     if (!question.trim()) return;
