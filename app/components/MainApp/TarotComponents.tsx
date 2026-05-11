@@ -16,27 +16,55 @@ export function TarotCardView({ card, isRevealed, onReveal, onSelect, size = "la
   return (
     <div className={`${dims} relative perspective-1200 cursor-pointer hover:-translate-y-2 transition-transform duration-300`} onClick={() => isRevealed ? onSelect() : onReveal()}>
       <motion.div animate={{ rotateY: isRevealed ? 0 : 180 }} transition={{ duration: 0.8 }} className="w-full h-full relative preserve-3d">
-        {/* Card Back */}
-        <div className="absolute inset-0 rounded-xl border-2 border-[#C9A84C]/40 bg-[#080510] backface-hidden rotate-y-180 overflow-hidden shadow-[0_0_20px_rgba(201,168,76,0.2)]">
-          <div className="absolute inset-2 border border-[#C9A84C]/20 rounded-lg flex items-center justify-center">
-            {/* Ornate Pattern */}
-            <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
+        {/* Card Back - Enhanced Luxurious Design */}
+        <div className="absolute inset-0 rounded-xl border-2 border-[#C9A84C]/60 bg-[#080510] backface-hidden rotate-y-180 overflow-hidden shadow-[0_0_30px_rgba(201,168,76,0.3)] group/back">
+          {/* Sacred Geometry SVG Pattern */}
+          <div className="absolute inset-0 opacity-[0.07] group-hover/back:opacity-10 transition-opacity duration-700">
+            <svg width="100%" height="100%" className="text-[#C9A84C]">
+              <defs>
+                <pattern id="sacred-pattern" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+                  <path d="M20 0 L40 20 L20 40 L0 20 Z" fill="none" stroke="currentColor" strokeWidth="0.5" />
+                  <circle cx="20" cy="20" r="10" fill="none" stroke="currentColor" strokeWidth="0.5" />
+                  <circle cx="20" cy="20" r="18" fill="none" stroke="currentColor" strokeWidth="0.2" />
+                </pattern>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#sacred-pattern)" />
+            </svg>
+          </div>
+
+          <div className="absolute inset-3 border border-[#C9A84C]/30 rounded-lg flex items-center justify-center overflow-hidden">
+            {/* Ambient Glow */}
+            <div className="absolute w-32 h-32 bg-[#C9A84C]/5 rounded-full blur-3xl animate-pulse" />
+            
             <div className="relative z-10 flex flex-col items-center">
-              <div className="w-16 h-16 rounded-full border border-[#C9A84C]/30 flex items-center justify-center bg-black/40 shadow-[0_0_15px_rgba(201,168,76,0.1)]">
-                <Moon className="text-[#C9A84C] opacity-60" size={32} />
+              {/* Central Ornate Medallion */}
+              <div className="relative flex items-center justify-center">
+                {/* Rotating Rings */}
+                <div className="absolute w-20 h-20 sm:w-28 sm:h-28 border border-[#C9A84C]/30 rounded-full animate-[spin_10s_linear_infinite]" />
+                <div className="absolute w-16 h-16 sm:w-24 sm:h-24 border border-[#C9A84C]/10 rounded-full animate-[spin_15s_linear_infinite_reverse]" />
+                <div className="absolute w-24 h-24 sm:w-32 sm:h-32 border-[0.5px] border-[#C9A84C]/5 rounded-full animate-[spin_20s_linear_infinite]" />
+                
+                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-[#1a1508] to-[#080510] border border-[#C9A84C]/40 flex items-center justify-center shadow-[0_0_20px_rgba(201,168,76,0.3)] z-20">
+                  <Moon className="text-[#C9A84C] drop-shadow-[0_0_8px_rgba(201,168,76,0.5)]" size={size === 'large' ? 32 : 24} />
+                </div>
               </div>
-              <div className="mt-4 flex gap-2">
-                <Star size={10} className="text-[#C9A84C]/30 animate-pulse" />
-                <Star size={10} className="text-[#C9A84C]/30 animate-pulse delay-700" />
-                <Star size={10} className="text-[#C9A84C]/30 animate-pulse delay-300" />
+
+              <div className="mt-6 flex gap-3 opacity-40">
+                <Star size={8} className="text-[#C9A84C] animate-pulse" />
+                <Star size={8} className="text-[#C9A84C] animate-pulse delay-500" />
+                <Star size={8} className="text-[#C9A84C] animate-pulse delay-1000" />
               </div>
             </div>
           </div>
-          {/* Decorative Corners */}
-          <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-[#C9A84C]/40 rounded-tl-xl" />
-          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-[#C9A84C]/40 rounded-tr-xl" />
-          <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-[#C9A84C]/40 rounded-bl-xl" />
-          <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-[#C9A84C]/40 rounded-br-xl" />
+
+          {/* Decorative Corner Filigree */}
+          <div className="absolute top-0 left-0 w-10 h-10 border-t-[1.5px] border-l-[1.5px] border-[#C9A84C]/50 rounded-tl-xl m-1" />
+          <div className="absolute top-0 right-0 w-10 h-10 border-t-[1.5px] border-r-[1.5px] border-[#C9A84C]/50 rounded-tr-xl m-1" />
+          <div className="absolute bottom-0 left-0 w-10 h-10 border-b-[1.5px] border-l-[1.5px] border-[#C9A84C]/50 rounded-bl-xl m-1" />
+          <div className="absolute bottom-0 right-0 w-10 h-10 border-b-[1.5px] border-r-[1.5px] border-[#C9A84C]/50 rounded-br-xl m-1" />
+          
+          {/* Subtle Shine Layer */}
+          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.03] to-transparent pointer-events-none" />
         </div>
         <div className="absolute inset-0 rounded-xl border-2 border-amber-400 bg-black backface-hidden flex flex-col p-2 shadow-[0_0_15px_rgba(201,168,76,0.3)]">
           <div className="flex-1 relative w-full"><Image src={`https://www.trustedtarot.com/img/cards/${card.englishName.toLowerCase().replace(/ /g, "-")}.png`} alt={card.name} fill sizes="200px" className="object-contain" referrerPolicy="no-referrer" /></div>

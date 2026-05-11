@@ -63,25 +63,27 @@ export default function MysticMarkdown({ content, cards, hideCards }: MysticMark
   return (
     <div className="mystic-markdown">
       {!hideCards && cards && cards.length > 0 && (
-        <div className="flex flex-wrap justify-center gap-4 md:gap-6 mb-10 mt-4">
-          {cards.map((card, idx) => (
-            <div key={idx} className="relative w-28 h-48 md:w-32 md:h-52 rounded-xl overflow-hidden border-2 border-amber-500/40 shadow-[0_10px_25px_rgba(0,0,0,0.6)]">
-              <Image
-                src={card.image}
-                alt={card.name}
-                width={128}
-                height={208}
-                className={`w-full h-full object-cover ${card.isReversed ? 'rotate-180' : ''}`}
-                referrerPolicy="no-referrer"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent pointer-events-none"></div>
-              <div className="absolute bottom-3 left-0 right-0 text-center px-2 pointer-events-none">
-                <span className="text-xs text-amber-100 font-serif tracking-widest drop-shadow-md">{card.name}</span>
-                <div className="text-[8px] text-amber-500/70 font-mono mt-0.5 uppercase">{card.englishName}</div>
-                <div className="text-[8px] text-amber-400/90 font-serif mt-0.5">{card.isReversed ? '逆位' : '正位'}</div>
+        <div className="flex flex-wrap justify-center gap-4 md:gap-6 mb-12 mt-4 relative z-10">
+          {cards.map((card, idx) => {
+            const imageUrl = `https://www.trustedtarot.com/img/cards/${card.englishName.toLowerCase().replace(/ /g, "-")}.png`;
+            return (
+              <div key={idx} className="relative w-24 h-40 md:w-32 md:h-52 rounded-xl overflow-hidden border-2 border-[#C9A84C]/40 shadow-[0_10px_30px_rgba(0,0,0,0.8)] hover:scale-105 transition-transform duration-500 group">
+                <Image
+                  src={imageUrl}
+                  alt={card.name}
+                  width={128}
+                  height={208}
+                  className={`w-full h-full object-cover ${card.isReversed ? 'rotate-180' : ''}`}
+                  referrerPolicy="no-referrer"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#080510]/90 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity"></div>
+                <div className="absolute bottom-2 left-0 right-0 text-center px-1 pointer-events-none">
+                  <span className="text-[10px] md:text-xs text-[#E8DFB8] font-serif tracking-widest drop-shadow-md">{card.name}</span>
+                  <div className="text-[8px] text-[#C9A84C]/80 font-serif mt-0.5">{card.isReversed ? '逆位' : '正位'}</div>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
       <ReactMarkdown

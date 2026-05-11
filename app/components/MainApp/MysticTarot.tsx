@@ -508,12 +508,25 @@ export function MysticTarot({ initialHandoff, clearHandoff }: { initialHandoff?:
               <AnimatePresence>
                 {revealedCards.every((r) => r) && (
                   <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-4xl glass-panel p-8 md:p-12 rounded-3xl mt-12">
-                    {isReading && messages.length === 0 ? <BreathingLoading text="正在查阅阿卡夏记录..." /> : (
+                    {isReading && messages.length === 0 ? (
+                      <div className="py-20 flex flex-col items-center justify-center space-y-10">
+                        <div className="relative w-32 h-32 flex items-center justify-center">
+                          <div className="absolute inset-0 border-2 border-amber-500/20 rounded-full animate-[ping_3s_ease-in-out_infinite]" />
+                          <div className="absolute inset-4 border border-amber-500/40 rounded-full animate-[spin_8s_linear_infinite]" />
+                          <div className="absolute inset-8 border border-amber-500/60 rounded-full animate-[spin_4s_linear_infinite_reverse]" />
+                          <Sparkles className="text-amber-400 animate-pulse" size={40} />
+                        </div>
+                        <div className="text-center space-y-4">
+                          <h3 className="text-2xl font-serif gold-gradient-text animate-pulse">正在感应阿卡夏记录...</h3>
+                          <p className="text-amber-100/40 font-serif text-sm tracking-widest italic">星辰正在交汇，命运的脉络正逐渐清晰</p>
+                        </div>
+                      </div>
+                    ) : (
                       <div className="space-y-8">
                         {messages.map((msg, idx) => (
                           <div key={idx} className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-center"}`}>
-                            <div className={`rounded-2xl p-6 ${msg.role === "user" ? "glass-panel bg-amber-900/20" : "glass-panel bg-black/40 markdown-body"}`}>
-                              {msg.role === "user" ? <p className="font-serif">{msg.content}</p> : <MysticMarkdown content={msg.content} cards={drawnCards} hideCards={idx > 1} />}
+                            <div className={`w-full rounded-2xl p-6 ${msg.role === "user" ? "glass-panel bg-amber-900/20" : "glass-panel bg-black/40 markdown-body"}`}>
+                              {msg.role === "user" ? <p className="font-serif">{msg.content}</p> : <MysticMarkdown content={msg.content} cards={drawnCards} hideCards={idx > 0} />}
                             </div>
                           </div>
                         ))}

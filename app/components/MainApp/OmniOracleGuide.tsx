@@ -26,6 +26,7 @@ export function OmniOracleGuide({ onClose, onHandoff }: OmniOracleGuideProps) {
     { role: 'model', content: "旅人，什么风把你吹到了阿卡夏的场域？\n告诉我你内心的困惑，我将为你开启通往真理的门扉..." }
   ]);
   const [isTyping, setIsTyping] = useState(false);
+  const [pendingAction, setPendingAction] = useState<HandoffData | null>(null);
   
   const { stream, isLoading, abort } = useAIStream();
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -62,9 +63,7 @@ export function OmniOracleGuide({ onClose, onHandoff }: OmniOracleGuideProps) {
       if (executeMatch && executeMatch[1]) {
         try {
           const actionData = JSON.parse(executeMatch[1]);
-          setTimeout(() => {
-            onHandoff(actionData);
-          }, 2500); // Wait 2.5s to let the user read the final message before transitioning
+          setPendingAction(actionData);
         } catch (e) {
           console.error("Failed to parse orchestrator action", e);
         }
@@ -127,6 +126,24 @@ export function OmniOracleGuide({ onClose, onHandoff }: OmniOracleGuideProps) {
         </div>
       </div>
 
+      <AnimatePresence>
+        {pendingAction && !isLoading && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="absolute bottom-40 z-50"
+          >
+            <button
+              onClick={() => onHandoff(pendingAction)}
+              className="px-10 py-4 bg-gradient-to-r from-[#C9A84C] to-[#9b7b2d] text-[#080510] rounded-full font-serif text-lg tracking-[0.2em] font-bold shadow-[0_0_30px_rgba(201,168,76,0.4)] hover:shadow-[0_0_50px_rgba(201,168,76,0.6)] hover:scale-105 transition-all flex items-center gap-3"
+            >
+              <Sparkles size={20} />
+              开启占卜仪式
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -138,9 +155,12 @@ export function OmniOracleGuide({ onClose, onHandoff }: OmniOracleGuideProps) {
           <input
             type="text"
             value={inputMessage}
-            onChange={(e) => setInputMessage(e.target.value)}
+            onChange={(e) => {
+              setInputMessage(e.target.value);
+              if (pendingAction) setPendingAction(null); // Clear pending action if user continues chatting
+            }}
             disabled={isTyping}
-            placeholder="回应阿卡夏的召唤..."
+            placeholder={pendingAction ? "或者，继续与我交谈..." : "回应阿卡夏的召唤..."}
             className="w-full bg-black/40 backdrop-blur-md border border-white/10 rounded-full py-5 pl-8 pr-16 text-[#E8DFB8] placeholder-[#E8DFB8]/30 focus:outline-none focus:border-[#C9A84C]/50 transition-all text-xl shadow-2xl"
           />
           <button
