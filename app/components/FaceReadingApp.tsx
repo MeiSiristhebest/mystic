@@ -156,9 +156,14 @@ export default function FaceReadingApp({
 
     try {
       let fullResponse = "";
-      const systemInstruction = `${AKASHA_PERSONA}\n你是一位精通中国传统相术的大师。你正在为用户进行一次${type === "face" ? "面相" : "手相"}分析。`;
+      const systemInstruction = `${AKASHA_PERSONA}\n你是一位精通中国传统相术的大师。你正在为用户进行一次${type === "face" ? "面相" : "手相"}分析追问。请基于先前的分析结果和图像特征进行解答，保持逻辑一致性。`;
       
-      for await (const chunk of stream(userMsg, systemInstruction)) {
+      const history = newMessages.map(m => ({
+        role: m.role,
+        parts: [{ text: m.content }]
+      }));
+
+      for await (const chunk of stream(history, systemInstruction)) {
         fullResponse += chunk;
         setMessages([...newMessages, { role: 'model', content: fullResponse }]);
       }

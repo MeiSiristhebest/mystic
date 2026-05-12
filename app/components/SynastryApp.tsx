@@ -11,10 +11,15 @@ import { MODELS } from "@/lib/ai";
 
 export default function SynastryApp() {
   const { profile, getProfileContext } = useUserProfile();
-  const { addEntry } = useJourney();
+  const { addEntry, updateEntry } = useJourney();
   const [question, setQuestion] = useState("");
   const [reading, setReading] = useState("");
   const [drawnCards, setDrawnCards] = useState<any[]>([]);
+  const [messages, setMessages] = useState<{ role: 'user' | 'model'; content: string }[]>([]);
+  const [inputMessage, setInputMessage] = useState("");
+  const [currentEntryId, setCurrentEntryId] = useState<string | null>(null);
+  const [isAskingFollowUp, setIsAskingFollowUp] = useState(false);
+
   const { sendMessage, isLoading, error } = useAIChat({
     model: MODELS.PRO,
     systemInstruction: `<system>
@@ -30,6 +35,10 @@ export default function SynastryApp() {
   const handleSynastry = async () => {
     if (!question.trim()) return;
     
+    setMessages([]);
+    setReading("");
+    setCurrentEntryId(null);
+
     const deck = generateDeck();
     const shuffled = [...deck].sort(() => 0.5 - Math.random());
     const selected = shuffled.slice(0, 3).map(card => ({
@@ -70,8 +79,9 @@ ${getProfileContext()}
     try {
       const response = await sendMessage(prompt);
       setReading(response);
+      setMessages([{ role: 'model', content: response }]);
       
-      await addEntry({
+      const id = await addEntry({
         type: "synastry",
         title: `三才合参：${question.substring(0, 15)}...`,
         summary: response.substring(0, 100) + "...",
@@ -80,13 +90,44 @@ ${getProfileContext()}
           text: response,
           question,
           messages: [
-            { role: 'user', content: question },
             { role: 'model', content: response }
           ]
         }
       });
+      setCurrentEntryId(id || null);
     } catch (e) {
       console.error(e);
+    }
+  };
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inputMessage.trim() || isLoading || !currentEntryId) return;
+
+    const userMsg = inputMessage;
+    setInputMessage("");
+    setIsAskingFollowUp(true);
+
+    try {
+      const response = await sendMessage(userMsg);
+      const updatedMessages = [
+        ...messages, 
+        { role: 'user' as const, content: userMsg }, 
+        { role: 'model' as const, content: response }
+      ];
+      
+      updateEntry(currentEntryId, { 
+        details: { 
+          type: 'synastry',
+          text: updatedMessages.map(m => m.role === 'user' ? `**问**：${m.content}` : `**阿卡夏**：${m.content}`).join('\n\n---\n\n'), 
+          question, 
+          messages: updatedMessages 
+        }
+      });
+    } catch (error) {
+      console.error("Chat error:", error);
+    } finally {
+      setIsAskingFollowUp(false);
     }
   };
 
@@ -111,28 +152,99 @@ ${getProfileContext()}
         </div>
       ) : (
         <div className="space-y-8">
-          <div className="bg-black/40 border border-amber-500/20 rounded-2xl p-6 backdrop-blur-sm">
-            <label className="block text-sm font-medium text-amber-200/80 mb-2">
-              你现在站在哪里？你想问什么？
-            </label>
-            <div className="relative">
-              <textarea
-                value={question}
-                onChange={(e) => setQuestion(e.target.value)}
-                placeholder="描述你当下的处境、困惑或选择..."
-                className="w-full bg-black/50 border border-amber-500/30 rounded-xl pl-4 pr-12 py-3 text-amber-100 placeholder-amber-100/30 focus:outline-none focus:border-amber-500/60 transition-colors min-h-[100px] resize-none"
-              />
-              <button
-                onClick={handleSynastry}
-                disabled={isLoading || !question.trim()}
-                className="absolute right-3 bottom-3 p-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Send className="w-5 h-5" />
-              </button>
+          {messages.length === 0 && !isLoading ? (
+            <div className="bg-black/40 border border-amber-500/20 rounded-2xl p-6 backdrop-blur-sm">
+              <label className="block text-sm font-medium text-amber-200/80 mb-2">
+                你现在站在哪里？你想问什么？
+              </label>
+              <div className="relative">
+                <textarea
+                  value={question}
+                  onChange={(e) => setQuestion(e.target.value)}
+                  placeholder="描述你当下的处境、困惑或选择..."
+                  className="w-full bg-black/50 border border-amber-500/30 rounded-xl pl-4 pr-12 py-3 text-amber-100 placeholder-amber-100/30 focus:outline-none focus:border-amber-500/60 transition-colors min-h-[100px] resize-none"
+                />
+                <button
+                  onClick={handleSynastry}
+                  disabled={isLoading || !question.trim()}
+                  className="absolute right-3 bottom-3 p-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Send className="w-5 h-5" />
+                </button>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="space-y-8 pb-20">
+              <div className="bg-black/40 border border-amber-500/20 rounded-3xl p-8 md:p-12 backdrop-blur-sm">
+                <div className="flex flex-col space-y-12">
+                  {drawnCards.length > 0 && (
+                    <div className="flex flex-col items-center">
+                      <h3 className="text-lg font-serif text-amber-300 mb-4 text-center">潜意识投射 (塔罗)</h3>
+                      <div className="flex justify-center gap-4">
+                        {drawnCards.map((card, idx) => (
+                          <div key={idx} className="text-center">
+                            <div className="text-xs text-amber-200/60 mb-1">{['过去', '现在', '未来'][idx]}</div>
+                            <div className="w-20 h-32 md:w-24 md:h-40 bg-zinc-800 border border-amber-500/30 rounded-lg flex items-center justify-center p-2 text-center">
+                              <span className="text-amber-100 text-xs md:text-sm font-serif leading-tight">
+                                {card.name}<br/>
+                                <span className="text-[10px] md:text-xs text-amber-500/80">{card.isReversed ? '(逆位)' : '(正位)'}</span>
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
-          {isLoading && (
+                  <div className="space-y-8">
+                    {messages.map((msg, idx) => (
+                      <div key={idx} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-center'}`}>
+                        <div className={`max-w-[95%] md:max-w-[85%] rounded-2xl p-6 ${
+                          msg.role === 'user' 
+                            ? 'bg-amber-900/40 border border-amber-500/30 text-amber-100' 
+                            : 'bg-black/20 markdown-body w-full'
+                        }`}>
+                          {msg.role === 'model' ? (
+                            <MysticMarkdown content={msg.content.replace(/<thinking>[\s\S]*?<\/thinking>/g, '').trim()} />
+                          ) : (
+                            <p className="font-serif text-lg">{msg.content}</p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                    {isAskingFollowUp && (
+                      <div className="flex justify-center">
+                        <BreathingLoading text="阿卡夏正在为您深入推演..." />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {!isLoading && (
+                <div className="fixed bottom-24 left-1/2 -translate-x-1/2 w-full max-w-2xl px-6 z-40">
+                  <form onSubmit={handleSendMessage} className="relative">
+                    <input
+                      type="text"
+                      value={inputMessage}
+                      onChange={(e) => setInputMessage(e.target.value)}
+                      placeholder="继续探索这份合盘的深意..."
+                      className="w-full bg-black/60 border border-amber-500/40 rounded-full py-4 pl-6 pr-16 text-amber-100 placeholder-amber-100/30 focus:outline-none focus:border-amber-500 transition-all backdrop-blur-xl shadow-[0_0_30px_rgba(0,0,0,0.5)]"
+                    />
+                    <button
+                      type="submit"
+                      disabled={!inputMessage.trim() || isAskingFollowUp}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-3 bg-amber-600 hover:bg-amber-500 text-white rounded-full transition-colors disabled:opacity-50"
+                    >
+                      <Send size={18} />
+                    </button>
+                  </form>
+                </div>
+              )}
+            </div>
+          )}
+
+          {isLoading && messages.length === 0 && (
             <div className="py-12">
               <BreathingLoading text="正在对齐星辰、八字与潜意识..." />
             </div>
@@ -142,33 +254,6 @@ ${getProfileContext()}
             <div className="bg-red-900/20 border border-red-500/30 rounded-xl p-4 text-red-200 text-sm">
               {error}
             </div>
-          )}
-
-          {drawnCards.length > 0 && !isLoading && (
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-black/40 border border-amber-500/20 rounded-2xl p-6 backdrop-blur-sm"
-            >
-              <h3 className="text-lg font-serif text-amber-300 mb-4 text-center">潜意识投射 (塔罗)</h3>
-              <div className="flex justify-center gap-4 mb-6">
-                {drawnCards.map((card, idx) => (
-                  <div key={idx} className="text-center">
-                    <div className="text-sm text-amber-200/80 mb-1">{['过去', '现在', '未来'][idx]}</div>
-                    <div className="w-24 h-40 bg-zinc-800 border border-amber-500/30 rounded-lg flex items-center justify-center p-2 text-center">
-                      <span className="text-amber-100 text-sm font-serif">
-                        {card.name}<br/>
-                        <span className="text-xs text-amber-500/80">{card.isReversed ? '(逆位)' : '(正位)'}</span>
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              
-              <div className="prose prose-invert prose-amber max-w-none">
-                <MysticMarkdown content={reading.replace(/<thinking>[\s\S]*?<\/thinking>/g, '').trim()} />
-              </div>
-            </motion.div>
           )}
         </div>
       )}

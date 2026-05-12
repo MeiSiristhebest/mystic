@@ -374,9 +374,14 @@ ${lineNames}
 
     try {
       let fullResponse = "";
-      const systemInstruction = `${AKASHA_PERSONA}\n你是一位精通《易经》、六爻预测学和梅花易数的导师。你正在为用户进行一次${mode === 'liuyao' ? '六爻' : mode === 'meihua' ? '梅花易数' : '奇门遁甲'}分析。`;
+      const systemInstruction = `${AKASHA_PERSONA}\n你是一位精通《易经》、六爻预测学和梅花易数的导师。你正在为用户进行一次${mode === 'liuyao' ? '六爻' : mode === 'meihua' ? '梅花易数' : '奇门遁甲'}分析。请务必保持对原始卦象及其辩证逻辑的忠诚。`;
       
-      for await (const chunk of stream(userMsg, systemInstruction)) {
+      const history = newMessages.map(m => ({
+        role: m.role,
+        parts: [{ text: m.content }]
+      }));
+
+      for await (const chunk of stream(history, systemInstruction)) {
         fullResponse += chunk;
         setMessages([...newMessages, { role: 'model', content: fullResponse }]);
       }

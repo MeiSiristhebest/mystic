@@ -199,7 +199,7 @@ const moods = [
           </section>
 
           <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="luxury-card p-8 space-y-6">
+            <div className="luxury-card p-6 md:p-8 space-y-6">
               <h4 className="font-serif text-xl tracking-widest">核心人生议题</h4>
               <div className="flex flex-wrap gap-3">
                 {coreIssues.map((word) => (
@@ -209,7 +209,7 @@ const moods = [
                 ))}
               </div>
             </div>
-            <div className="luxury-card p-12 space-y-8">
+            <div className="luxury-card p-6 md:p-8 space-y-6">
               <div className="flex items-center justify-between">
                 <h4 className="font-serif text-2xl tracking-[0.2em] gold-gradient-text">能量波动</h4>
               </div>

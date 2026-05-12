@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Clock, Moon, Sun, Star, Globe, Zap, AlertTriangle, Activity } from "lucide-react";
+import { Clock, Moon, Sun, Star, Globe, Zap, AlertTriangle, Activity, Send } from "lucide-react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useAIChat } from "@/hooks/useAIChat";
 import { useJourney } from "@/hooks/useJourney";
@@ -46,13 +46,17 @@ function getMoonPhase(date: Date) {
 
 export default function TimeWisdomApp() {
   const { profile, getProfileContext } = useUserProfile();
-  const { addEntry } = useJourney();
+  const { addEntry, updateEntry } = useJourney();
   const [reading, setReading] = useState("");
   const [hasGenerated, setHasGenerated] = useState(false);
   const today = useMemo(() => new Date(), []);
   const moonPhase = useMemo(() => getMoonPhase(today), [today]);
 
-  const { sendMessage, isLoading, error } = useAIChat({
+  const [inputMessage, setInputMessage] = useState("");
+  const [currentEntryId, setCurrentEntryId] = useState<string | null>(null);
+  const [isAskingFollowUp, setIsAskingFollowUp] = useState(false);
+
+  const { messages, setMessages, sendMessage, isLoading, error } = useAIChat({
     model: MODELS.FLASH,
     systemInstruction: `你是一位精通宇宙时空节律的「时间智者」。你的使命是将宏观的全球局势（时事）、剧烈的天体相位与个体的灵魂档案进行深度对齐。你拒绝给出平庸的运势描述，必须指出当下这一刻在整个人类进化史和用户个体生命史中的独特性。`,
   });
@@ -84,7 +88,7 @@ export default function TimeWisdomApp() {
       setReading(response);
       setHasGenerated(true);
 
-      await addEntry({
+      const id = await addEntry({
         type: "time",
         title: `时间智慧：${today.toLocaleDateString()}`,
         summary: response.substring(0, 100) + "...",
@@ -94,10 +98,41 @@ export default function TimeWisdomApp() {
           messages: [{ role: 'model', content: response }]
         }
       });
+      setCurrentEntryId(id || null);
     } catch (e) {
       console.error(e);
     }
   }, [hasGenerated, today, moonPhase, getProfileContext, sendMessage, addEntry]);
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inputMessage.trim() || isLoading || !currentEntryId) return;
+
+    const userMsg = inputMessage;
+    setInputMessage("");
+    setIsAskingFollowUp(true);
+
+    try {
+      const response = await sendMessage(userMsg);
+      const updatedMessages = [
+        ...messages, 
+        { role: 'user' as const, content: userMsg }, 
+        { role: 'model' as const, content: response }
+      ];
+      
+      updateEntry(currentEntryId, { 
+        details: { 
+          type: 'time',
+          text: updatedMessages.map(m => m.role === 'user' ? `**问**：${m.content}` : `**阿卡夏**：${m.content}`).join('\n\n---\n\n'), 
+          messages: updatedMessages 
+        }
+      });
+    } catch (error) {
+      console.error("Chat error:", error);
+    } finally {
+      setIsAskingFollowUp(false);
+    }
+  };
 
   useEffect(() => {
     if (profile.birthDate && !hasGenerated && !isLoading) {
@@ -156,7 +191,7 @@ export default function TimeWisdomApp() {
         </div>
       </div>
 
-      <div className="relative min-h-[400px] luxury-card p-8 md:p-12 border-blue-500/10 bg-black/40 overflow-hidden">
+      <div className="relative min-h-[400px] luxury-card p-8 md:p-12 border-blue-500/10 bg-black/40 overflow-hidden mb-12">
         <div className="absolute top-0 right-0 p-4 opacity-10">
           <Clock className="w-32 h-32 text-blue-500" />
         </div>
@@ -167,34 +202,68 @@ export default function TimeWisdomApp() {
             <p className="text-blue-200/50 mb-2">需要完善您的“灵魂档案”以开启时间智慧</p>
             <p className="text-[10px] text-blue-500/40 uppercase tracking-widest">Awaiting Cosmic Alignment</p>
           </div>
-        ) : isLoading ? (
+        ) : isLoading && messages.length === 0 ? (
           <div className="py-20">
             <BreathingLoading text="正在读取全球时空记录..." />
           </div>
         ) : (
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={reading}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 1 }}
-            >
-              <MysticMarkdown content={reading} />
-              
-              {reading && (
-                <div className="mt-12 pt-8 border-t border-blue-500/10 flex justify-center">
-                  <button 
-                    onClick={() => { setHasGenerated(false); generateReading(); }}
-                    className="text-xs font-serif text-blue-400/40 hover:text-blue-400 transition-colors tracking-[0.3em] uppercase"
-                  >
-                    刷新时空场域
-                  </button>
+          <div className="space-y-8">
+            {messages.map((msg, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-center'}`}
+              >
+                <div className={`max-w-[95%] md:max-w-[85%] rounded-2xl p-6 ${
+                  msg.role === 'user' 
+                    ? 'bg-blue-900/40 border border-blue-500/30 text-blue-100' 
+                    : 'bg-black/20 markdown-body w-full'
+                }`}>
+                  <MysticMarkdown content={msg.content} />
                 </div>
-              )}
-            </motion.div>
-          </AnimatePresence>
+              </motion.div>
+            ))}
+            {isAskingFollowUp && (
+              <div className="flex justify-center">
+                <BreathingLoading text="时间智者正在深思..." />
+              </div>
+            )}
+            
+            {hasGenerated && !isLoading && (
+              <div className="pt-8 border-t border-blue-500/10 flex justify-center">
+                <button 
+                  onClick={() => { setHasGenerated(false); setMessages([]); generateReading(); }}
+                  className="text-xs font-serif text-blue-400/40 hover:text-blue-400 transition-colors tracking-[0.3em] uppercase"
+                >
+                  刷新时空场域
+                </button>
+              </div>
+            )}
+          </div>
         )}
       </div>
+
+      {hasGenerated && (
+        <div className="max-w-2xl mx-auto">
+          <form onSubmit={handleSendMessage} className="relative">
+            <input
+              type="text"
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              placeholder="深入请教当下时空对你的启示..."
+              className="w-full bg-blue-900/20 border border-blue-500/30 rounded-full py-4 pl-6 pr-16 text-blue-100 placeholder-blue-100/30 focus:outline-none focus:border-blue-500 transition-all"
+            />
+            <button
+              type="submit"
+              disabled={!inputMessage.trim() || isLoading}
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-3 bg-blue-600 hover:bg-blue-500 text-white rounded-full transition-colors disabled:opacity-50"
+            >
+              <Send size={18} />
+            </button>
+          </form>
+        </div>
+      )}
     </div>
   );
 }

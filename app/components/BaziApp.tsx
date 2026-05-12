@@ -305,7 +305,14 @@ export default function BaziApp({
 
     try {
       let fullResponse = "";
-      for await (const chunk of stream(userMsg, AKASHA_PERSONA)) {
+      const systemInstruction = `${AKASHA_PERSONA}\n你正在基于此命理排盘进行追问解答。请务必保持对原始排盘数据及其运势逻辑的忠诚。`;
+      
+      const history = newMessages.map(m => ({
+        role: m.role,
+        parts: [{ text: m.content }]
+      }));
+
+      for await (const chunk of stream(history, systemInstruction)) {
         fullResponse += chunk;
         setMessages([...newMessages, { role: 'model', content: fullResponse }]);
       }

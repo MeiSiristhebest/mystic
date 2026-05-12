@@ -85,7 +85,7 @@
 - **Decision: Journey Persistence Parity**
   - **Reason**: Several modules (`Synastry`, `Shadow Work`, etc.) were missing logic to save results to the user's journey.
   - **Action**: Integrated `addEntry` calls across all 10+ divination modules. Updated `JourneyDetails` type in `useJourney.ts` for full schema coverage.
-- **Decision: Lint-Driven Stabilization**
+- **Decision: Lint-Clean Production Target**
   - **Reason**: "setState in effect" and missing dependency warnings were destabilizing the production build process.
   - **Action**: Refactored `UserProfileModal`, `DiscoveryView`, and AI hooks to adhere to strict React patterns and Next.js production standards.
 
@@ -137,10 +137,6 @@
 - **Decision: Intelligent Model Fallback Chain (Gemini 3.1)**
   - **Reason**: To handle the strict RPD/RPM limits of the Pro model while ensuring a 100% uptime UX.
   - **Action**: Implemented a systematic fallback chain `[PRO -> FLASH -> LITE]` in `app/api/ai/route.ts`.
-  - **Details**:
-    - **Tier 1 (PRO)**: `gemini-3.1-pro-preview` (Deep Analysis)
-    - **Tier 2 (FLASH)**: `gemini-3-flash-preview` (Standard Balance)
-    - **Tier 3 (LITE)**: `gemini-3.1-flash-lite` (High-Volume Backup, 4K RPM)
 - **Decision: Dynamic Model Dispatching**
   - **Reason**: Complex divination tasks require higher reasoning than simple UI guidance.
   - **Action**: Configured `BaziApp` and `MysticTarot` to prefer Tier 1, while `Orchestrator` uses Tier 2.
@@ -153,3 +149,33 @@
 - **Decision: Lint-Clean Production Target**
   - **Reason**: Ensure 100% build success on Vercel/Next.js.
   - **Action**: Resolved all remaining `react-hooks` and `immutability` errors. Verified via `pnpm run lint`.
+
+## [2026-05-13] Phase 13: Standardized Deep Dive & Context Continuity
+
+- **Decision: Stateless to Stateful History Migration**
+  - **Reason**: Follow-up questions in several modules (IChing, Bazi, Face Reading) were losing context, leading to "attention drift" and generic AI responses.
+  - **Action**: Refactored `handleSendMessage` in all core modules to pass the complete `messages` history to the AI stream.
+- **Decision: Explicit Context Pinning (Anchor Logic)**
+  - **Reason**: AI tended to forget the original divination data (Hexagrams, Bazi charts) during long chat threads.
+  - **Action**: Enforced "Context Pinning" by prepending original divination data and initial analysis results as immutable anchors in the conversation history.
+- **Decision: Unified Chat Interface (Deep Dive)**
+  - **Reason**: `SynastryApp` and `TimeWisdomApp` lacked the ability for users to ask follow-up questions.
+  - **Action**: Implemented standardized chat UI and `useAIChat`/`useAIStream` logic across all divination modules, ensuring a consistent "Deep Dive" experience.
+- **Decision: Journey Persistence Parity (Sync)**
+  - **Reason**: Follow-up conversations were not always correctly synchronized back to the user's permanent journey.
+  - **Action**: Integrated `updateEntry` calls in all follow-up handlers to maintain O(1) sync parity between volatile UI state and IndexedDB storage.
+
+## [2026-05-13] Phase 14: Scenario-Based Prompt Elevation & Intelligence
+
+- **Decision: Scenario-Specific Prompt Engineering (Akasha Standard)**
+  - **Reason**: Generic prompts in Tarot, Astrology, and Oracle Guide led to "hallmarked" or shallow responses that didn't feel like a cohesive mystical experience.
+  - **Action**: Re-engineered all core prompts using XML encapsulation, Chain-of-Thought (CoT) reasoning, and Persona-specific logic (e.g., Jungian for Tarot, Multi-system Synthesis for Astrology).
+- **Decision: Tarot Deep Dive Implementation**
+  - **Reason**: Tarot was the only major module missing the "Deep Dive" follow-up capability, hindering its value as a reflective tool.
+  - **Action**: Refactored `MysticTarot.tsx` and `TarotReadingResult.tsx` to support stateful history and interactive chat directly on the result view.
+- **Decision: Cross-System Synthesis (Astrology + MBTI)**
+  - **Reason**: Users expect personalized insights that bridge their static profile (MBTI) with dynamic cosmic transits.
+  - **Action**: Updated `AstrologyApp.tsx` prompt to explicitly synthesize personality types with planetary phase analysis.
+- **Decision: Navigational Intelligence (OmniOracle)**
+  - **Reason**: The initial AI guide was a simple keyword router.
+  - **Action**: Upgraded `OmniOracleGuide.tsx` to use high-fidelity intent recognition to recommend the best divination system based on emotional nuance and problem depth.

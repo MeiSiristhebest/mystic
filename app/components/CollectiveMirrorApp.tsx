@@ -124,9 +124,14 @@ export default function CollectiveMirrorApp({ onReadingChange }: { onReadingChan
 
     try {
       let fullResponse = "";
-      const systemInstruction = `${AKASHA_PERSONA}\n你现在是“集体无意识之镜”的引路人。你的语言应当宏大、深邃、充满慈悲与洞见。`;
+      const systemInstruction = `${AKASHA_PERSONA}\n你现在是“集体无意识之镜”的引路人。你正在基于先前的感应结果进行追问解答。请保持宏大、深邃、充满慈悲与洞见的语言风格。`;
       
-      for await (const chunk of stream(userMsg, systemInstruction)) {
+      const history = newMessages.map(m => ({
+        role: m.role,
+        parts: [{ text: m.content }]
+      }));
+
+      for await (const chunk of stream(history, systemInstruction)) {
         fullResponse += chunk;
         setMessages([...newMessages, { role: 'model', content: fullResponse }]);
       }

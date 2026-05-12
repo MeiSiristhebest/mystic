@@ -18,11 +18,13 @@ import MysticMarkdown from "./MysticMarkdown";
 import { AKASHA_PERSONA } from '@/lib/ai';
 import { usePosterGenerator } from '@/hooks/usePosterGenerator';
 import { useAIStream } from '@/hooks/useAIStream';
+import { useAIChat } from '@/hooks/useAIChat';
 import { getZodiacFromLongitude } from '@/lib/astrology';
 import { getStarChartData } from '@/app/actions/aiActions';
 import BreathingLoading from "./BreathingLoading";
 import { useJourney } from "@/hooks/useJourney";
 import { useUserProfile } from "@/hooks/useUserProfile";
+import { MODELS } from '@/lib/ai';
 
 const ZODIAC_SIGNS = [
   { id: "aries", name: "白羊座", element: "火", dates: "3.21-4.19" },
@@ -96,25 +98,39 @@ export default function AstrologyApp({ initialHandoff, clearHandoff }: Astrology
   const [birthCity, setBirthCity] = useState(profile.birthPlace || CITIES[0].name);
 
   const [messages, setMessages] = useState<{ role: 'user' | 'model'; content: string }[]>([]);
-  const { stream, isLoading: isReading, abort } = useAIStream();
-  const { addEntry } = useJourney();
+  const { sendMessage, isLoading: isChatLoading } = useAIChat({ model: MODELS.PRO });
+  const [currentEntryId, setCurrentEntryId] = useState<string | null>(null);
+  const [isAskingFollowUp, setIsAskingFollowUp] = useState(false);
+  const [inputMessage, setInputMessage] = useState("");
+
+  const { addEntry, updateEntry } = useJourney();
   const { handleGeneratePoster, isGeneratingPoster } = usePosterGenerator();
   const posterRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const handleGenerate = async () => {
     setMessages([]);
+    setIsAskingFollowUp(false);
     const profileContext = getProfileContext();
     const topicName = TOPICS.find((t) => t.id === selectedTopic)?.name || "综合解析";
 
-    let prompt = `
+    const prompt = `
 <instruction>
-你是一位精通现代占星学与心理学的占星大师。请为用户提供一份深度、精准且具有洞察力的分析报告。
+你是一位精通现代心理占星学、古典占星学以及 MBTI 性格理论的占星宗师。
+请结合星象能量与用户的多维度人格数据，生成一份极具深度与前瞻性的分析报告。
+
+【分析逻辑层 - 思维链演化】
+1. 解析当前选定的星座 (${selectedZodiac}) 与选定主题 (${topicName}) 的本源关联。
+2. 结合用户的档案数据（MBTI: ${profile.mbti}, 生日: ${profile.birthDate}）进行灵魂层面的建模。
+3. 探讨当前星象相位对该人格模型的动态影响。
+4. 提供不仅是心理慰藉，更是具有实操意义的进化指南。
 </instruction>
 
 <divination_context>
   <mode>${mode}</mode>
   <topic>${topicName}</topic>
-  <question>${question || "全面运势解析"}</question>
+  <target_zodiac>${selectedZodiac}</target_zodiac>
+  <user_question>${question || "全面运势解析"}</user_question>
 </divination_context>
 
 <user_profile>
@@ -122,25 +138,71 @@ ${profileContext}
 </user_profile>
 
 <output_format>
-使用Markdown排版，包含三个主要章节：
-## 🌌 星象能量共振
-## 🔍 深度领域解析
-## 🌟 灵魂进化的指引
+使用Markdown排版，包含以下章节：
+## 🌌 星象能量共振 (Cosmic Resonance)
+（分析宏观天象与个体能量的交织点）
+
+## 🔍 深度领域解析 (Deep Insight)
+（针对所选主题的具体分析，需体现心理学深度）
+
+## 🌟 灵魂进化的指引 (Evolutionary Guide)
+（提供关于心态、行动或决策的具体建议）
+
+[SOUL_MOTTO]一句与星空相关的哲学格言[/SOUL_MOTTO]
 </output_format>
     `;
 
-    let fullResponse = "";
-    for await (const chunk of stream(prompt, AKASHA_PERSONA)) {
-      fullResponse += chunk;
-      setMessages([{ role: 'model', content: fullResponse }]);
+    try {
+      const response = await sendMessage(prompt, AKASHA_PERSONA);
+      const id = await addEntry({
+        type: "astrology",
+        title: `星象：${topicName}`,
+        summary: response.substring(0, 100) + "...",
+        details: { 
+          type: 'astrology', 
+          text: response, 
+          mode, 
+          messages: [
+            { role: 'user' as const, content: `[开启推演] 主题：${topicName}` },
+            { role: 'model' as const, content: response }
+          ] 
+        }
+      });
+      setCurrentEntryId(id || null);
+    } catch (e) {
+      console.error(e);
     }
+  };
 
-    await addEntry({
-      type: "astrology",
-      title: `星象解析：${topicName}`,
-      summary: fullResponse.substring(0, 100) + "...",
-      details: { type: 'astrology', text: fullResponse, mode, messages: [{ role: 'model', content: fullResponse }] }
-    });
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inputMessage.trim() || isChatLoading || !currentEntryId) return;
+
+    const userMsg = inputMessage;
+    setInputMessage("");
+    setIsAskingFollowUp(true);
+
+    try {
+      const contextPin = `[系统提醒：当前正在进行关于“${selectedZodiac}”星座的“${TOPICS.find(t => t.id === selectedTopic)?.name}”专题分析。请基于此背景回答。]`;
+      const response = await sendMessage(`${contextPin}\n\n${userMsg}`);
+      
+      const updatedMessages = [
+        ...messages, 
+        { role: 'user' as const, content: userMsg }, 
+        { role: 'model' as const, content: response }
+      ];
+      
+      updateEntry(currentEntryId, { 
+        details: { 
+          type: 'astrology',
+          text: response,
+          mode,
+          messages: updatedMessages 
+        }
+      });
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   useEffect(() => {
@@ -220,7 +282,7 @@ ${profileContext}
           <div className="flex justify-center">
             <button
               onClick={handleGenerate}
-              disabled={isReading}
+              disabled={isChatLoading}
               className="px-16 py-4 bg-indigo-700 text-white rounded-full font-serif tracking-[0.3em] hover:bg-indigo-600 transition-all disabled:opacity-30"
             >
               开启星象解析
@@ -228,17 +290,85 @@ ${profileContext}
           </div>
         </motion.div>
       ) : (
-        <div className="space-y-8">
-           <div ref={posterRef} className="glass-panel p-8 md:p-12 rounded-3xl">
-              <MysticMarkdown content={messages[0].content} />
+        <div className="space-y-8 max-w-4xl mx-auto">
+           <div ref={posterRef} className="glass-panel p-8 md:p-12 rounded-3xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-8 opacity-5">
+                <Star className="w-32 h-32 text-indigo-500" />
+              </div>
+              <div className="relative z-10">
+                <MysticMarkdown content={messages[0]?.content || ""} />
+
+                {/* Follow-up Messages */}
+                <div className="mt-12 space-y-8">
+                  {messages.slice(2).map((msg, idx) => (
+                    <motion.div
+                      key={idx}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div className={`max-w-[85%] rounded-2xl p-6 ${
+                        msg.role === 'user' 
+                          ? 'bg-indigo-500/10 border border-indigo-500/20 text-indigo-100' 
+                          : 'bg-white/5 border border-white/10 text-indigo-100/80'
+                      }`}>
+                        <MysticMarkdown content={msg.content} />
+                      </div>
+                    </motion.div>
+                  ))}
+                  
+                  {isChatLoading && (
+                    <div className="flex justify-start">
+                      <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+                        <BreathingLoading text="正在观测更深层的星轨..." />
+                      </div>
+                    </div>
+                  )}
+                  <div ref={messagesEndRef} />
+                </div>
+              </div>
            </div>
+
+           {/* Deep Dive Input Area */}
+           <div className="glass-panel p-6 rounded-3xl border border-indigo-500/20">
+             <form onSubmit={handleSendMessage} className="relative flex items-center gap-4">
+               <div className="flex-1 relative">
+                 <input
+                   type="text"
+                   value={inputMessage}
+                   onChange={(e) => setInputMessage(e.target.value)}
+                   placeholder="对星象有何疑惑？开启深潜模式..."
+                   disabled={isChatLoading}
+                   className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-indigo-100 placeholder-white/20 focus:outline-none focus:border-indigo-500/50 transition-all font-serif"
+                 />
+                 <Sparkles className="absolute right-6 top-1/2 -translate-y-1/2 w-5 h-5 text-white/10" />
+               </div>
+               <button
+                 type="submit"
+                 disabled={isChatLoading || !inputMessage.trim()}
+                 className="p-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl transition-all shadow-lg shadow-indigo-900/20 disabled:opacity-30"
+               >
+                 <Send className="w-5 h-5" />
+               </button>
+             </form>
+           </div>
+
            <div className="flex justify-center gap-4">
-              <button onClick={() => setMessages([])} className="px-8 py-3 border border-indigo-500/20 text-indigo-400 rounded-full font-serif text-sm">返回重新推演</button>
+              <button 
+                onClick={() => {
+                  setMessages([]);
+                  setIsAskingFollowUp(false);
+                }} 
+                className="px-8 py-3 border border-indigo-500/20 text-indigo-400 rounded-full font-serif text-sm hover:bg-indigo-500/10 transition-all"
+              >
+                返回重新推演
+              </button>
               <button 
                 onClick={() => handleGeneratePoster(posterRef.current, "astrology.jpg")} 
-                className="px-8 py-3 bg-indigo-600 text-white rounded-full font-serif text-sm"
+                disabled={isGeneratingPoster}
+                className="px-8 py-3 bg-indigo-600 text-white rounded-full font-serif text-sm hover:bg-indigo-500 transition-all disabled:opacity-50"
               >
-                保存分享海报
+                {isGeneratingPoster ? "生成中..." : "保存分享海报"}
               </button>
            </div>
         </div>
