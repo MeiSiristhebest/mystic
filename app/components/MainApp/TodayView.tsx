@@ -272,6 +272,6 @@ ${JSON.stringify(profile)}
           </button>
         </div>
       </section>
-    </div>
+    </motion.div>
   );
 }
