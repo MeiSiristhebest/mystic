@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { zustandStorage } from '@/lib/storage';
 
 export interface LifeEvent {
   id: string;
@@ -107,7 +108,7 @@ export const useAppStore = create<AppState>()(
     }),
     {
       name: 'mystic-app-storage',
-      storage: typeof window !== 'undefined' ? (await import('@/lib/storage')).zustandStorage : undefined,
+      storage: typeof window !== 'undefined' ? createJSONStorage(() => zustandStorage) : undefined,
       partialize: (state) => ({ profile: state.profile, activeTab: state.activeTab }),
       onRehydrateStorage: () => (state) => {
         if (state && typeof window !== 'undefined') {
