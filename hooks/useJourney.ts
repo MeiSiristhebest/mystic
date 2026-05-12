@@ -2,8 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import LZString from 'lz-string';
-import { saveToIndexedDB, getFromIndexedDB, deleteFromIndexedDB } from '@/lib/storage';
-import { useAppStore } from '@/lib/store';
+import { 
+  saveToStore, 
+  getFromStore, 
+  getAllFromStore, 
+  deleteFromStore, 
+  clearStore 
+} from '@/lib/storage';
 
 export type Message = {
   role: 'user' | 'model';
@@ -39,13 +44,13 @@ export type JourneyDetails =
 export type JourneyEntry = {
   id: string;
   date: string;
-  type: 'tarot' | 'bazi' | 'iching' | 'daily' | 'astrology' | 'face_reading' | 'shadow_work' | 'synastry' | 'subconscious' | 'time' | 'mirror' | 'collective_mirror' | 'unified';
+  type: JourneyDetails['type'];
   title: string;
   summary: string;
   details?: JourneyDetails;
 };
 
-const STORAGE_KEY = 'akasha_journey_v3'; // Incremented version for IndexedDB migration
+const LEGACY_KEY = 'akasha_journey_v3';
 
 export function useJourney() {
   const [entries, setEntries] = useState<JourneyEntry[]>([]);
@@ -54,33 +59,33 @@ export function useJourney() {
   useEffect(() => {
     const loadJourney = async () => {
       try {
-        // Try IndexedDB first
-        const stored = await getFromIndexedDB(STORAGE_KEY);
-        if (stored && typeof stored === 'string') {
-          const decompressed = LZString.decompress(stored);
-          if (decompressed) {
-            setEntries(JSON.parse(decompressed));
-          }
-        } else if (stored && Array.isArray(stored)) {
-          // If it's already an array (not compressed)
-          setEntries(stored);
+        // 1. Try atomic storage first
+        const atomicEntries = await getAllFromStore('journey-entries');
+        
+        if (atomicEntries && atomicEntries.length > 0) {
+          // Sort by date descending
+          setEntries(atomicEntries.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
         } else {
-          // Migration from localStorage if exists
-          const legacy = localStorage.getItem('akasha_journey_v2');
-          if (legacy) {
+          // 2. Migration: Try legacy monolithic blob
+          const legacy = await getFromStore('reports', LEGACY_KEY);
+          if (legacy && typeof legacy === 'string') {
             const decompressed = LZString.decompress(legacy);
             if (decompressed) {
-              const legacyEntries = JSON.parse(decompressed);
+              const legacyEntries: JourneyEntry[] = JSON.parse(decompressed);
               setEntries(legacyEntries);
-              // Save to IndexedDB for future
-              await saveToIndexedDB(STORAGE_KEY, legacy);
-              // Optionally remove legacy from localStorage
-              // localStorage.removeItem('akasha_journey_v2');
+              
+              // Migrate to atomic
+              console.log('[MIGRATION] Moving legacy entries to atomic storage...');
+              for (const entry of legacyEntries) {
+                await saveToStore('journey-entries', entry.id, entry);
+              }
+              // Clear legacy after success
+              await deleteFromStore('reports', LEGACY_KEY);
             }
           }
         }
       } catch (e) {
-        console.error('Failed to load journey from IndexedDB', e);
+        console.error('Failed to load journey:', e);
       } finally {
         setIsLoaded(true);
       }
@@ -88,16 +93,6 @@ export function useJourney() {
 
     loadJourney();
   }, []);
-
-  const persistToIndexedDB = async (updatedEntries: JourneyEntry[]) => {
-    try {
-      const stringified = JSON.stringify(updatedEntries);
-      const compressed = LZString.compress(stringified);
-      await saveToIndexedDB(STORAGE_KEY, compressed);
-    } catch (e) {
-      console.error('Failed to save journey to IndexedDB', e);
-    }
-  };
 
   const addEntry = async (entry: Omit<JourneyEntry, 'id' | 'date'>) => {
     const id = Math.random().toString(36).substring(2, 9);
@@ -107,30 +102,30 @@ export function useJourney() {
       date: new Date().toISOString(),
     };
     
-    const updatedEntries = [newEntry, ...entries];
-    setEntries(updatedEntries);
-    await persistToIndexedDB(updatedEntries);
+    // Optimistic update
+    setEntries(prev => [newEntry, ...prev]);
+    // Atomic save
+    await saveToStore('journey-entries', id, newEntry);
     return id;
   };
 
   const updateEntry = async (id: string, updates: Partial<JourneyEntry>) => {
-    const updatedEntries = entries.map(entry => 
-      entry.id === id ? { ...entry, ...updates } : entry
-    );
-    setEntries(updatedEntries);
-    await persistToIndexedDB(updatedEntries);
+    const entry = entries.find(e => e.id === id);
+    if (!entry) return;
+
+    const updatedEntry = { ...entry, ...updates };
+    setEntries(prev => prev.map(e => e.id === id ? updatedEntry : e));
+    await saveToStore('journey-entries', id, updatedEntry);
   };
 
   const deleteEntry = async (id: string) => {
-    const updatedEntries = entries.filter(entry => entry.id !== id);
-    setEntries(updatedEntries);
-    await persistToIndexedDB(updatedEntries);
+    setEntries(prev => prev.filter(e => e.id !== id));
+    await deleteFromStore('journey-entries', id);
   };
 
   const clearJourney = async () => {
     setEntries([]);
-    await deleteFromIndexedDB(STORAGE_KEY);
-    localStorage.removeItem('akasha_journey_v2'); // Also clear legacy
+    await clearStore('journey-entries');
   };
 
   return { entries, addEntry, updateEntry, deleteEntry, clearJourney, isLoaded };

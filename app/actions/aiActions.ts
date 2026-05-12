@@ -66,11 +66,12 @@ export async function generateMysticImage(prompt: string, aspectRatio: any, docI
     if (cachedDoc.exists) {
       const data = cachedDoc.data();
       if (data?.imageUrl) {
+        console.log(`[FIREBASE] Cache HIT for ${docId}`);
         return data.imageUrl;
       }
     }
   } catch (error) {
-    console.warn("Failed to read from server cache", error);
+    console.warn("[FIREBASE] Cache read failed:", error);
   }
 
   // 2. Generate with Gemini
@@ -95,18 +96,52 @@ export async function generateMysticImage(prompt: string, aspectRatio: any, docI
   const part = response.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
   let base64Data = "";
   if (part?.inlineData?.data) {
-    base64Data = `data:image/png;base64,${part.inlineData.data}`;
+    // Respect the actual mimeType returned by the model (could be png, jpeg, etc.)
+    const mimeType = part.inlineData.mimeType || "image/png";
+    base64Data = `data:${mimeType};base64,${part.inlineData.data}`;
   } else {
     throw new Error("No image data received");
   }
 
-  // 3. Save to server-side cache
+  // 3. Save to server-side cache with Size Guard
+  console.log(`[FIREBASE] Attempting save for ${docId}`);
+  try {
+    const sizeInBytes = Buffer.byteLength(base64Data, 'utf8');
+    
+    // Firestore 1MB document limit safety margin
+    if (sizeInBytes > 1040000) {
+      console.warn(`[FIREBASE] Image too large (${sizeInBytes} bytes) for Firestore. Skipping cloud cache.`);
+    } else {
+      const docRef = adminDb.collection("daily-images").doc(docId);
+      await docRef.set({
+        imageUrl: base64Data,
+        prompt: prompt,
+        date: docId.split('_')[0],
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        expiresAt: admin.firestore.Timestamp.fromDate(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000))
+      });
+      console.log(`[FIREBASE] SUCCESS: Document ${docId} saved.`);
+    }
+  } catch (error: any) {
+    console.error(`[FIREBASE] FAILED to save ${docId}:`, error.message);
+  }
+
+  return base64Data;
+}
+
+/**
+ * Syncs a (potentially client-side compressed) image back to Firestore.
+ */
+export async function syncImageToCloud(docId: string, base64Data: string, prompt: string) {
   try {
     const docRef = adminDb.collection("daily-images").doc(docId);
+    const sizeInBytes = Buffer.byteLength(base64Data, 'utf8');
     
-    // Firestore has a 1MB document limit. Base64 adds ~33% overhead.
-    // If it's too large, we'll try to save it anyway but log the error.
-    // Ideally we would compress here if we had 'sharp'.
+    if (sizeInBytes > 1048000) {
+      console.warn(`[SYNC] Image still too large (${sizeInBytes} bytes). Rejected.`);
+      return { success: false, error: "Size limit exceeded" };
+    }
+
     await docRef.set({
       imageUrl: base64Data,
       prompt: prompt,
@@ -114,10 +149,10 @@ export async function generateMysticImage(prompt: string, aspectRatio: any, docI
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       expiresAt: admin.firestore.Timestamp.fromDate(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000))
     });
-    console.log(`Successfully saved image to Firestore: ${docId} (${base64Data.length} bytes)`);
-  } catch (error) {
-    console.error(`Failed to save to server cache for docId ${docId}:`, error);
+    console.log(`[SYNC] Successfully synced image ${docId} to Firestore.`);
+    return { success: true };
+  } catch (error: any) {
+    console.error(`[SYNC] Failed to save ${docId}:`, error.message);
+    return { success: false, error: error.message };
   }
-
-  return base64Data;
 }

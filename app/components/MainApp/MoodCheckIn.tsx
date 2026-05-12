@@ -13,12 +13,12 @@ const moods = [
 
 export function MoodCheckIn({ onSelect }: { onSelect?: (mood: string) => void }) {
   return (
-    <div className="w-full mt-6">
-      <div className="p-4 md:p-6 bg-black/20 backdrop-blur-sm rounded-2xl border border-white/5">
-        <h3 className="text-xs md:text-sm font-serif text-amber-200/60 mb-6 text-center tracking-widest uppercase">
+    <div className="w-full mt-10">
+      <div className="p-10 md:p-12 bg-white/[0.01] backdrop-blur-xl rounded-[40px] border border-white/5 shadow-2xl">
+        <h3 className="text-[10px] md:text-xs font-serif text-amber-200/30 mb-12 text-center tracking-[0.4em] uppercase">
           此刻你的灵魂处于何种频率？
         </h3>
-        <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 md:gap-4">
+        <div className="grid grid-cols-3 md:grid-cols-6 gap-8 md:gap-12">
           {moods.map((mood) => (
             <button
               key={mood.value}

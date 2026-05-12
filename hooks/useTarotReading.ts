@@ -14,7 +14,10 @@ export function useTarotReading() {
 
   const { getProfileContext } = useUserProfile();
   const { addEntry, updateEntry } = useJourney();
-  const { stream, isLoading: isReading, abort } = useAIStream({ model: MODELS.PRO });
+  const { stream, isLoading: isReading, abort } = useAIStream({ 
+    model: MODELS.PRO,
+    config: { responseMimeType: 'application/json' }
+  });
 
   const generateReading = useCallback(async (
     drawnCards: any[], 
@@ -39,11 +42,12 @@ export function useTarotReading() {
 
       const prompt = `
 <instruction>
-你正在进行一次正式的塔罗占卜仪式。请基于提供的牌阵和用户信息，用中文撰写一份专业、深刻的解读报告。
+你正在进行一次正式的塔罗占卜仪式。请基于提供的牌阵和用户信息，生成一份结构化的解读报告。
+必须严格输出 JSON 格式。
 </instruction>
 
 <divination_context>
-  <spread_mode>${currentMode.name} (共${currentMode.cardCount}张牌)</spread_mode>
+  <spread_mode>${currentMode.name}</spread_mode>
   <category>${categoryName}</category>
 </divination_context>
 
@@ -52,23 +56,16 @@ export function useTarotReading() {
   ${zodiacSign ? `<zodiac>${zodiacSign}</zodiac>` : ""}
 </user_profile>
 
-<user_question>
-  ${question ? question : "未提供具体问题，请进行深度整体运势解读"}
-</user_question>
-
 <drawn_cards>
   ${cardsList}
 </drawn_cards>
 
-<output_format>
-使用Markdown排版，必须且只能包含以下三个二级标题（##）：
-## 🔮 牌阵解析
-## 🌌 牌面间的能量连结
-## 🌟 最终神谕与指引
-
-在文章末尾，必须单独提炼一句20字内的灵魂箴言，严格使用以下XML标签包裹：
-[SOUL_MOTTO] 你的灵魂箴言内容 [/SOUL_MOTTO]
-</output_format>
+<output_schema>
+{
+  "reading": "markdown string (with headers ## 🔮 牌阵解析, ## 🌌 牌面连结, ## 🌟 最终指引)",
+  "soulMotto": "string (short motto within 20 chars)"
+}
+</output_schema>
       `;
 
       let fullResponse = "";
@@ -76,16 +73,12 @@ export function useTarotReading() {
 
       for await (const chunk of stream(prompt, AKASHA_PERSONA)) {
         fullResponse += chunk;
-        setMessages([{ role: 'model', content: fullResponse }]);
       }
 
-      const mottoMatch = fullResponse.match(/\[SOUL_MOTTO\]([\s\S]*?)\[\/SOUL_MOTTO\]/);
-      let finalContent = fullResponse;
-      if (mottoMatch && mottoMatch[1]) {
-        setSoulMotto(mottoMatch[1].trim());
-        finalContent = fullResponse.replace(/\[SOUL_MOTTO\][\s\S]*?\[\/SOUL_MOTTO\]/g, '').trim();
-        setMessages([{ role: 'model', content: finalContent }]);
-      }
+      const data = JSON.parse(fullResponse);
+      const finalContent = data.reading;
+      setSoulMotto(data.soulMotto);
+      setMessages([{ role: 'model', content: finalContent }]);
 
       const displayTitle = question 
         ? (question.length > 25 ? `${question.substring(0, 25)}...` : question)

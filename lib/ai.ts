@@ -1,12 +1,13 @@
 export const MODELS = {
   PRO: "gemini-3.1-pro-preview",           // For deep reasoning & orchestration
-  FLASH: "gemini-3.1-flash-preview",       // For real-time search & context
-  LITE: "gemini-3.1-flash-lite",           // For standard divination
-  IMAGE: "nano-banana-pro-preview",        // For high-fidelity mystic visuals
-  RESEARCH: "deep-research-preview-04-2026" // For collective mirror deep dives
+  FLASH: "gemini-3-flash-preview",         // For rapid analysis
+  LITE: "gemini-3.1-flash-lite",           // Efficient stable inference
+  IMAGE_NANO: "gemini-3.1-flash-image-preview", // Nano Banana 2: High-efficiency image gen
+  IMAGE_PRO: "gemini-3-pro-image-preview",      // Nano Banana Pro: State-of-the-art 4K gen
+  RESEARCH: "deep-research-preview-04-2026"     // Agentic multi-step research
 };
 
-export const DEFAULT_MODEL = MODELS.LITE;
+export const DEFAULT_MODEL = MODELS.FLASH;
 
 export function sanitizePrompt(input: string): string {
   if (!input) return "";

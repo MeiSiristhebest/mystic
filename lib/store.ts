@@ -107,6 +107,7 @@ export const useAppStore = create<AppState>()(
     }),
     {
       name: 'mystic-app-storage',
+      storage: typeof window !== 'undefined' ? (await import('@/lib/storage')).zustandStorage : undefined,
       partialize: (state) => ({ profile: state.profile, activeTab: state.activeTab }),
       onRehydrateStorage: () => (state) => {
         if (state && typeof window !== 'undefined') {
@@ -114,7 +115,6 @@ export const useAppStore = create<AppState>()(
             const oldProfileStr = localStorage.getItem('mystic_user_profile');
             if (oldProfileStr) {
               const oldProfile = JSON.parse(oldProfileStr);
-              // If the new store doesn't have a name yet, but old one does, migrate it over
               if (!state.profile.name && oldProfile.name) {
                 state.updateProfile(oldProfile);
               }

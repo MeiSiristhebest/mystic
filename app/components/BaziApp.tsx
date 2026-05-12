@@ -69,12 +69,44 @@ function ZiweiLoading() {
   );
 }
 
-export default function BaziApp({ mode = 'bazi', onReadingChange }: { mode?: string, onReadingChange?: (reading: boolean) => void }) {
+interface BaziAppProps {
+  mode?: string;
+  onReadingChange?: (reading: boolean) => void;
+  initialHandoff?: any;
+  clearHandoff?: () => void;
+}
+
+export default function BaziApp({ 
+  mode: initialMode = 'bazi', 
+  onReadingChange,
+  initialHandoff,
+  clearHandoff
+}: BaziAppProps) {
+  const [mode, setMode] = useState(initialMode);
   const [question, setQuestion] = useState('');
   const { profile, getProfileContext } = useUserProfile();
   const { addEntry, updateEntry } = useJourney();
   const { isGeneratingPoster, handleGeneratePoster } = usePosterGenerator();
   const { stream, isLoading: isReading, error: streamError, abort } = useAIStream();
+
+  useEffect(() => {
+    if (initialHandoff) {
+      const q = initialHandoff.question || initialHandoff.context;
+      const m = initialHandoff.modeId;
+      
+      if (q) setQuestion(q);
+      if (m && ['bazi', 'ziwei', 'liunian'].includes(m)) {
+        setMode(m);
+      }
+      
+      // Auto-trigger if we have enough info
+      if (q && q.length > 5) {
+        handleGenerate();
+      }
+      clearHandoff?.();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialHandoff]);
 
   const [birthDate, setBirthDate] = useState(profile.birthDate || '');
   const [birthTime, setBirthTime] = useState(profile.birthTime || '');

@@ -20,7 +20,7 @@ interface EasternAppProps {
 
 export default function EasternApp({ initialHandoff, clearHandoff }: EasternAppProps) {
   const [activeTab, setActiveTab] = useState<"bazi" | "iching">(
-    initialHandoff?.system === "iching" ? "iching" : "bazi"
+    initialHandoff?.modeId === "iching" || initialHandoff?.system === "iching" ? "iching" : "bazi"
   );
 
   return (
@@ -60,7 +60,11 @@ export default function EasternApp({ initialHandoff, clearHandoff }: EasternAppP
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.5 }}
         >
-          {activeTab === "bazi" ? <BaziApp /> : <IChingApp />}
+          {activeTab === "bazi" ? (
+            <BaziApp initialHandoff={initialHandoff} clearHandoff={clearHandoff} />
+          ) : (
+            <IChingApp initialHandoff={initialHandoff} clearHandoff={clearHandoff} />
+          )}
         </motion.div>
       </AnimatePresence>
     </div>

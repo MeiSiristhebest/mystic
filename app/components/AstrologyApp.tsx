@@ -77,7 +77,12 @@ const CITIES = [
   { name: '台北', lon: 121.56, lat: 25.03 },
 ];
 
-export default function AstrologyApp() {
+interface AstrologyAppProps {
+  initialHandoff?: any;
+  clearHandoff?: () => void;
+}
+
+export default function AstrologyApp({ initialHandoff, clearHandoff }: AstrologyAppProps) {
   const { profile, getProfileContext } = useUserProfile();
   const [mode, setMode] = useState<"zodiac" | "mbti" | "compatibility" | "starchart" | "daily">("zodiac");
   const [selectedZodiac, setSelectedZodiac] = useState("aries");
@@ -95,6 +100,25 @@ export default function AstrologyApp() {
   const { addEntry } = useJourney();
   const { handleGeneratePoster, isGeneratingPoster } = usePosterGenerator();
   const posterRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (initialHandoff) {
+      const q = initialHandoff.question || initialHandoff.context;
+      const m = initialHandoff.modeId;
+      
+      if (q) setQuestion(q);
+      if (m && ["zodiac", "daily", "starchart", "mbti", "compatibility"].includes(m)) {
+        setMode(m as any);
+      }
+      
+      // Auto-trigger if question is substantial
+      if (q && q.length > 5) {
+        handleGenerate();
+      }
+      clearHandoff?.();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialHandoff]);
 
   const handleGenerate = async () => {
     setMessages([]);

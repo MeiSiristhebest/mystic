@@ -116,3 +116,18 @@
   - **Reason**: The 6-tab navigation restoration required `initialHandoff` support in `MysticTarot` and `SoulLab` to maintain UX continuity from the AI Guide.
   - **Action**: Updated component prop interfaces and lifecycle effects to consume and clear global handoff state.
 
+
+## [2026-05-12] Phase 11: Atomic Persistence & Agentic Automation
+
+- **Decision: Atomic IndexedDB Engine**
+  - **Reason**: Monolithic 'blob' storage caused significant UI jank as user history grew.
+  - **Action**: Refactored lib/storage.ts to support multi-store atomic operations. Updated useJourney.ts to implement O(1) record updates.
+- **Decision: Gemini 3.1 JSON Mode Standardization**
+  - **Reason**: Regex-based string parsing for AI responses was prone to failure.
+  - **Action**: Enforced responseMimeType: 'application/json' across TodayView, useTarotReading, and other core hooks.
+- **Decision: Divination Handoff Automation**
+  - **Reason**: AI Guide recommendations required too many manual clicks to execute.
+  - **Action**: Implemented auto-triggering logic in MysticTarot, BaziApp, AstrologyApp, and IChingApp to consume handoff data and start rituals immediately upon entry.
+- **Decision: Emotional Baseline Persistence**
+  - **Reason**: Mood check-ins were transient and not reflected in the user's permanent journey history.
+  - **Action**: Integrated MoodCheckIn with addEntry in SoulView, ensuring every emotional pulse is recorded in the Akashic timeline.

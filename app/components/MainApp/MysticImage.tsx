@@ -46,22 +46,21 @@ const getFallbackImageUrl = (prompt: string, aspectRatio: string) => {
   return `https://images.unsplash.com/${selectedId}?auto=format&fit=crop&q=80&w=${w}&h=${h}`;
 };
 
-// Compress image to ensure it fits in Firestore's 1MB limit
-const compressImage = (base64Str: string, maxWidth = 1024, quality = 0.7): Promise<string> => {
+// Compress image using an iterative strategy to maximize quality within Firestore's 1MB limit
+const compressImage = (base64Str: string, maxWidth = 1280, initialQuality = 0.85): Promise<string> => {
   return new Promise((resolve) => {
-    if (typeof window === 'undefined') {
-      resolve(base64Str);
-      return;
-    }
+    if (typeof window === 'undefined') return resolve(base64Str);
     
-    const timeout = setTimeout(() => {
-      resolve(base64Str);
-    }, 5000);
-
     const img = new window.Image();
+    // Enable cross-origin for decoding any potential remote base64 sources safely
+    img.crossOrigin = "anonymous";
     img.src = base64Str;
+    
+    const timeout = setTimeout(() => resolve(base64Str), 8000);
+
     img.onload = () => {
       clearTimeout(timeout);
+      // Create a canvas as a universal transcoder
       const canvas = document.createElement('canvas');
       let width = img.width;
       let height = img.height;
@@ -73,9 +72,38 @@ const compressImage = (base64Str: string, maxWidth = 1024, quality = 0.7): Promi
 
       canvas.width = width;
       canvas.height = height;
-      const ctx = canvas.getContext('2d');
-      ctx?.drawImage(img, 0, 0, width, height);
-      resolve(canvas.toDataURL('image/jpeg', quality));
+      
+      // Optimization: Disable alpha channel for smaller file size
+      const ctx = canvas.getContext('2d', { alpha: false });
+      if (!ctx) return resolve(base64Str);
+      
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      
+      // Fill dark background for non-alpha canvas
+      ctx.fillStyle = '#050308';
+      ctx.fillRect(0, 0, width, height);
+      ctx.drawImage(img, 0, 0, width, height);
+
+      // Iterative Strategy: Try WebP first, then JPEG. Adjust quality to fit 1MB.
+      let quality = initialQuality;
+      let format = 'image/webp';
+      let result = canvas.toDataURL(format, quality);
+      
+      // Fallback if WebP not supported
+      if (result.startsWith('data:image/png')) {
+        format = 'image/jpeg';
+        result = canvas.toDataURL(format, quality);
+      }
+
+      const MAX_CHARS = 1000000; // Safe threshold for Firestore string
+      
+      while (result.length > MAX_CHARS && quality > 0.2) {
+        quality -= 0.1;
+        result = canvas.toDataURL(format, quality);
+      }
+      
+      resolve(result);
     };
     img.onerror = () => {
       clearTimeout(timeout);
@@ -141,14 +169,27 @@ export const MysticImage = ({
         return;
       }
 
-      // Generate securely using Server Action (which also checks/saves to Firestore server-side)
+      // Generate securely using Server Action
       const base64Data = await generateMysticImage(prompt, aspectRatio, docId);
 
-      try {
-        let dataToCache = base64Data;
-        if (base64Data.length > 800000) {
+      // Handle Compression & Sync-back if it was generated fresh
+      let dataToCache = base64Data;
+      const needsSync = base64Data.length > 800000; // Likely skipped by server cache
+
+      if (needsSync) {
+        try {
+          console.log(`[CLIENT] Image large (${base64Data.length} chars), compressing before sync...`);
           dataToCache = await compressImage(base64Data, 1280, 0.6);
+          // Sync compressed version back to Firestore
+          const { syncImageToCloud } = await import("@/app/actions/aiActions");
+          await syncImageToCloud(docId, dataToCache, prompt);
+        } catch (syncErr) {
+          console.warn("[CLIENT] Sync-back failed:", syncErr);
         }
+      }
+
+      // Save to local IndexedDB
+      try {
         await saveToIndexedDB(`mystic_img_${docId}`, dataToCache);
       } catch (cacheErr) {
         // Silently fail cache saving

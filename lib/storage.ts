@@ -1,8 +1,7 @@
 import type { IDBPDatabase } from 'idb';
 
 const DB_NAME = 'akasha-journey-db';
-const STORE_NAME = 'reports';
-const VERSION = 1;
+const VERSION = 2; // Incremented for new stores
 
 let dbPromise: Promise<IDBPDatabase> | null = null;
 
@@ -14,9 +13,18 @@ async function getDB() {
   if (!dbPromise) {
     const { openDB } = await import('idb');
     dbPromise = openDB(DB_NAME, VERSION, {
-      upgrade(db) {
-        if (!db.objectStoreNames.contains(STORE_NAME)) {
-          db.createObjectStore(STORE_NAME);
+      upgrade(db, oldVersion) {
+        // Main Reports store
+        if (!db.objectStoreNames.contains('reports')) {
+          db.createObjectStore('reports');
+        }
+        // App State Store (For Zustand)
+        if (!db.objectStoreNames.contains('app-state')) {
+          db.createObjectStore('app-state');
+        }
+        // Atomic Journey Store
+        if (!db.objectStoreNames.contains('journey-entries')) {
+          db.createObjectStore('journey-entries', { keyPath: 'id' });
         }
       },
     });
@@ -24,62 +32,52 @@ async function getDB() {
   return dbPromise;
 }
 
-export async function saveToIndexedDB(key: string, value: unknown) {
+// Generic Store Operations
+export async function saveToStore(storeName: string, key: string, value: any) {
   const db = await getDB();
-  await db.put(STORE_NAME, value, key);
+  // If the store has a keyPath, we don't need to provide the key separately in put()
+  if (storeName === 'journey-entries') {
+    return db.put(storeName, value);
+  }
+  return db.put(storeName, value, key);
 }
 
-export async function getFromIndexedDB(key: string) {
+export async function getFromStore(storeName: string, key: string) {
   const db = await getDB();
-  return db.get(STORE_NAME, key);
+  return db.get(storeName, key);
 }
 
-export async function deleteFromIndexedDB(key: string) {
+export async function getAllFromStore(storeName: string) {
   const db = await getDB();
-  await db.delete(STORE_NAME, key);
+  return db.getAll(storeName);
 }
 
-export async function clearIndexedDB() {
+export async function deleteFromStore(storeName: string, key: string) {
   const db = await getDB();
-  await db.clear(STORE_NAME);
+  return db.delete(storeName, key);
 }
+
+export async function clearStore(storeName: string) {
+  const db = await getDB();
+  return db.clear(storeName);
+}
+
+// Legacy Aliases for compatibility during migration
+export const saveToIndexedDB = (key: string, value: any) => saveToStore('reports', key, value);
+export const getFromIndexedDB = (key: string) => getFromStore('reports', key);
+export const deleteFromIndexedDB = (key: string) => deleteFromStore('reports', key);
 
 /**
- * Cleanup localStorage if it's getting too full
+ * Custom Storage Adapter for Zustand
  */
-export function cleanupLocalStorage() {
-  try {
-    const keys = Object.keys(localStorage);
-    let totalSize = 0;
-    for (const key of keys) {
-      totalSize += (localStorage.getItem(key) || '').length;
-    }
-
-    // If over 4MB (approximate), clear old entries
-    if (totalSize > 4 * 1024 * 1024) {
-      console.warn('LocalStorage is full, cleaning up...');
-      // Simple strategy: clear all and let the app rebuild what it needs
-      // or selectively delete based on prefix
-      const journeyKeys = keys.filter(k => k.startsWith('akasha-journey-'));
-      journeyKeys.sort(); // Sort by key (which might include timestamp)
-      
-      // Delete oldest 50% of journey entries
-      const toDelete = journeyKeys.slice(0, Math.floor(journeyKeys.length / 2));
-      toDelete.forEach(k => localStorage.removeItem(k));
-    }
-  } catch (e) {
-    console.error('Failed to cleanup localStorage', e);
-  }
-}
-
-/**
- * Compress Base64 image data (placeholder for real compression if needed)
- * For now, we just suggest using IndexedDB for large files.
- */
-export async function saveLargeData(key: string, data: string) {
-  if (data.length > 100 * 1024) { // > 100KB
-    await saveToIndexedDB(key, data);
-    return { type: 'indexeddb', key };
-  }
-  return { type: 'inline', data };
-}
+export const zustandStorage = {
+  getItem: async (name: string): Promise<string | null> => {
+    return (await getFromStore('app-state', name)) || null;
+  },
+  setItem: async (name: string, value: string): Promise<void> => {
+    await saveToStore('app-state', name, value);
+  },
+  removeItem: async (name: string): Promise<void> => {
+    await deleteFromStore('app-state', name);
+  },
+};

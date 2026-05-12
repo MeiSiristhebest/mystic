@@ -24,9 +24,42 @@ export function SoulView() {
   const isLoaded = useAppStore((state) => state.isLoaded);
   const setIsProfileModalOpen = useAppStore((state) => state.setIsProfileModalOpen);
   const setActiveTab = useAppStore((state) => state.setActiveTab);
+  const updateProfile = useAppStore((state) => state.updateProfile);
   
-  const { entries } = useJourney();
+  const { entries, addEntry } = useJourney();
   
+  const handleMoodSelect = async (moodValue: string) => {
+    const today = new Date();
+    const dateStr = today.toISOString().split('T')[0];
+    const mood = moods.find(m => m.value === moodValue);
+    
+    // 1. Update Profile Store
+    const currentBaseline = profile.emotionalBaseline || [];
+    const existingIndex = currentBaseline.findIndex(e => e.date === dateStr);
+    
+    let newBaseline;
+    if (existingIndex >= 0) {
+      const words = [...new Set([...currentBaseline[existingIndex].words, mood?.label || ""])];
+      newBaseline = currentBaseline.map((e, i) => i === existingIndex ? { ...e, words } : e);
+    } else {
+      newBaseline = [...currentBaseline, { date: dateStr, words: [mood?.label || ""] }];
+    }
+    
+    updateProfile({ emotionalBaseline: newBaseline });
+
+    // 2. Add to Journey for persistence
+    await addEntry({
+      type: 'subconscious',
+      title: `能量打卡：${mood?.label || "觉察"}`,
+      summary: `今日灵魂频率调频至 ${mood?.label}。在星辰的流动中，你记录下了这一刻的内在共鸣。`,
+      details: {
+        type: 'subconscious',
+        text: `你于 ${dateStr} 完成了一次灵魂频率打卡。当前状态：${mood?.label}。建议通过冥想进一步加深对此能量的觉察。`,
+        messages: [{ role: 'model', content: `我感知到了你的频率，${profile.name || "旅人"}。${mood?.label}的能量正在你的生命中流淌。保持这份觉察，它是通往个体化之路的基石。` }]
+      }
+    });
+  };
+
   const birthDate = profile.birthDate ? new Date(profile.birthDate) : null;
   const sunSign = birthDate ? getSunSign(birthDate) : "未知";
   const ascendant = birthDate && profile.birthTime ? getAscendant(birthDate, profile.birthTime) : "未知";
@@ -48,7 +81,7 @@ export function SoulView() {
     for (let i = 6; i >= 0; i--) {
       const d = new Date(today);
       d.setDate(today.getDate() - i);
-      const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      const dateStr = d.toISOString().split('T')[0];
       
       const dayEmotion = profile.emotionalBaseline?.find(e => e.date === dateStr);
       if (dayEmotion) {
@@ -59,6 +92,15 @@ export function SoulView() {
     }
     return levels;
   }, [profile.emotionalBaseline]);
+
+const moods = [
+  { emoji: "✨", label: "充满灵感", value: "inspired" },
+  { emoji: "🌙", label: "平静宁和", value: "calm" },
+  { emoji: "🔥", label: "动力十足", value: "energetic" },
+  { emoji: "🌧️", label: "略显忧郁", value: "melancholy" },
+  { emoji: "🌀", label: "有些迷茫", value: "confused" },
+  { emoji: "🌿", label: "正在疗愈", value: "healing" },
+];
 
   if (!isLoaded) return <BreathingLoading text="正在同步灵魂频率..." />;
 
@@ -167,9 +209,9 @@ export function SoulView() {
                 ))}
               </div>
             </div>
-            <div className="luxury-card p-8 space-y-6">
+            <div className="luxury-card p-12 space-y-8">
               <div className="flex items-center justify-between">
-                <h4 className="font-serif text-xl tracking-widest">能量波动</h4>
+                <h4 className="font-serif text-2xl tracking-[0.2em] gold-gradient-text">能量波动</h4>
               </div>
               <div className="h-32 flex items-end gap-1 md:gap-2">
                 {energyLevels.map((h, i) => (
@@ -186,7 +228,7 @@ export function SoulView() {
                   </motion.div>
                 ))}
               </div>
-              <MoodCheckIn />
+              <MoodCheckIn onSelect={handleMoodSelect} />
             </div>
           </section>
         </div>

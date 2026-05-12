@@ -19,25 +19,25 @@ export function AmbientCosmicBackground() {
       {/* Deep Space Base */}
       <div className="absolute inset-0 bg-[#050308]" />
       
-      {/* Nebulas */}
+      {/* Nebulas - Enhanced visibility */}
       <motion.div 
         animate={{ 
-          opacity: [0.1, 0.2, 0.1],
+          opacity: [0.15, 0.35, 0.15],
           scale: [1, 1.1, 1],
         }}
         transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute -top-[20%] -left-[10%] w-[80%] h-[80%] rounded-full bg-purple-900/20 blur-[120px]"
+        className="absolute -top-[20%] -left-[10%] w-[80%] h-[80%] rounded-full bg-purple-900/30 blur-[120px]"
       />
       <motion.div 
         animate={{ 
-          opacity: [0.1, 0.15, 0.1],
+          opacity: [0.1, 0.25, 0.1],
           scale: [1, 1.2, 1],
         }}
         transition={{ duration: 20, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-        className="absolute bottom-[10%] -right-[10%] w-[70%] h-[70%] rounded-full bg-amber-900/10 blur-[100px]"
+        className="absolute bottom-[10%] -right-[10%] w-[70%] h-[70%] rounded-full bg-amber-900/20 blur-[100px]"
       />
       
-      {/* Floating Particles */}
+      {/* Floating Particles - Brighter and Larger */}
       <div className="absolute inset-0">
         {particles.map((p) => (
           <motion.div
@@ -49,7 +49,7 @@ export function AmbientCosmicBackground() {
             }}
             animate={{ 
               y: ["0%", "100%"],
-              opacity: [0.1, 0.5, 0.1]
+              opacity: [0.2, 0.7, 0.2]
             }}
             transition={{ 
               duration: p.duration, 
@@ -57,7 +57,7 @@ export function AmbientCosmicBackground() {
               ease: "linear",
               delay: p.delay
             }}
-            className="absolute w-[1px] h-[1px] bg-white rounded-full shadow-[0_0_8px_white]"
+            className="absolute w-[2px] h-[2px] bg-white rounded-full shadow-[0_0_12px_rgba(255,255,255,0.8)]"
           />
         ))}
       </div>

@@ -28,7 +28,10 @@ import { usePosterGenerator } from "@/hooks/usePosterGenerator";
 export function TodayView() {
   const { profile, isLoaded: isProfileLoaded } = useUserProfile();
   const { entries, isLoaded: journeyLoaded } = useJourney();
-  const { stream } = useAIStream();
+  const { stream } = useAIStream({ 
+    model: "gemini-3-flash-preview", 
+    config: { responseMimeType: "application/json" } 
+  });
   const { isGeneratingPoster, handleGeneratePoster } = usePosterGenerator();
   const setActiveTab = useAppStore((state) => state.setActiveTab);
   const setHandoff = useAppStore((state: any) => state.setHandoff);
@@ -61,7 +64,7 @@ export function TodayView() {
     };
   }, []);
 
-  // 智能推荐逻辑 (Smart Card Logic from commit 3eeb634e)
+  // 智能推荐逻辑
   const smartCard = useMemo(() => {
     if (lastEntry) {
       return {
@@ -95,7 +98,7 @@ export function TodayView() {
       const today = now.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
       const hour = now.getHours();
       const timePeriod = hour >= 5 && hour < 12 ? 'morning' : hour >= 12 && hour < 18 ? 'afternoon' : hour >= 18 && hour < 22 ? 'evening' : 'night';
-      const cacheKey = `daily_minimal_v2_${today}_${timePeriod}_${profile.name || 'guest'}`;
+      const cacheKey = `daily_minimal_v3_${today}_${timePeriod}_${profile.name || 'guest'}`;
       
       const cached = await getFromIndexedDB(cacheKey);
       if (cached) {
@@ -108,29 +111,32 @@ export function TodayView() {
 <instruction>
 你是阿卡夏记录的守护者。请为用户生成今日专属的灵魂寄语和神谕。
 现在的时刻是：${greeting}。
-请结合用户的档案信息，生成一段具有深度艺术感、玄奥且充满力量的文字。</instruction>
+请结合用户的档案信息（MBTI、性格特质等），生成一段具有深度艺术感、玄奥且充满力量的文字。
+必须严格输出纯净的 JSON 格式。
+</instruction>
 
 <user_profile>
 ${JSON.stringify(profile)}
 </user_profile>
 
-<output_format>
-请严格按照以下JSON格式输出：
+<output_schema>
 {
-  "subMotto": "一句简短的灵魂寄语（位于问候语下方，10-15字）",
-  "oracle": "今日核心神谕（带有哲理性，1-3句话，约30-60字，不含引号。）",
-  "imagePrompt": "一张匹配该神谕意境的神秘主义艺术大图提示词，High Fantasy, Cosmic, Mystical, Cinematic"
+  "subMotto": "string (10-15 chars, poetic motto)",
+  "oracle": "string (30-60 chars, philosophical oracle)",
+  "imagePrompt": "string (artistic prompt for Nano Banana 2 image generation)"
 }
-</output_format>
+</output_schema>
       `;
 
       let fullOutput = "";
       try {
-        for await (const chunk of stream(prompt, AKASHA_PERSONA)) {
+        for await (const chunk of stream(prompt)) {
           fullOutput += chunk;
         }
 
-        const data = JSON.parse(fullOutput.replace(/```json|```/g, '').trim());
+        // Gemini 3.1 JSON Mode guarantees valid JSON
+        const data = JSON.parse(fullOutput);
+        
         const newDaily = {
           date: today,
           reading: data.oracle,

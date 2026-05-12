@@ -88,7 +88,20 @@ function HexagramDisplay({ lines }: { lines: number[] }) {
   );
 }
 
-export default function IChingApp({ mode = 'liuyao', onReadingChange }: { mode?: string, onReadingChange?: (reading: boolean) => void }) {
+interface IChingAppProps {
+  mode?: string;
+  onReadingChange?: (reading: boolean) => void;
+  initialHandoff?: any;
+  clearHandoff?: () => void;
+}
+
+export default function IChingApp({ 
+  mode: initialMode = 'liuyao', 
+  onReadingChange,
+  initialHandoff,
+  clearHandoff
+}: IChingAppProps) {
+  const [mode, setMode] = useState(initialMode);
   const [question, setQuestion] = useState('');
   
   // Liu Yao state
@@ -98,6 +111,36 @@ export default function IChingApp({ mode = 'liuyao', onReadingChange }: { mode?:
   // Mei Hua state
   const [num1, setNum1] = useState('');
   const [num2, setNum2] = useState('');
+
+  // Define generation handlers first so they can be used in useEffect
+  const handleMeiHuaGenerate = async () => { /* ... existing implementation below ... */ };
+  const handleQiMenGenerate = async () => { /* ... existing implementation below ... */ };
+
+  useEffect(() => {
+    if (initialHandoff) {
+      const q = initialHandoff.question || initialHandoff.context;
+      const m = initialHandoff.modeId;
+      
+      if (q) setQuestion(q);
+      if (m && ['liuyao', 'meihua', 'qimen'].includes(m)) {
+        setMode(m as any);
+      }
+      
+      // Auto-trigger for specific modes that don't require coin tossing
+      if (q && q.length > 5) {
+        if (m === 'meihua') {
+          // Trigger Mei Hua calculation logic (needs numbers usually, but can be derived or randomized)
+          const btn = document.getElementById('meihua-trigger');
+          if (btn) btn.click();
+        } else if (m === 'qimen') {
+          const btn = document.getElementById('qimen-trigger');
+          if (btn) btn.click();
+        }
+      }
+      clearHandoff?.();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialHandoff]);
   const [error, setError] = useState('');
 
   const [currentEntryId, setCurrentEntryId] = useState<string | null>(null);
