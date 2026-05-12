@@ -60,7 +60,11 @@ export default function SoulLab({ initialHandoff, clearHandoff }: SoulLabProps) 
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.5 }}
         >
-          {activeTab === "shadow" ? <ShadowWorkApp /> : <SubconsciousApp />}
+          {activeTab === "shadow" ? (
+            <ShadowWorkApp initialHandoff={initialHandoff} clearHandoff={clearHandoff} />
+          ) : (
+            <SubconsciousApp initialHandoff={initialHandoff} clearHandoff={clearHandoff} />
+          )}
         </motion.div>
       </AnimatePresence>
     </div>

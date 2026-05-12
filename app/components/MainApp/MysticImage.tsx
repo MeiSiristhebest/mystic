@@ -262,9 +262,24 @@ export const MysticImage = ({
         <div className="absolute inset-0 bg-gradient-to-br from-[#1a1033] via-[#080510] to-[#101a33]" />
       )}
       
-      {/* Brand Overlays */}
+      {/* Brand Overlays & Breathing Aura */}
       <div className="absolute inset-0 pointer-events-none z-10">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(8,5,16,0.4)_70%,rgba(8,5,16,0.8)_100%)]" />
+        
+        {/* New Breathing Aura Overlay */}
+        <motion.div 
+          animate={{ 
+            opacity: [0.3, 0.6, 0.3],
+            scale: [1, 1.05, 1]
+          }}
+          transition={{ 
+            duration: 8, 
+            repeat: Infinity, 
+            ease: "easeInOut" 
+          }}
+          className="absolute inset-0 bg-gradient-to-tr from-[#C9A84C]/10 via-transparent to-[#9B7FD4]/10 mix-blend-screen"
+        />
+
         <div className="absolute inset-0 flex items-center justify-center opacity-20">
           <motion.div 
             animate={{ rotate: 360 }}

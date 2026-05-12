@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { Moon, MessageCircle, Send } from "lucide-react";
 import { useUserProfile } from "@/hooks/useUserProfile";
@@ -7,11 +7,32 @@ import { useJourney } from "@/hooks/useJourney";
 import BreathingLoading from "./BreathingLoading";
 import { MODELS } from "@/lib/ai";
 
-export default function SubconsciousApp() {
+interface SubconsciousAppProps {
+  initialHandoff?: any;
+  clearHandoff?: () => void;
+}
+
+export default function SubconsciousApp({ initialHandoff, clearHandoff }: SubconsciousAppProps = {}) {
   const { getProfileContext } = useUserProfile();
   const { addEntry } = useJourney();
+  const [hasAcceptedDisclaimer, setHasAcceptedDisclaimer] = useState(false);
   const [mode, setMode] = useState<'dream' | 'imagination'>('dream');
   const [input, setInput] = useState("");
+
+  useEffect(() => {
+    if (initialHandoff) {
+      const timer = setTimeout(() => {
+        const q = initialHandoff.question || initialHandoff.context;
+        const m = initialHandoff.modeId;
+        
+        if (q) setInput(q);
+        if (m === 'dream' || m === 'imagination') setMode(m);
+        
+        clearHandoff?.();
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [initialHandoff, clearHandoff]);
   
   const { messages, sendMessage, isLoading, error, clearMessages } = useAIChat({
     model: MODELS.PRO,
@@ -65,6 +86,44 @@ ${currentInput}
     clearMessages();
     setInput("");
   };
+
+  if (!hasAcceptedDisclaimer) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-12">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-amber-950/20 border border-amber-500/30 rounded-3xl p-8 backdrop-blur-md"
+        >
+          <div className="flex justify-center mb-6">
+            <Moon className="w-16 h-16 text-amber-500" />
+          </div>
+          <h2 className="text-2xl font-serif font-bold text-amber-400 text-center mb-6 tracking-widest">
+            潜意识探索安全指引
+          </h2>
+          <div className="space-y-4 text-amber-100/70 text-sm md:text-base leading-relaxed mb-8 font-serif">
+            <p>
+              欢迎来到「潜意识剧场」。梦境解析与主动想象是通往内心深处的门户。
+            </p>
+            <p className="font-bold text-amber-300/90">
+              请知悉：这里提供的解析是基于心理学原型的象征性探讨，并非临床心理诊断或医疗建议。
+            </p>
+            <p>
+              深入潜意识可能会唤起被遗忘的记忆或强烈的情绪。如果您正处于极度的心理压力中，请在专业人士的指导下进行此类探索。
+            </p>
+          </div>
+          <div className="flex justify-center">
+            <button
+              onClick={() => setHasAcceptedDisclaimer(true)}
+              className="bg-amber-600/30 hover:bg-amber-600/50 border border-amber-500/50 text-amber-200 px-10 py-3 rounded-full font-serif transition-all"
+            >
+              我已准备好面对内在真实的倒影
+            </button>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -156,7 +156,7 @@ export function ExploreView() {
           >
             {subTab === "tarot" && <MysticTarot initialHandoff={handoffData} clearHandoff={() => setHandoffData(null)} />}
             {subTab === "eastern" && <EasternApp initialHandoff={handoffData} clearHandoff={() => setHandoffData(null)} />}
-            {subTab === "astrology" && <AstrologyApp />}
+            {subTab === "astrology" && <AstrologyApp initialHandoff={handoffData} clearHandoff={() => setHandoffData(null)} />}
             {subTab === "soul" && <SoulLab initialHandoff={handoffData} clearHandoff={() => setHandoffData(null)} />}
           </motion.div>
         </AnimatePresence>

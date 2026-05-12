@@ -62,6 +62,8 @@ interface AppState {
   
   profile: UserProfile;
   isLoaded: boolean;
+  hasAcceptedTerms: boolean;
+  setHasAcceptedTerms: (accepted: boolean) => void;
   updateProfile: (newProfile: Partial<UserProfile>) => void;
   clearProfile: () => void;
   setLoaded: (loaded: boolean) => void;
@@ -84,6 +86,8 @@ export const useAppStore = create<AppState>()(
       profile: DEFAULT_PROFILE,
       isLoaded: false,
       setLoaded: (isLoaded) => set({ isLoaded }),
+      hasAcceptedTerms: false,
+      setHasAcceptedTerms: (hasAcceptedTerms) => set({ hasAcceptedTerms }),
       
       updateProfile: (newProfile) => set((state) => {
         // Sanitize to prevent garbled text (basic protection)
@@ -109,7 +113,7 @@ export const useAppStore = create<AppState>()(
     {
       name: 'mystic-app-storage',
       storage: typeof window !== 'undefined' ? createJSONStorage(() => zustandStorage) : undefined,
-      partialize: (state) => ({ profile: state.profile, activeTab: state.activeTab }),
+      partialize: (state) => ({ profile: state.profile, activeTab: state.activeTab, hasAcceptedTerms: state.hasAcceptedTerms }),
       onRehydrateStorage: () => (state) => {
         if (state && typeof window !== 'undefined') {
           try {

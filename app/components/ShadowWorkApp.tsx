@@ -7,11 +7,28 @@ import { useJourney } from "@/hooks/useJourney";
 import BreathingLoading from "./BreathingLoading";
 import { MODELS } from "@/lib/ai";
 
-export default function ShadowWorkApp() {
+interface ShadowWorkAppProps {
+  initialHandoff?: any;
+  clearHandoff?: () => void;
+}
+
+export default function ShadowWorkApp({ initialHandoff, clearHandoff }: ShadowWorkAppProps = {}) {
   const { getProfileContext } = useUserProfile();
   const { addEntry } = useJourney();
   const [hasAcceptedDisclaimer, setHasAcceptedDisclaimer] = useState(false);
   const [input, setInput] = useState("");
+
+  useEffect(() => {
+    if (initialHandoff) {
+      const timer = setTimeout(() => {
+        const q = initialHandoff.question || initialHandoff.context;
+        if (q) setInput(q);
+        // DO NOT auto-accept disclaimer. User MUST read and click.
+        clearHandoff?.();
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [initialHandoff, clearHandoff]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { messages, sendMessage, isLoading, error, clearMessages } = useAIChat({

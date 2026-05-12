@@ -179,3 +179,24 @@
 - **Decision: Navigational Intelligence (OmniOracle)**
   - **Reason**: The initial AI guide was a simple keyword router.
   - **Action**: Upgraded `OmniOracleGuide.tsx` to use high-fidelity intent recognition to recommend the best divination system based on emotional nuance and problem depth.
+- **Decision: Historical Journey Follow-up (Living Memories)**
+  - **Reason**: Users want to continue dialogues from past readings to see how their situation has evolved.
+  - **Action**: Refactored `JourneyApp.tsx` to support full interactive chat for historical entries. Implemented smart initial reading extraction (from `messages[1]`) and context pinning based on entry type.
+
+## [2026-05-12] Phase 15: Sensory & Intelligence Evolution (Final Integration)
+
+- **Decision: Cross-Module Intelligence (灵觉共振)**
+  - **Reason**: To break vertical data silos and create a unified mystical entity that "remembers" the user across different divination systems.
+  - **Action**: Injected `Soul Profile` (MBTI, Archetype, Bazi) and `Emotional Baseline` into all core prompts. Upgraded `AKASHA_PERSONA` with `cross_system_synthesis` logic.
+- **Decision: Proactive Association Engine (命运指引)**
+  - **Reason**: Users often didn't know which module to explore next based on their results.
+  - **Action**: Implemented `<mystic_association>` tag parsing in `MysticMarkdown`. Created the `AssociationBubble` UI to enable one-click transitions between systems (e.g., Tarot -> Bazi) with context handoff.
+- **Decision: Orchestrator Modernization**
+  - **Reason**: The initial guide was disconnected from the user's permanent profile.
+  - **Action**: Refactored `OmniOracleGuide.tsx` to use the centralized `ORCHESTRATOR_PERSONA` and profile context.
+- **Decision: Sensory Ritualization**
+  - **Reason**: Enhance the "Sacred Emergence" feeling of AI-generated content.
+  - **Action**: Finalized `StreamingParticles` in Markdown and `BreathingAura` in Image generation.
+- **Decision: Production Build Hardening**
+  - **Reason**: Complex Markdown parsing and dynamic components caused intermittent hydration and import errors.
+  - **Action**: Standardized imports in `MysticMarkdown` and fixed circular dependencies in `MainApp/index`. Verified 100% build success.

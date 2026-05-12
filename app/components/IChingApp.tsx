@@ -130,18 +130,24 @@ export default function IChingApp({
         // Auto-trigger for specific modes that don't require coin tossing
         if (q && q.length > 5) {
           if (m === 'meihua') {
-            const btn = document.getElementById('meihua-trigger');
-            if (btn) btn.click();
+            // Pre-fill numbers if not present to allow generation
+            if (!num1) setNum1('8'); 
+            if (!num2) setNum2('8');
+            // We'll use a small delay to ensure state is updated before clicking
+            setTimeout(() => {
+              document.getElementById('meihua-trigger')?.click();
+            }, 100);
           } else if (m === 'qimen') {
-            const btn = document.getElementById('qimen-trigger');
-            if (btn) btn.click();
+            setTimeout(() => {
+              document.getElementById('qimen-trigger')?.click();
+            }, 100);
           }
         }
         clearHandoff?.();
       }, 0);
       return () => clearTimeout(timer);
     }
-  }, [initialHandoff, clearHandoff]);
+  }, [initialHandoff, clearHandoff, num1, num2]);
   const [error, setError] = useState('');
 
   const [currentEntryId, setCurrentEntryId] = useState<string | null>(null);
@@ -553,6 +559,7 @@ ${lineNames}
                     <p className="text-red-400 text-sm mb-4 font-serif">{error}</p>
                   )}
                   <button
+                    id="meihua-trigger"
                     onClick={handleMeihuaGenerate}
                     className="group relative px-10 py-4 w-full bg-gradient-to-r from-amber-700 to-amber-900 hover:from-amber-600 hover:to-amber-800 text-amber-100 rounded-full font-serif text-lg tracking-wider shadow-[0_0_20px_rgba(180,110,20,0.4)] hover:shadow-[0_0_30px_rgba(200,130,30,0.6)] transition-all duration-300 overflow-hidden"
                   >
@@ -573,6 +580,7 @@ ${lineNames}
                   </div>
                   
                   <button
+                    id="qimen-trigger"
                     onClick={() => generateReading('qimen', {})}
                     className="group relative px-10 py-4 w-full md:w-1/2 bg-gradient-to-r from-amber-700 to-amber-900 hover:from-amber-600 hover:to-amber-800 text-amber-100 rounded-full font-serif text-lg tracking-wider shadow-[0_0_20px_rgba(180,110,20,0.4)] hover:shadow-[0_0_30px_rgba(200,130,30,0.6)] transition-all duration-300 overflow-hidden"
                   >

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useJourney, JourneyEntry } from "@/hooks/useJourney";
-import { Trash2, Book, Sparkles, Compass, Star, Sun, Moon, X, ChevronRight, Send, Download, Maximize2, Minimize2 } from "lucide-react";
+import { Trash2, Book, Sparkles, Compass, Star, Sun, Moon, X, ChevronRight, Send, Download, Maximize2, Minimize2, RefreshCw } from "lucide-react";
 import MysticMarkdown from "./MysticMarkdown";
 import BreathingLoading from "./BreathingLoading";
 import { AKASHA_PERSONA } from "@/lib/ai";
@@ -14,26 +14,29 @@ import { TarotCard } from "@/lib/tarot-data";
 export default function JourneyApp() {
   const { entries, deleteEntry, updateEntry, clearJourney } = useJourney();
   const [selectedEntry, setSelectedEntry] = useState<JourneyEntry | null>(null);
+  const [prevSelectedEntryId, setPrevSelectedEntryId] = useState<string | null>(null);
+  const [chatMessages, setChatMessages] = useState<{ role: 'user' | 'model'; content: string }[]>([]);
+  const [retroInsight, setRetroInsight] = useState<string | null>(null);
+  const [isGeneratingRetro, setIsGeneratingRetro] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [inputMessage, setInputMessage] = useState("");
   const [isAskingFollowUp, setIsAskingFollowUp] = useState(false);
-  const [chatMessages, setChatMessages] = useState<{ role: 'user' | 'model'; content: string }[]>([]);
-  const posterRef = useRef<HTMLDivElement>(null);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-  const { isGeneratingPoster, handleGeneratePoster } = usePosterGenerator();
-  const { stream, isLoading: isStreaming, error: streamError, abort } = useAIStream();
-
-  const [prevSelectedEntryId, setPrevSelectedEntryId] = useState<string | null>(null);
-  
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [selectedCard, setSelectedCard] = useState<TarotCard | null>(null);
   const [cardMeaningsCache, setCardMeaningsCache] = useState<Record<string, string>>({});
+
+  const posterRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const { isGeneratingPoster, handleGeneratePoster } = usePosterGenerator();
+  const { stream, isLoading: isStreaming, error: streamError, abort } = useAIStream();
 
   // Sync chat messages when selected entry changes
   const currentId = selectedEntry?.id || null;
   if (currentId !== prevSelectedEntryId) {
     setChatMessages(selectedEntry?.details?.messages || []);
+    setRetroInsight(null); // Clear previous retro insight
     setPrevSelectedEntryId(currentId);
   }
 
@@ -43,6 +46,44 @@ export default function JourneyApp() {
     }
   }, [chatMessages]);
 
+  const generateRetroInsight = async () => {
+    if (!selectedEntry || isGeneratingRetro) return;
+    setIsGeneratingRetro(true);
+    setRetroInsight("");
+
+    try {
+      const pastReading = selectedEntry.summary || (selectedEntry.details as any)?.text || "";
+      const currentContext = `[当前状态：用户正在回看这条记录。当前日期：${new Date().toLocaleDateString()}]`;
+      
+      const prompt = `
+<instruction>
+你是一个观察时间流动的智者。请对比用户「过去」的占卜记录与「现在」的时间节点，给出一段富有哲理、温暖且具有启发性的“回响”。
+不要重复占卜内容，而是谈论“演变”和“当下的意义”。
+</instruction>
+
+<past_reading>
+${pastReading}
+</past_reading>
+
+<current_context>
+${currentContext}
+</current_context>
+`;
+      const systemInstruction = "你是阿卡夏记录的管理员，擅长通过时间线连接灵魂的碎片。";
+      
+      let fullResponse = "";
+      for await (const chunk of stream(prompt, systemInstruction)) {
+        fullResponse += chunk;
+        setRetroInsight(fullResponse);
+      }
+    } catch (err) {
+      console.error(err);
+      setRetroInsight("时间的迷雾暂时遮蔽了回响，请稍后再试。");
+    } finally {
+      setIsGeneratingRetro(false);
+    }
+  };
+
   const onGeneratePoster = async () => {
     if (!posterRef.current || !selectedEntry) return;
     await handleGeneratePoster(posterRef.current, `akasha-journey-${selectedEntry.id}.jpg`);
@@ -50,7 +91,7 @@ export default function JourneyApp() {
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputMessage.trim() || !selectedEntry) return;
+    if (!inputMessage.trim() || !selectedEntry || isAskingFollowUp) return;
 
     const userMsg = inputMessage;
     setInputMessage("");
@@ -61,34 +102,44 @@ export default function JourneyApp() {
 
     try {
       let fullResponse = "";
-      const systemInstruction = "你是一个神秘的阿卡夏记录解读器，请用神秘、深邃、富有哲理的语气回答用户的追问。请基于之前的对话上下文进行回答。";
       
-      for await (const chunk of stream(userMsg, systemInstruction)) {
+      // Context Pinning: Remind AI what we are talking about
+      let contextInfo = "";
+      if (selectedEntry.type === 'tarot') {
+        const d = selectedEntry.details as any;
+        contextInfo = `[背景：塔罗占卜“${d.question}”，牌面：${d.cards?.map((c:any) => c.name).join('、')}，牌阵：${d.spread}]`;
+      } else if (selectedEntry.type === 'iching') {
+        contextInfo = `[背景：易经卦象占卜]`;
+      } else if (selectedEntry.type === 'astrology') {
+        contextInfo = `[背景：星象推演分析]`;
+      }
+
+      const prompt = `${contextInfo}\n\n${userMsg}`;
+      const systemInstruction = `你是阿卡夏记录的引导者。请基于之前的对话历史和提供的背景信息，为用户提供深邃、富有哲理且具有针对性的追问解答。始终保持你的神秘学导师人格。`;
+      
+      for await (const chunk of stream(prompt, systemInstruction)) {
         fullResponse += chunk;
         setChatMessages([...newMsgs, { role: "model", content: fullResponse }]);
       }
       
       const finalMsgs = [...newMsgs, { role: "model", content: fullResponse } as const];
       
-      // Update entry
-      const fullText = finalMsgs.map(m => m.role === 'user' ? `**问**：${m.content}` : `**阿卡夏**：${m.content}`).join('\n\n---\n\n');
+      // Update entry in IndexedDB
       updateEntry(selectedEntry.id, {
         details: {
           ...selectedEntry.details,
-          text: fullText,
           messages: finalMsgs
         } as JourneyEntry['details']
       });
       
-      // Update local selected entry
-      setSelectedEntry({
-        ...selectedEntry,
+      // Update local state to reflect changes immediately
+      setSelectedEntry(prev => prev ? {
+        ...prev,
         details: {
-          ...selectedEntry.details,
-          text: fullText,
+          ...prev.details,
           messages: finalMsgs
         } as JourneyEntry['details']
-      });
+      } : null);
 
     } catch (err) {
       if (err instanceof Error && err.name !== 'AbortError') {
@@ -134,8 +185,19 @@ export default function JourneyApp() {
       return <MysticMarkdown content={entry.details} />;
     }
 
+    const hasMessages = entry.details && Array.isArray((entry.details as any).messages) && (entry.details as any).messages.length >= 2;
     const hasText = entry.details && typeof entry.details.text === 'string';
-    const textContent = (hasText && entry.details) ? <MysticMarkdown content={entry.details.text} /> : null;
+    
+    // If we have messages, use the first model response (index 1) as the initial reading
+    // Otherwise fallback to the text field
+    let contentToRender = "";
+    if (hasMessages) {
+      contentToRender = (entry.details as any).messages[1].content;
+    } else if (hasText && entry.details) {
+      contentToRender = (entry.details as any).text;
+    }
+
+    const textContent = contentToRender ? <MysticMarkdown content={contentToRender} /> : null;
 
     let metadataContent = null;
 
@@ -356,13 +418,104 @@ export default function JourneyApp() {
 
               <div 
                 ref={scrollContainerRef}
-                className="flex-grow overflow-y-auto pr-2 pb-4 space-y-6 relative z-10"
+                className="flex-grow overflow-y-auto pr-2 pb-4 space-y-8 relative z-10"
               >
-                <div ref={posterRef} className={`bg-black/20 p-4 sm:p-8 rounded-xl ${isFullScreen ? 'max-w-5xl mx-auto' : ''}`}>
+                {/* Initial Content & Metadata */}
+                <div className={`bg-black/20 p-4 sm:p-8 rounded-xl ${isFullScreen ? 'max-w-5xl mx-auto' : ''}`}>
                   <div className="prose prose-invert prose-amber max-w-none font-serif leading-relaxed text-amber-100/90 markdown-body">
                     {renderDetails(selectedEntry)}
                   </div>
                 </div>
+
+                {/* Retroactive Insight / Destiny Echo */}
+                <div className={`relative ${isFullScreen ? 'max-w-4xl mx-auto' : ''}`}>
+                  <div className="p-8 rounded-2xl bg-gradient-to-br from-amber-500/10 via-purple-500/5 to-transparent border border-amber-500/20 shadow-xl overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                      <RefreshCw className="w-20 h-20 text-amber-400 rotate-12" />
+                    </div>
+                    
+                    <div className="relative z-10 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center border border-amber-500/30">
+                            <Sparkles className="w-5 h-5 text-amber-400" />
+                          </div>
+                          <div>
+                            <h4 className="text-lg font-serif gold-gradient-text tracking-widest">命运回响</h4>
+                            <p className="text-[10px] text-amber-500/40 uppercase tracking-[0.2em]">Retroactive Insight</p>
+                          </div>
+                        </div>
+                        
+                        {!retroInsight && !isGeneratingRetro && (
+                          <button
+                            onClick={generateRetroInsight}
+                            className="px-6 py-2 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-serif tracking-widest hover:bg-amber-500/30 transition-all hover:scale-105"
+                          >
+                            召唤此时此刻的回响
+                          </button>
+                        )}
+                      </div>
+
+                      {isGeneratingRetro ? (
+                        <div className="py-8">
+                          <BreathingLoading text="正在穿越时间长河..." />
+                        </div>
+                      ) : retroInsight ? (
+                        <motion.div 
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          className="text-amber-100/80 font-serif leading-relaxed italic border-l-2 border-amber-500/30 pl-6 py-2"
+                        >
+                          <MysticMarkdown content={retroInsight} isLoading={isGeneratingRetro} />
+                        </motion.div>
+                      ) : (
+                        <p className="text-sm text-amber-100/40 font-serif italic pl-4 border-l border-amber-500/10">
+                          “回看旧日的足迹，在此时此刻的群星之下，是否产生了新的感悟？”
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Follow-up Conversations */}
+                {chatMessages.length > 2 && (
+                  <div className={`space-y-6 ${isFullScreen ? 'max-w-4xl mx-auto' : ''}`}>
+                    <div className="flex items-center gap-4 py-4">
+                      <div className="h-px flex-1 bg-gradient-to-r from-transparent to-amber-500/20" />
+                      <span className="text-[10px] uppercase tracking-[0.3em] text-amber-500/40 font-serif">深潜对谈历史</span>
+                      <div className="h-px flex-1 bg-gradient-to-l from-transparent to-amber-500/20" />
+                    </div>
+                    
+                    {chatMessages.slice(2).map((msg, idx) => (
+                      <motion.div
+                        key={idx}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                      >
+                        <div className={`max-w-[85%] rounded-2xl p-6 ${
+                          msg.role === 'user' 
+                            ? 'bg-amber-500/10 border border-amber-500/20 text-amber-100' 
+                            : 'bg-white/5 border border-white/10 text-amber-100/80'
+                        }`}>
+                          <MysticMarkdown 
+                            content={msg.content} 
+                            isLoading={isAskingFollowUp && idx === chatMessages.length - 3} 
+                          />
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+                
+                {isAskingFollowUp && chatMessages[chatMessages.length - 1]?.role === 'model' && !chatMessages[chatMessages.length - 1]?.content && (
+                  <div className={`flex justify-start ${isFullScreen ? 'max-w-4xl mx-auto' : ''}`}>
+                    <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+                      <BreathingLoading text="阿卡夏正在查阅记录并回应..." />
+                    </div>
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
               </div>
 
               <div className={`mt-4 pt-4 border-t border-amber-500/20 relative z-10 ${isFullScreen ? 'max-w-3xl mx-auto w-full' : ''}`}>

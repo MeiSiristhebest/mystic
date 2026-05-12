@@ -1,19 +1,123 @@
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import Image from "next/image";
+import { motion } from "motion/react";
 import { TarotCard } from "@/lib/tarot-data";
+import { useAppStore } from "@/lib/store";
+import { Compass, Sparkles, ArrowRight } from "lucide-react";
+
+const StreamingParticles = () => (
+  <div className="absolute inset-0 pointer-events-none overflow-hidden">
+    {[...Array(6)].map((_, i) => (
+      <motion.div
+        key={i}
+        className="absolute w-1 h-1 bg-amber-400/40 rounded-full blur-[1px]"
+        initial={{ 
+          x: Math.random() * 100 + "%", 
+          y: "100%", 
+          opacity: 0 
+        }}
+        animate={{ 
+          y: "-10%", 
+          opacity: [0, 1, 0],
+          x: (Math.random() * 100 - 50) + "%" 
+        }}
+        transition={{ 
+          duration: 3 + Math.random() * 2, 
+          repeat: Infinity, 
+          delay: Math.random() * 2,
+          ease: "linear" 
+        }}
+      />
+    ))}
+  </div>
+);
+
+const AssociationBubble = ({ association }: { association: any }) => {
+  const setActiveTab = useAppStore(state => state.setActiveTab);
+  const setActiveSubTab = useAppStore(state => state.setActiveSubTab);
+  const setHandoff = useAppStore(state => state.setHandoff);
+
+  const handleNavigate = () => {
+    if (association.system === 'tarot') {
+      setActiveTab('explore');
+      setActiveSubTab('tarot');
+    } else if (association.system === 'eastern') {
+      setActiveTab('explore');
+      setActiveSubTab('eastern');
+    } else if (association.system === 'astrology') {
+      setActiveTab('explore');
+      setActiveSubTab('astrology');
+    } else {
+      setActiveTab('explore');
+    }
+
+    if (association.system && association.modeId) {
+      setHandoff({
+        modeId: association.modeId,
+        question: association.reason,
+        autoTrigger: true
+      });
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      className="my-12 p-1 bg-gradient-to-r from-amber-500/20 via-purple-500/20 to-amber-500/20 rounded-[2rem] relative group"
+    >
+      <div className="bg-[#0a0502]/90 backdrop-blur-xl rounded-[1.9rem] p-6 md:p-8 flex flex-col md:flex-row items-center gap-6 border border-white/5">
+        <div className="w-16 h-16 rounded-full bg-amber-500/10 flex items-center justify-center relative flex-shrink-0">
+          <div className="absolute inset-0 bg-amber-500/20 blur-xl rounded-full group-hover:bg-amber-500/40 transition-all"></div>
+          <Compass className="w-8 h-8 text-amber-500 relative animate-spin-slow" />
+        </div>
+        
+        <div className="flex-1 space-y-2 text-center md:text-left">
+          <div className="flex items-center justify-center md:justify-start gap-2 text-amber-500/60 text-[10px] uppercase tracking-[0.3em] font-serif">
+            <Sparkles className="w-3 h-3" />
+            <span>阿卡夏指引 · 灵觉共振</span>
+            <Sparkles className="w-3 h-3" />
+          </div>
+          <h4 className="text-lg text-amber-100 font-serif">前往探索：{association.target}</h4>
+          <p className="text-sm text-amber-200/40 leading-relaxed font-light italic">
+            &quot;{association.reason}&quot;
+          </p>
+        </div>
+
+        <button
+          onClick={handleNavigate}
+          className="px-8 py-3 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 rounded-full text-amber-200 text-sm font-serif tracking-widest transition-all flex items-center gap-2 group-hover:scale-105"
+        >
+          即刻前往 <ArrowRight className="w-4 h-4" />
+        </button>
+      </div>
+    </motion.div>
+  );
+};
 
 interface MysticMarkdownProps {
   content: string;
   cards?: TarotCard[];
   hideCards?: boolean;
+  isLoading?: boolean;
 }
 
-export default function MysticMarkdown({ content, cards, hideCards }: MysticMarkdownProps) {
+export default function MysticMarkdown({ content, cards, hideCards, isLoading }: MysticMarkdownProps) {
   // Pre-process markdown to fix common formatting issues from the model
+  let association: any = null;
   let processedContent = content
     // Filter out [SOUL_MOTTO] tags
     .replace(/\[SOUL_MOTTO\][\s\S]*?\[\/SOUL_MOTTO\]/g, '')
+    // Extract association tag
+    .replace(/<mystic_association>([\s\S]*?)<\/mystic_association>/g, (match, p1) => {
+      try {
+        association = JSON.parse(p1.trim());
+      } catch (e) {
+        console.error("Failed to parse association", e);
+      }
+      return "";
+    })
     // Fix missing space after list dash (e.g., "-**text**" -> "- **text**")
     .replace(/^-(?=\*\*|\*)/gm, '- ')
     // Fix ****text**** to **text**
@@ -22,6 +126,7 @@ export default function MysticMarkdown({ content, cards, hideCards }: MysticMark
     .replace(/\*\*\*\s+\*\*/g, '**')
     .replace(/\*\*\s+\*\*\*/g, '***');
 
+  // ... (keeping existing tripleStars/doubleStars logic) ...
   // 1. Extract ***...*** and replace with placeholder
   const tripleStars: string[] = [];
   processedContent = processedContent.replace(/\*\*\*([\s\S]*?)\*\*\*/g, (match, p1) => {
@@ -61,7 +166,8 @@ export default function MysticMarkdown({ content, cards, hideCards }: MysticMark
   processedContent = processedContent.replace(/ {2,}/g, ' ');
 
   return (
-    <div className="mystic-markdown">
+    <div className="mystic-markdown relative">
+      {isLoading && <StreamingParticles />}
       {!hideCards && cards && cards.length > 0 && (
         <div className="flex flex-wrap justify-center gap-4 md:gap-6 mb-12 mt-4 relative z-10">
           {cards.map((card, idx) => {
@@ -191,6 +297,7 @@ export default function MysticMarkdown({ content, cards, hideCards }: MysticMark
       >
         {processedContent}
       </ReactMarkdown>
+      {association && <AssociationBubble association={association} />}
     </div>
   );
 }

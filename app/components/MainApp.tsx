@@ -20,6 +20,7 @@ const DiscoveryView = dynamic(() => import("./DiscoveryView"), {
   loading: () => <BreathingLoading text="正在开启发现之窗..." />
 });
 const UserProfileModal = dynamic(() => import("./UserProfileModal"));
+const GlobalDisclaimerModal = dynamic(() => import("./MainApp/GlobalDisclaimerModal").then(mod => mod.GlobalDisclaimerModal));
 
 // State Management (Zustand)
 import { useAppStore } from "@/lib/store";
@@ -32,6 +33,8 @@ export default function App() {
   const isProfileModalOpen = useAppStore((state) => state.isProfileModalOpen);
   const setIsProfileModalOpen = useAppStore((state) => state.setIsProfileModalOpen);
   const isLoaded = useAppStore((state) => state.isLoaded);
+  const hasAcceptedTerms = useAppStore((state) => state.hasAcceptedTerms);
+  const setHasAcceptedTerms = useAppStore((state) => state.setHasAcceptedTerms);
 
   // Global access for legacy or specialized components if needed
   useEffect(() => {
@@ -92,6 +95,11 @@ export default function App() {
           <UserProfileModal 
             isOpen={isProfileModalOpen} 
             onClose={() => setIsProfileModalOpen(false)} 
+          />
+
+          <GlobalDisclaimerModal 
+            isOpen={isLoaded && !hasAcceptedTerms}
+            onAccept={() => setHasAcceptedTerms(true)}
           />
         </div>
       </div>

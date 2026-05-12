@@ -4,12 +4,14 @@ import { useState } from "react";
 import { motion } from "motion/react";
 import { X, Sparkles, Send } from "lucide-react";
 import { useAIStream } from "@/hooks/useAIStream";
-import { AKASHA_PERSONA } from "@/lib/ai";
 import MysticMarkdown from "../MysticMarkdown";
+import { useUserProfile } from "@/hooks/useUserProfile";
+import { ORCHESTRATOR_PERSONA, MODELS } from "@/lib/ai";
 
 export interface HandoffData {
   system: string;
   context: string;
+  modeId?: string;
 }
 
 interface OmniOracleGuideProps {
@@ -20,47 +22,45 @@ interface OmniOracleGuideProps {
 export function OmniOracleGuide({ onClose, onHandoff }: OmniOracleGuideProps) {
   const [query, setQuery] = useState("");
   const [response, setResponse] = useState("");
-  const { stream, isLoading } = useAIStream();
+  const { stream, isLoading } = useAIStream({ model: MODELS.PRO });
+  const { getProfileContext } = useUserProfile();
 
   const handleAsk = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim() || isLoading) return;
 
     setResponse("");
+    const profileContext = getProfileContext();
     const prompt = `
-<instruction>
-你现在是“阿卡夏之窗”的全知向导。你存在于星辰与现实的交界处。
-用户向你寻求指引，你必须用一种充满灵性、玄奥且温暖的语气回应。
-
-【引导逻辑层 - 思维链推理】
-1. 识别用户困惑的核心维度（是关于：命运转折、心理阴影、他人关系、还是时间契机？）。
-2. 在建议系统前，先给出一句具有神谕感的话语，安抚或启迪其灵魂。
-3. 根据其问题深度，从可选系统中挑选最契合的一个：
-   - [tarot]: 适合具体选择、短期预测、象征性启示。
-   - [eastern]: 适合宏观命运、流年运势、东方古老智慧（八字/易经）。
-   - [astrology]: 适合性格建模、长期心理周期、能量相位分析。
-   - [soul]: 适合潜意识探索、梦境解析、阴影工作、深层恐惧。
-
-最后，你必须以 [RECOMMENDED_SYSTEM: 系统代号] 的格式结束，确保程序能自动为其开启法阵。
-</instruction>
+<user_profile>
+${profileContext}
+</user_profile>
 
 <user_query>${query}</user_query>
     `;
 
     let fullText = "";
     try {
-      for await (const chunk of stream(prompt, AKASHA_PERSONA)) {
+      for await (const chunk of stream(prompt, ORCHESTRATOR_PERSONA)) {
         fullText += chunk;
         setResponse(fullText);
       }
 
-      // Parse recommended system
-      const match = fullText.match(/\[RECOMMENDED_SYSTEM:\s*([a-zA-Z]+)\]/);
-      if (match && match[1]) {
-        const system = match[1].toLowerCase();
-        setTimeout(() => {
-          onHandoff({ system, context: query });
-        }, 3000);
+      // Parse recommended system using the new <execute> tag format defined in ORCHESTRATOR_PERSONA
+      const executeMatch = fullText.match(/<execute>([\s\S]*?)<\/execute>/);
+      if (executeMatch && executeMatch[1]) {
+        try {
+          const executeData = JSON.parse(executeMatch[1].trim());
+          setTimeout(() => {
+            onHandoff({ 
+              system: executeData.system, 
+              context: executeData.question || query,
+              modeId: executeData.modeId
+            });
+          }, 3000);
+        } catch (e) {
+          console.error("Failed to parse execute tag", e);
+        }
       }
     } catch (e) {
       console.error(e);

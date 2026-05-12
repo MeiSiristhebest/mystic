@@ -76,7 +76,10 @@ export default function TarotReadingResult({
                   ? 'bg-amber-500/10 border border-amber-500/20 text-amber-100' 
                   : 'bg-white/5 border border-white/10 text-amber-100/80'
               }`}>
-                <MysticMarkdown content={msg.content} />
+                <MysticMarkdown 
+                  content={msg.content} 
+                  isLoading={isLoading && idx === messages.length - 3} 
+                />
               </div>
             </motion.div>
           ))}
