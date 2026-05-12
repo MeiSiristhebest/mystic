@@ -200,3 +200,18 @@
 - **Decision: Production Build Hardening**
   - **Reason**: Complex Markdown parsing and dynamic components caused intermittent hydration and import errors.
   - **Action**: Standardized imports in `MysticMarkdown` and fixed circular dependencies in `MainApp/index`. Verified 100% build success.
+
+## [2026-05-12] Phase 16: Radical Modularization & Performance Hardening
+
+- **Decision: Separation of Concerns (Prompt & Type Registry)**
+  - **Reason**: Hardcoded XML prompts and scattered types made the codebase brittle and difficult to audit.
+  - **Action**: Centralized all AI personas and templates in `lib/prompts/index.ts`. Unified system types in `app/types/divination.ts`.
+- **Decision: "Fat Component" Decomposition (Ritual vs. UI)**
+  - **Reason**: `IChingApp` and `BaziApp` were monoliths (700+ lines), causing slow HMR and complex debugging.
+  - **Action**: Extracted core divination logic into `hooks/useIChingEngine` and `hooks/useBaziEngine`. Standardized the UI with `RitualLayout` and `MysticChatInterface`.
+- **Decision: Unified AI Session Management (useAIChat)**
+  - **Reason**: Redundant AI stream handling and inconsistent journey persistence across 10+ modules.
+  - **Action**: Implemented `useAIChat` to handle messages, streaming, and O(1) IndexedDB persistence in a single, robust hook.
+- **Decision: Render Performance (Memoization & Lazy Initialization)**
+  - **Reason**: High-frequency streaming updates caused excessive re-renders of the entire Markdown tree.
+  - **Action**: Applied `React.memo` to `MysticMarkdown` and modular detail renderers. Verified 60fps streaming experience.

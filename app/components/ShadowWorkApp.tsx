@@ -31,7 +31,8 @@ export default function ShadowWorkApp({ initialHandoff, clearHandoff }: ShadowWo
   }, [initialHandoff, clearHandoff]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const { messages, sendMessage, isLoading, error, clearMessages } = useAIChat({
+  const { messages, sendMessage, isLoading, error } = useAIChat({
+    type: 'shadow_work',
     model: MODELS.PRO,
     systemInstruction: `你现在是一位受过严格训练的荣格派分析师和IFS（内部家庭系统）引导者。用户正在进行「阴影工作坊」与核心创伤探索。
 【最高安全护栏（Guardrails）：绝对遵守】1. 你的基调是「自我觉察与反思工具」，绝对不是「临床心理治疗」。2. 如果用户表达出任何自残、自杀倾向、严重的抑郁爆发或创伤闪回（如“我不想活了”、“我控制不住想伤害自己”、“我感觉回到了被虐待的时候”），你必须：
@@ -48,26 +49,14 @@ export default function ShadowWorkApp({ initialHandoff, clearHandoff }: ShadowWo
     const currentInput = input;
     setInput("");
     
-    const prompt = messages.length === 0 
-      ? `${getProfileContext()}\n\n用户输入：${currentInput}`
-      : currentInput;
+    const prompt = `${getProfileContext()}\n\n用户输入：${currentInput}`;
 
     try {
-      const response = await sendMessage(prompt);
-      
-      await addEntry({
-        type: "shadow_work",
+      await sendMessage(prompt, {
         title: `阴影工作：${currentInput.substring(0, 15)}...`,
-        summary: response.substring(0, 100) + "...",
         details: {
           type: 'shadow_work',
-          text: response,
-          issue: currentInput,
-          messages: [
-            ...messages,
-            { role: 'user', content: currentInput },
-            { role: 'model', content: response }
-          ]
+          issue: currentInput
         }
       });
     } catch (e) {

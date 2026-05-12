@@ -5,6 +5,7 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 import { useAIChat } from "@/hooks/useAIChat";
 import { useJourney } from "@/hooks/useJourney";
 import BreathingLoading from "./BreathingLoading";
+import { getSubconsciousPrompt } from '@/lib/prompts';
 import { MODELS } from "@/lib/ai";
 
 interface SubconsciousAppProps {
@@ -34,7 +35,8 @@ export default function SubconsciousApp({ initialHandoff, clearHandoff }: Subcon
     }
   }, [initialHandoff, clearHandoff]);
   
-  const { messages, sendMessage, isLoading, error, clearMessages } = useAIChat({
+  const { messages, sendMessage, isLoading, error } = useAIChat({
+    type: 'subconscious',
     model: MODELS.PRO,
     systemInstruction: mode === 'dream' 
       ? `你是一位精通荣格心理学和符号学的梦境解析师。请基于用户的灵魂档案，解析他们梦境中的意象（如水、坠落、追逐、特定人物等）。不要给出迷信的“吉凶”判断，而是将梦境视为潜意识的信使，引导用户理解梦境在提示他们什么核心议题或被压抑的阴影（Shadow）。语气：深邃、洞察、充满同理心。`
@@ -46,34 +48,19 @@ export default function SubconsciousApp({ initialHandoff, clearHandoff }: Subcon
     const currentInput = input;
     setInput("");
     
-    const prompt = messages.length === 0 
-      ? `
-<user_profile>
-${getProfileContext()}
-</user_profile>
-
-<user_input>
-${currentInput}
-</user_input>
-`
-      : currentInput;
+    const prompt = getSubconsciousPrompt({
+      mode,
+      input: currentInput,
+      profileContext: getProfileContext()
+    });
 
     try {
-      const response = await sendMessage(prompt);
-      
-      await addEntry({
-        type: "subconscious",
+      await sendMessage(prompt, {
         title: `${mode === 'dream' ? '梦境解析' : '主动想象'}：${currentInput.substring(0, 15)}...`,
-        summary: response.substring(0, 100) + "...",
         details: {
           type: 'subconscious',
-          text: response,
-          content: currentInput,
-          messages: [
-            ...messages,
-            { role: 'user', content: currentInput },
-            { role: 'model', content: response }
-          ]
+          mode,
+          content: currentInput
         }
       });
     } catch (e) {
@@ -83,7 +70,6 @@ ${currentInput}
 
   const handleModeSwitch = (newMode: 'dream' | 'imagination') => {
     setMode(newMode);
-    clearMessages();
     setInput("");
   };
 

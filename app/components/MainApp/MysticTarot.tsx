@@ -8,7 +8,8 @@ import dynamic from "next/dynamic";
 import { CATEGORIES, SPREAD_MODES } from "./constants";
 import { useAIStream } from "@/hooks/useAIStream";
 import { useAIChat } from "@/hooks/useAIChat";
-import { AKASHA_PERSONA, MODELS } from "@/lib/ai";
+import { MODELS } from "@/lib/ai";
+import { getTarotPrompt } from '@/lib/prompts';
 import { getDailyTarotCards } from "@/lib/tarot-data";
 import { useJourney } from "@/hooks/useJourney";
 import { useUserProfile } from "@/hooks/useUserProfile";
@@ -37,6 +38,7 @@ export function MysticTarot({ initialHandoff, clearHandoff }: MysticTarotProps =
   const [currentEntryId, setCurrentEntryId] = useState<string | null>(null);
 
   const { messages, setMessages, sendMessage, isLoading: isChatLoading, error: chatError } = useAIChat({
+    type: 'tarot',
     model: MODELS.PRO
   });
   const { addEntry, updateEntry } = useJourney();
@@ -82,65 +84,24 @@ export function MysticTarot({ initialHandoff, clearHandoff }: MysticTarotProps =
     const cardNames = cards.map(c => `${c.name}${c.isReversed ? '(逆位)' : '(正位)'}`).join('、');
     const profileContext = getProfileContext();
 
-    const prompt = `
-<instruction>
-你现在是一位精通符号学、荣格心理学与神秘学教义的塔罗大师（阿卡夏记录的引导者）。
-请针对用户的问题进行一次深度的塔罗占卜解读。
-
-【占卜逻辑层 - 执行思维链 (Chain of Thought)】
-1. 首先，在内心解析每张牌在牌阵位置上的符号学含义。
-2. 寻找牌与牌之间的相位关系（共鸣或冲突）。
-3. 结合用户的灵魂档案（User Profile）进行性格与命运的共振。
-4. 最终输出一份不仅是预测，更是灵魂指引的报告。
-</instruction>
-
-<divination_context>
-  <user_question>${question}</user_question>
-  <category>${category?.name}</category>
-  <spread_name>${spread?.name}</spread_name>
-  <spread_positions>${spread?.positions.join('、')}</spread_positions>
-  <drawn_cards>${cardNames}</drawn_cards>
-</divination_context>
-
-<user_profile>
-${profileContext}
-</user_profile>
-
-<output_format>
-请使用Markdown排版，必须包含以下部分：
-## ☯️ 牌阵能量流
-（分析牌阵整体的能量流动，是阻塞还是顺畅）
-
-## 🔍 深度奥义解析
-（针对每张牌的深入解读，结合现实场景与潜意识映射）
-
-## 🌟 灵魂进化指引
-（给用户的具体、建设性建议，关于如何扬长避短，转化当前的能量）
-
-[SOUL_MOTTO]一句充满力量的神秘学格言[/SOUL_MOTTO]
-</output_format>
-    `;
+    const prompt = getTarotPrompt({
+      category,
+      spread,
+      cardNames,
+      question,
+      profileContext
+    });
 
     try {
-      const response = await sendMessage(prompt, AKASHA_PERSONA);
-      
-      const id = await addEntry({
-        type: "tarot",
+      await sendMessage(prompt, {
         title: `塔罗：${question.substring(0, 20)}...`,
-        summary: response.substring(0, 100) + "...",
         details: {
           type: 'tarot',
-          text: response,
           cards,
           spread: spread?.name,
-          question,
-          messages: [
-            { role: 'user' as const, content: `[占卜开始] 问题：${question}` },
-            { role: 'model' as const, content: response }
-          ]
+          question
         }
       });
-      setCurrentEntryId(id || null);
     } catch (error) {
       console.error(error);
     }

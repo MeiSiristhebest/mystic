@@ -15,7 +15,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import MysticMarkdown from "./MysticMarkdown";
-import { AKASHA_PERSONA } from '@/lib/ai';
+import { getAstrologyPrompt } from '@/lib/prompts';
 import { usePosterGenerator } from '@/hooks/usePosterGenerator';
 import { useAIStream } from '@/hooks/useAIStream';
 import { useAIChat } from '@/hooks/useAIChat';
@@ -98,7 +98,7 @@ export default function AstrologyApp({ initialHandoff, clearHandoff }: Astrology
   const [birthCity, setBirthCity] = useState(profile.birthPlace || CITIES[0].name);
 
   const [messages, setMessages] = useState<{ role: 'user' | 'model'; content: string }[]>([]);
-  const { sendMessage, isLoading: isChatLoading } = useAIChat({ model: MODELS.PRO });
+  const { sendMessage, isLoading: isChatLoading } = useAIChat({ type: 'astrology', model: MODELS.PRO });
   const [currentEntryId, setCurrentEntryId] = useState<string | null>(null);
   const [isAskingFollowUp, setIsAskingFollowUp] = useState(false);
   const [inputMessage, setInputMessage] = useState("");
@@ -109,66 +109,26 @@ export default function AstrologyApp({ initialHandoff, clearHandoff }: Astrology
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const handleGenerate = async () => {
-    setMessages([]);
-    setIsAskingFollowUp(false);
     const profileContext = getProfileContext();
     const topicName = TOPICS.find((t) => t.id === selectedTopic)?.name || "综合解析";
-
-    const prompt = `
-<instruction>
-你是一位精通现代心理占星学、古典占星学以及 MBTI 性格理论的占星宗师。
-请结合星象能量与用户的多维度人格数据，生成一份极具深度与前瞻性的分析报告。
-
-【分析逻辑层 - 思维链演化】
-1. 解析当前选定的星座 (${selectedZodiac}) 与选定主题 (${topicName}) 的本源关联。
-2. 结合用户的档案数据（MBTI: ${profile.mbti}, 生日: ${profile.birthDate}）进行灵魂层面的建模。
-3. 探讨当前星象相位对该人格模型的动态影响。
-4. 提供不仅是心理慰藉，更是具有实操意义的进化指南。
-</instruction>
-
-<divination_context>
-  <mode>${mode}</mode>
-  <topic>${topicName}</topic>
-  <target_zodiac>${selectedZodiac}</target_zodiac>
-  <user_question>${question || "全面运势解析"}</user_question>
-</divination_context>
-
-<user_profile>
-${profileContext}
-</user_profile>
-
-<output_format>
-使用Markdown排版，包含以下章节：
-## 🌌 星象能量共振 (Cosmic Resonance)
-（分析宏观天象与个体能量的交织点）
-
-## 🔍 深度领域解析 (Deep Insight)
-（针对所选主题的具体分析，需体现心理学深度）
-
-## 🌟 灵魂进化的指引 (Evolutionary Guide)
-（提供关于心态、行动或决策的具体建议）
-
-[SOUL_MOTTO]一句与星空相关的哲学格言[/SOUL_MOTTO]
-</output_format>
-    `;
+    const prompt = getAstrologyPrompt({
+      mode,
+      zodiac: selectedZodiac,
+      topic: topicName,
+      question,
+      profileContext
+    });
 
     try {
-      const response = await sendMessage(prompt, AKASHA_PERSONA);
-      const id = await addEntry({
-        type: "astrology",
+      await sendMessage(prompt, {
         title: `星象：${topicName}`,
-        summary: response.substring(0, 100) + "...",
         details: { 
           type: 'astrology', 
-          text: response, 
-          mode, 
-          messages: [
-            { role: 'user' as const, content: `[开启推演] 主题：${topicName}` },
-            { role: 'model' as const, content: response }
-          ] 
+          mode,
+          topic: topicName,
+          zodiac: selectedZodiac
         }
       });
-      setCurrentEntryId(id || null);
     } catch (e) {
       console.error(e);
     }

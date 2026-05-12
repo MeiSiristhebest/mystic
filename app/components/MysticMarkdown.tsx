@@ -103,7 +103,7 @@ interface MysticMarkdownProps {
   isLoading?: boolean;
 }
 
-export default function MysticMarkdown({ content, cards, hideCards, isLoading }: MysticMarkdownProps) {
+const MysticMarkdown = React.memo(({ content, cards, hideCards, isLoading }: MysticMarkdownProps) => {
   // Pre-process markdown to fix common formatting issues from the model
   let association: any = null;
   let processedContent = content
@@ -300,4 +300,6 @@ export default function MysticMarkdown({ content, cards, hideCards, isLoading }:
       {association && <AssociationBubble association={association} />}
     </div>
   );
-}
+});
+
+export default MysticMarkdown;

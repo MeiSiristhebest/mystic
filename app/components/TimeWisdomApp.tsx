@@ -8,6 +8,7 @@ import { useAIChat } from "@/hooks/useAIChat";
 import { useJourney } from "@/hooks/useJourney";
 import BreathingLoading from "./BreathingLoading";
 import MysticMarkdown from "./MysticMarkdown";
+import { getTimeWisdomPrompt } from '@/lib/prompts';
 import { MODELS } from "@/lib/ai";
 
 // Dynamic Global Context instruction
@@ -57,6 +58,7 @@ export default function TimeWisdomApp() {
   const [isAskingFollowUp, setIsAskingFollowUp] = useState(false);
 
   const { messages, setMessages, sendMessage, isLoading, error } = useAIChat({
+    type: 'time',
     model: MODELS.FLASH,
     systemInstruction: `你是一位精通宇宙时空节律的「时间智者」。你的使命是将宏观的全球局势（时事）、剧烈的天体相位与个体的灵魂档案进行深度对齐。你拒绝给出平庸的运势描述，必须指出当下这一刻在整个人类进化史和用户个体生命史中的独特性。`,
   });
@@ -64,41 +66,23 @@ export default function TimeWisdomApp() {
   const generateReading = useCallback(async () => {
     if (hasGenerated) return;
     
-    const prompt = `
-<instruction>
-请基于以下【全球时空脉动】背景，结合今天的月相能量以及用户的【灵魂档案】，撰写一份极具深度的时间智慧报告。要求：1. 分析全球局势（如地缘张力、变革趋势）如何作为一种“背景低音”影响着用户的心理状态。2. 结合冥王星在水瓶座逆行等星象，给出用户在这个五月进行“权力重构”或“自我变革”的深度建议。3. 最后的输出必须符合 <output_format> 的 Markdown 要求。</instruction>
-
-<current_context>
-  <iso_time>${today.toISOString()}</iso_time>
-  <local_time>${today.toLocaleString()}</local_time>
-  <moon_phase>${moonPhase.name} - ${moonPhase.desc}</moon_phase>
-  ${GLOBAL_CONTEXT_INSTRUCTION}
-</current_context>
-
-<user_profile>
-  ${getProfileContext()}
-</user_profile>
-
-<output_format>
-使用极具专业感的Markdown排版：- 使用 ### 作为主要标题。- 使用 **粗体** 强调关键词。- 必须包含：【🌌 宏观能量场】、【🧬 个体共振】、【⏳ 时间之礼：今日行动指南】。</output_format>
-`;
+    const prompt = getTimeWisdomPrompt({
+      today,
+      moonPhase,
+      profileContext: getProfileContext(),
+      globalContextInstruction: GLOBAL_CONTEXT_INSTRUCTION
+    });
 
     try {
-      const response = await sendMessage(prompt);
-      setReading(response);
-      setHasGenerated(true);
-
-      const id = await addEntry({
-        type: "time",
+      await sendMessage(prompt, {
         title: `时间智慧：${today.toLocaleDateString()}`,
-        summary: response.substring(0, 100) + "...",
         details: {
           type: 'time',
-          text: response,
-          messages: [{ role: 'model', content: response }]
+          date: today.toISOString(),
+          moonPhase: moonPhase.name
         }
       });
-      setCurrentEntryId(id || null);
+      setHasGenerated(true);
     } catch (e) {
       console.error(e);
     }
@@ -124,7 +108,7 @@ export default function TimeWisdomApp() {
         details: { 
           type: 'time',
           text: updatedMessages.map(m => m.role === 'user' ? `**问**：${m.content}` : `**阿卡夏**：${m.content}`).join('\n\n---\n\n'), 
-          messages: updatedMessages 
+          messages: updatedMessages as any
         }
       });
     } catch (error) {

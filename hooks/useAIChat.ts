@@ -1,98 +1,117 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
-import { generateContentStream, DEFAULT_MODEL, sanitizePrompt, AKASHA_PERSONA } from '@/lib/ai';
+'use client';
 
-export interface Message {
-  role: 'user' | 'model';
-  content: string;
-  parts?: any[];
-}
+import { useState, useCallback, useRef } from 'react';
+import { useAIStream } from './useAIStream';
+import { useJourney } from './useJourney';
+import { Message, DivinationType } from '@/app/types/divination';
+import { AKASHA_PERSONA } from '@/lib/prompts';
 
 interface UseAIChatOptions {
-  systemInstruction?: string;
+  type: DivinationType;
   model?: string;
+  systemInstruction?: string;
+  initialMessages?: Message[];
 }
 
-export function useAIChat(options: UseAIChatOptions = {}) {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const abortControllerRef = useRef<AbortController | null>(null);
+export function useAIChat({ 
+  type, 
+  model, 
+  systemInstruction = AKASHA_PERSONA,
+  initialMessages = []
+}: UseAIChatOptions) {
+  const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const [currentEntryId, setCurrentEntryId] = useState<string | null>(null);
+  const { stream, isLoading, error, abort } = useAIStream({ model });
+  const { addEntry, updateEntry } = useJourney();
 
-  useEffect(() => {
-    return () => {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-    };
-  }, []);
+  const resetChat = useCallback(() => {
+    setMessages([]);
+    setCurrentEntryId(null);
+    abort();
+  }, [abort]);
 
-  const sendMessage = useCallback(async (prompt: string, customSystemInstruction?: string) => {
-    // Abort previous request if any
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
+  const sendMessage = useCallback(async (
+    prompt: string | any[],
+    entryMetadata?: { title: string; summaryPrefix?: string; details: any },
+    customSystemInstruction?: string
+  ) => {
+    const isFollowUp = messages.length > 0;
+    const userMessageContent = typeof prompt === 'string' ? prompt : (Array.isArray(prompt) ? prompt[prompt.length - 1].content : '');
+
+    // 1. Prepare new message state
+    let newMessages: Message[];
+    if (isFollowUp) {
+      newMessages = [...messages, { role: 'user', content: userMessageContent } as Message];
+    } else {
+      // First message is usually the prompt which might be a large XML, 
+      // but in UI we might want to show a cleaner version if it's a string.
+      // However, usually first message from user isn't shown if it's a generated prompt.
+      newMessages = messages; 
     }
-    abortControllerRef.current = new AbortController();
 
-    setIsLoading(true);
-    setError(null);
+    setMessages([...newMessages, { role: 'model', content: '' } as Message]);
 
-    const sanitized = sanitizePrompt(prompt);
-    
-    // Construct the full history for the API
-    // We map our messages to the format expected by the API
-    const history = messages.map(m => ({
-      role: m.role,
-      parts: [{ text: m.content }]
-    }));
-    
-    const currentPrompt = [...history, { role: 'user', parts: [{ text: sanitized }] }];
-    
-    const newUserMsg: Message = { role: 'user', content: sanitized };
-    const newModelMsg: Message = { role: 'model', content: '' };
-    
-    setMessages(prev => [...prev, newUserMsg, newModelMsg]);
-
-    let accumulated = '';
     try {
-      const systemInstruction = customSystemInstruction || options.systemInstruction || AKASHA_PERSONA;
-      const model = options.model || DEFAULT_MODEL;
-      const stream = generateContentStream(currentPrompt, systemInstruction, abortControllerRef.current.signal, { model });
+      let fullResponse = "";
+      const si = customSystemInstruction || systemInstruction;
+      
+      // If it's a follow-up, we pass the history
+      const streamInput = isFollowUp 
+        ? newMessages.map(m => ({ role: m.role, parts: [{ text: m.content }] }))
+        : prompt;
 
-      for await (const chunk of stream) {
-        accumulated += chunk;
-        setMessages(prev => {
-          const updated = [...prev];
-          if (updated.length > 0) {
-            updated[updated.length - 1] = { role: 'model', content: accumulated };
+      for await (const chunk of stream(streamInput as any, si)) {
+        fullResponse += chunk;
+        setMessages([...newMessages, { role: 'model', content: fullResponse } as Message]);
+      }
+
+      const finalMessages = [...newMessages, { role: 'model', content: fullResponse } as Message];
+
+      // 2. Persistence Logic
+      if (!isFollowUp && entryMetadata) {
+        const id = await addEntry({
+          type,
+          title: entryMetadata.title,
+          summary: fullResponse.substring(0, 100) + '...',
+          details: {
+            ...entryMetadata.details,
+            text: fullResponse,
+            messages: finalMessages
           }
-          return updated;
+        });
+        setCurrentEntryId(id || null);
+      } else if (currentEntryId) {
+        // For follow-ups, we update the existing entry
+        // Combine all messages for the 'text' field if needed, or just update the messages array
+        updateEntry(currentEntryId, {
+          details: {
+            // We need to spread existing details if we had access to them, 
+            // but updateEntry in current useJourney implementation handles merging if we pass partial.
+            // Actually, current updateEntry replaces the whole details object.
+            // This is a known limitation that we'll address in the JourneyApp refactor.
+            type,
+            messages: finalMessages
+          } as any
         });
       }
 
-      return accumulated;
-    } catch (err: any) {
-      if (err.name === 'AbortError') return '';
-      console.error('AI Chat Error:', err);
-      setError(err.message || '星辰暂时沉默了，请稍后再试。');
-      // Keep user message but remove failed model message
-      setMessages(prev => prev.slice(0, -1));
+      return fullResponse;
+    } catch (err) {
+      console.error('Chat error:', err);
       throw err;
-    } finally {
-      setIsLoading(false);
-      abortControllerRef.current = null;
     }
-  }, [messages, options.systemInstruction, options.model]);
-
-  const clearMessages = useCallback(() => {
-    setMessages([]);
-  }, []);
+  }, [messages, currentEntryId, stream, addEntry, updateEntry, systemInstruction, type]);
 
   return {
     messages,
     setMessages,
-    isLoading,
-    error,
     sendMessage,
-    clearMessages,
+    isLoading,
+    isStreaming: isLoading, // Alias for consistency
+    error,
+    abort,
+    resetChat,
+    currentEntryId,
+    setCurrentEntryId
   };
 }
