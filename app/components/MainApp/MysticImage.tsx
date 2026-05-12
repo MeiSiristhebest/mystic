@@ -23,7 +23,8 @@ function hashString(str: string) {
 // Fallback images for different prompt types to save quota and prevent "crashes"
 const getFallbackImageUrl = (prompt: string, aspectRatio: string) => {
   const seed = hashString(prompt);
-  const [w, h] = aspectRatio === "16:9" ? [1920, 1080] : 
+  const [w, h] = aspectRatio === "21:9" ? [2100, 900] :
+               aspectRatio === "16:9" ? [1920, 1080] : 
                aspectRatio === "9:16" ? [1080, 1920] :
                aspectRatio === "4:3" ? [1200, 900] :
                aspectRatio === "3:4" ? [900, 1200] : [1024, 1024];
@@ -91,7 +92,7 @@ export const MysticImage = ({
 }: { 
   prompt: string; 
   className?: string; 
-  aspectRatio?: "1:1" | "3:4" | "4:3" | "9:16" | "16:9";
+  aspectRatio?: "1:1" | "3:4" | "4:3" | "9:16" | "16:9" | "21:9";
   seed?: string;
 }) => {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
