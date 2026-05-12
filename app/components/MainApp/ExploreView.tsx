@@ -13,6 +13,7 @@ import dynamic from "next/dynamic";
 import { MysticImage } from "./MysticImage";
 import BreathingLoading from "../BreathingLoading";
 import { useAppStore } from "@/lib/store";
+import { DivinationHandoff } from "@/app/types/divination";
 const MysticTarot = dynamic(() => import("@/app/components/MainApp/MysticTarot").then(mod => mod.MysticTarot), { 
   loading: () => <BreathingLoading text="正在感应塔罗能量..." /> 
 });
@@ -68,7 +69,7 @@ function SystemCard({ system, isActive, onClick }: SystemCardProps) {
 export function ExploreView() {
   const [subTab, setSubTab] = useState("");
   const [isGuideOpen, setIsGuideOpen] = useState(false);
-  const [handoffData, setHandoffData] = useState<HandoffData | null>(null);
+  const [handoffData, setHandoffData] = useState<DivinationHandoff | null>(null);
   const setActiveTab = useAppStore((state) => state.setActiveTab);
   const globalHandoff = useAppStore((state: any) => state.handoff);
   const setGlobalHandoff = useAppStore((state: any) => state.setHandoff);

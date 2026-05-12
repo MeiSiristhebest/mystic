@@ -7,16 +7,11 @@ import { useAIStream } from "@/hooks/useAIStream";
 import MysticMarkdown from "../MysticMarkdown";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { ORCHESTRATOR_PERSONA, MODELS } from "@/lib/ai";
-
-export interface HandoffData {
-  system: string;
-  context: string;
-  modeId?: string;
-}
+import { DivinationHandoff } from "@/app/types/divination";
 
 interface OmniOracleGuideProps {
   onClose: () => void;
-  onHandoff: (data: HandoffData) => void;
+  onHandoff: (data: DivinationHandoff) => void;
 }
 
 export function OmniOracleGuide({ onClose, onHandoff }: OmniOracleGuideProps) {

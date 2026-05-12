@@ -54,30 +54,6 @@ export default function IChingApp({
     onReadingChange?.(isLoading);
   }, [isLoading, onReadingChange]);
 
-  // Handoff Logic
-  useEffect(() => {
-    if (initialHandoff) {
-      const q = initialHandoff.question || initialHandoff.context;
-      const m = initialHandoff.modeId;
-      if (q) setQuestion(q);
-      if (m && ['liuyao', 'meihua', 'qimen'].includes(m)) setMode(m);
-      
-      // Auto-trigger for simple modes (Meihua, Qimen) if requested
-      if (initialHandoff.autoTrigger && q && q.length > 2) {
-        if (m === 'meihua') {
-          // Meihua needs numbers, provide defaults or skip auto if missing
-          const n1 = initialHandoff.num1 || '8';
-          const n2 = initialHandoff.num2 || '8';
-          setNum1(n1); setNum2(n2);
-          handleGenerate('meihua', undefined, n1, n2);
-        } else if (m === 'qimen') {
-          handleGenerate('qimen');
-        }
-      }
-      clearHandoff?.();
-    }
-  }, [initialHandoff, clearHandoff, handleGenerate]);
-
   const handleGenerate = useCallback(async (type: 'liuyao' | 'meihua' | 'qimen', customLines?: number[], overrideNum1?: string, overrideNum2?: string) => {
     const profileContext = getProfileContext();
     let promptData: any = { method: type };
@@ -110,6 +86,30 @@ export default function IChingApp({
       details: { data: { method: type, question, hexagrams: lines } }
     });
   }, [getProfileContext, question, calculateMeihua, num1, num2, setLines, sendMessage, lines]);
+
+  // Handoff Logic
+  useEffect(() => {
+    if (initialHandoff) {
+      const q = initialHandoff.question || initialHandoff.context;
+      const m = initialHandoff.modeId;
+      if (q) setQuestion(q);
+      if (m && ['liuyao', 'meihua', 'qimen'].includes(m)) setMode(m);
+      
+      // Auto-trigger for simple modes (Meihua, Qimen) if requested
+      if (initialHandoff.autoTrigger && q && q.length > 2) {
+        if (m === 'meihua') {
+          // Meihua needs numbers, provide defaults or skip auto if missing
+          const n1 = initialHandoff.num1 || '8';
+          const n2 = initialHandoff.num2 || '8';
+          setNum1(n1); setNum2(n2);
+          handleGenerate('meihua', undefined, n1, n2);
+        } else if (m === 'qimen') {
+          handleGenerate('qimen');
+        }
+      }
+      clearHandoff?.();
+    }
+  }, [initialHandoff, clearHandoff, handleGenerate]);
 
   const handleReset = () => {
     resetEngine();

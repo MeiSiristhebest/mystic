@@ -62,22 +62,6 @@ export default function BaziApp({
     onReadingChange?.(isLoading);
   }, [isLoading, onReadingChange]);
 
-  // Handoff Logic
-  useEffect(() => {
-    if (initialHandoff) {
-      const q = initialHandoff.question || initialHandoff.context;
-      const m = initialHandoff.modeId as any;
-      if (q) setQuestion(q);
-      if (m && ['bazi', 'ziwei', 'liunian'].includes(m)) setMode(m);
-      
-      // Auto-trigger if requested and profile is ready
-      if (initialHandoff.autoTrigger && q && profile.birthDate) {
-        handleGenerate();
-      }
-      clearHandoff?.();
-    }
-  }, [initialHandoff, clearHandoff, profile.birthDate]);
-
   const handleGenerate = useCallback(async () => {
     if (!birthDate || !birthTime) return;
 
@@ -116,6 +100,22 @@ export default function BaziApp({
       }
     });
   }, [birthDate, birthTime, profile, updateProfile, gender, fullName, birthPlace, calculateBazi, mode, question, getProfileContext, sendMessage]);
+
+  // Handoff Logic
+  useEffect(() => {
+    if (initialHandoff) {
+      const q = initialHandoff.question || initialHandoff.context;
+      const m = initialHandoff.modeId as any;
+      if (q) setQuestion(q);
+      if (m && ['bazi', 'ziwei', 'liunian'].includes(m)) setMode(m);
+      
+      // Auto-trigger if requested and profile is ready
+      if (initialHandoff.autoTrigger && q && profile.birthDate) {
+        handleGenerate();
+      }
+      clearHandoff?.();
+    }
+  }, [initialHandoff, clearHandoff, profile.birthDate, handleGenerate]);
 
   const handleReset = () => {
     resetEngine();
