@@ -57,33 +57,36 @@ export default function IChingApp({
   // Handoff Logic
   useEffect(() => {
     if (initialHandoff) {
-      const timer = setTimeout(() => {
-        const q = initialHandoff.question || initialHandoff.context;
-        const m = initialHandoff.modeId;
-        if (q) setQuestion(q);
-        if (m && ['liuyao', 'meihua', 'qimen'].includes(m)) setMode(m);
-        
-        if (q && q.length > 5) {
-          if (m === 'meihua') {
-            if (!num1) setNum1('8'); if (!num2) setNum2('8');
-            setTimeout(() => document.getElementById('meihua-trigger')?.click(), 100);
-          } else if (m === 'qimen') {
-            setTimeout(() => document.getElementById('qimen-trigger')?.click(), 100);
-          }
+      const q = initialHandoff.question || initialHandoff.context;
+      const m = initialHandoff.modeId;
+      if (q) setQuestion(q);
+      if (m && ['liuyao', 'meihua', 'qimen'].includes(m)) setMode(m);
+      
+      // Auto-trigger for simple modes (Meihua, Qimen) if requested
+      if (initialHandoff.autoTrigger && q && q.length > 2) {
+        if (m === 'meihua') {
+          // Meihua needs numbers, provide defaults or skip auto if missing
+          const n1 = initialHandoff.num1 || '8';
+          const n2 = initialHandoff.num2 || '8';
+          setNum1(n1); setNum2(n2);
+          handleGenerate('meihua', undefined, n1, n2);
+        } else if (m === 'qimen') {
+          handleGenerate('qimen');
         }
-        clearHandoff?.();
-      }, 0);
-      return () => clearTimeout(timer);
+      }
+      clearHandoff?.();
     }
-  }, [initialHandoff, clearHandoff, num1, num2, setNum1, setNum2]);
+  }, [initialHandoff, clearHandoff, handleGenerate]);
 
-  const handleGenerate = async (type: 'liuyao' | 'meihua' | 'qimen', customLines?: number[]) => {
+  const handleGenerate = useCallback(async (type: 'liuyao' | 'meihua' | 'qimen', customLines?: number[], overrideNum1?: string, overrideNum2?: string) => {
     const profileContext = getProfileContext();
     let promptData: any = { method: type };
 
     if (type === 'meihua') {
-      if (!num1 || !num2) { setError('请输入两个随机数字'); return; }
-      const { lines: mhLines, n1, n2 } = calculateMeihua(num1, num2);
+      const activeNum1 = overrideNum1 || num1;
+      const activeNum2 = overrideNum2 || num2;
+      if (!activeNum1 || !activeNum2) { setError('请输入两个随机数字'); return; }
+      const { lines: mhLines, n1, n2 } = calculateMeihua(activeNum1, activeNum2);
       setLines(mhLines);
       promptData = { ...promptData, lines: mhLines, num1: n1, num2: n2 };
     } else if (type === 'liuyao') {
@@ -106,7 +109,7 @@ export default function IChingApp({
       title: question ? `易经占卜：${question}` : '易经占卜',
       details: { data: { method: type, question, hexagrams: lines } }
     });
-  };
+  }, [getProfileContext, question, calculateMeihua, num1, num2, setLines, sendMessage, lines]);
 
   const handleReset = () => {
     resetEngine();

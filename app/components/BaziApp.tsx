@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion } from 'motion/react';
 import { Sparkles, Calendar, Clock, MapPin, User, Compass } from 'lucide-react';
 
@@ -65,22 +65,20 @@ export default function BaziApp({
   // Handoff Logic
   useEffect(() => {
     if (initialHandoff) {
-      const timer = setTimeout(() => {
-        const q = initialHandoff.question || initialHandoff.context;
-        const m = initialHandoff.modeId as any;
-        if (q) setQuestion(q);
-        if (m && ['bazi', 'ziwei', 'liunian'].includes(m)) setMode(m);
-        
-        if (q && q.length > 5 && profile.birthDate) {
-          setTimeout(() => document.getElementById('bazi-trigger')?.click(), 100);
-        }
-        clearHandoff?.();
-      }, 0);
-      return () => clearTimeout(timer);
+      const q = initialHandoff.question || initialHandoff.context;
+      const m = initialHandoff.modeId as any;
+      if (q) setQuestion(q);
+      if (m && ['bazi', 'ziwei', 'liunian'].includes(m)) setMode(m);
+      
+      // Auto-trigger if requested and profile is ready
+      if (initialHandoff.autoTrigger && q && profile.birthDate) {
+        handleGenerate();
+      }
+      clearHandoff?.();
     }
   }, [initialHandoff, clearHandoff, profile.birthDate]);
 
-  const handleGenerate = async () => {
+  const handleGenerate = useCallback(async () => {
     if (!birthDate || !birthTime) return;
 
     // Update profile store if needed
@@ -117,7 +115,7 @@ export default function BaziApp({
         birthPlace
       }
     });
-  };
+  }, [birthDate, birthTime, profile, updateProfile, gender, fullName, birthPlace, calculateBazi, mode, question, getProfileContext, sendMessage]);
 
   const handleReset = () => {
     resetEngine();

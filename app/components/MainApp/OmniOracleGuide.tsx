@@ -55,7 +55,8 @@ ${profileContext}
             onHandoff({ 
               system: executeData.system, 
               context: executeData.question || query,
-              modeId: executeData.modeId
+              modeId: executeData.modeId,
+              autoTrigger: true
             });
           }, 3000);
         } catch (e) {

@@ -47,24 +47,23 @@ export function MysticTarot({ initialHandoff, clearHandoff }: MysticTarotProps =
 
   useEffect(() => {
     if (initialHandoff) {
-      const timer = setTimeout(() => {
-        const q = initialHandoff.question || initialHandoff.context;
-        const m = initialHandoff.modeId;
-        
-        if (q) setQuestion(q);
-        if (m) setSelectedSpread(m);
-        
-        // Auto-trigger if we have a full question
-        if (q && q.length > 5) {
-          const spread = SPREAD_MODES.find(s => s.id === (m || selectedSpread));
-          if (spread) {
-            setCards(getDailyTarotCards(spread.cardCount));
-            setStep("ritual");
-          }
+      const q = initialHandoff.question || initialHandoff.context;
+      const m = initialHandoff.modeId;
+      
+      if (q) setQuestion(q);
+      if (m && SPREAD_MODES.some(s => s.id === m)) {
+        setSelectedSpread(m);
+      }
+      
+      // Auto-trigger ritual if requested
+      if (initialHandoff.autoTrigger && q && q.length > 2) {
+        const targetSpread = SPREAD_MODES.find(s => s.id === (m || selectedSpread));
+        if (targetSpread) {
+          setCards(getDailyTarotCards(targetSpread.cardCount));
+          setStep("ritual");
         }
-        clearHandoff?.();
-      }, 0);
-      return () => clearTimeout(timer);
+      }
+      clearHandoff?.();
     }
   }, [initialHandoff, clearHandoff, selectedSpread]);
 

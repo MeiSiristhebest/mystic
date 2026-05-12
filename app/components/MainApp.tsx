@@ -10,7 +10,16 @@ import { DesktopNavigation, MobileNavigation, MobileHeader } from './MainApp/ind
 import BreathingLoading from "./BreathingLoading";
 
 // Modular Views (Named imports from central index)
-import { TodayView, ExploreView, SoulView, MoreView } from "./MainApp/index";
+import { TodayView } from "./MainApp/TodayView";
+const ExploreView = dynamic(() => import("./MainApp/ExploreView").then(mod => mod.ExploreView), {
+  loading: () => <BreathingLoading text="正在开启星际门户..." />
+});
+const SoulView = dynamic(() => import("./MainApp/SoulView").then(mod => mod.SoulView), {
+  loading: () => <BreathingLoading text="正在感应灵魂共鸣..." />
+});
+const MoreView = dynamic(() => import("./MainApp/MoreView").then(mod => mod.MoreView), {
+  loading: () => <BreathingLoading text="正在加载更多维度..." />
+});
 
 // External App Modules (Dynamic for chunking)
 const JourneyApp = dynamic(() => import("./JourneyApp"), { 

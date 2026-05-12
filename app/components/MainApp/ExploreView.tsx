@@ -13,9 +13,9 @@ import dynamic from "next/dynamic";
 import { MysticImage } from "./MysticImage";
 import BreathingLoading from "../BreathingLoading";
 import { useAppStore } from "@/lib/store";
-import { MysticTarot } from "@/app/components/MainApp/MysticTarot";
-import { OmniOracleGuide, HandoffData } from "./OmniOracleGuide";
-
+const MysticTarot = dynamic(() => import("@/app/components/MainApp/MysticTarot").then(mod => mod.MysticTarot), { 
+  loading: () => <BreathingLoading text="正在感应塔罗能量..." /> 
+});
 const AstrologyApp = dynamic(() => import("../AstrologyApp"), { 
   loading: () => <BreathingLoading text="正在连接星辰..." /> 
 });
@@ -25,6 +25,45 @@ const EasternApp = dynamic(() => import("../EasternApp"), {
 const SoulLab = dynamic(() => import("./SoulLab"), { 
   loading: () => <BreathingLoading text="正在激活心灵实验室..." /> 
 });
+const OmniOracleGuide = dynamic(() => import("./OmniOracleGuide").then(mod => mod.OmniOracleGuide), {
+  ssr: false
+});
+
+interface SystemCardProps {
+  system: any;
+  isActive: boolean;
+  onClick: () => void;
+}
+
+function SystemCard({ system, isActive, onClick }: SystemCardProps) {
+  const Icon = system.icon;
+  return (
+    <div
+      role="button"
+      onClick={onClick}
+      className={`luxury-card p-10 text-left transition-all duration-700 group relative overflow-hidden min-h-[320px] flex flex-col justify-end cursor-pointer ${
+        isActive ? "border-[#C9A84C]/60 bg-[#C9A84C]/10" : "hover:bg-white/5"
+      }`}
+    >
+      <div className="absolute inset-0 z-0">
+        <MysticImage 
+          prompt={system.prompt} 
+          className={`w-full h-full transition-all duration-1000 ${isActive ? "opacity-60 scale-105" : "opacity-20 group-hover:opacity-40"}`}
+          aspectRatio="3:4"
+        />
+      </div>
+      <div className="relative z-10">
+        <Icon className={`w-10 h-10 mb-6 transition-all duration-700 ${
+          isActive ? "text-[#C9A84C] scale-110" : "text-[#E8DFB8]/20 group-hover:text-[#E8DFB8]/40"
+        }`} />
+        <h3 className={`text-2xl font-serif mb-3 transition-colors ${isActive ? "gold-gradient-text" : ""}`}>
+          {system.name}
+        </h3>
+        <p className="text-[#E8DFB8]/40 text-sm leading-relaxed">{system.desc}</p>
+      </div>
+    </div>
+  );
+}
 
 export function ExploreView() {
   const [subTab, setSubTab] = useState("");
@@ -107,45 +146,23 @@ export function ExploreView() {
       </motion.div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-        {systems.map((system) => {
-          const Icon = system.icon;
-          const isActive = subTab === system.id;
-          return (
-            <div
-              key={system.id}
-              role="button"
-              onClick={() => {
-                setSubTab(system.id);
-                setTimeout(() => {
-                  window.scrollTo({ top: 800, behavior: 'smooth' });
-                }, 300);
-              }}
-              className={`luxury-card p-10 text-left transition-all duration-700 group relative overflow-hidden min-h-[320px] flex flex-col justify-end cursor-pointer ${
-                isActive ? "border-[#C9A84C]/60 bg-[#C9A84C]/10" : "hover:bg-white/5"
-              }`}
-            >
-              <div className="absolute inset-0 z-0">
-                <MysticImage 
-                  prompt={system.prompt} 
-                  className={`w-full h-full transition-all duration-1000 ${isActive ? "opacity-60 scale-105" : "opacity-20 group-hover:opacity-40"}`}
-                  aspectRatio="3:4"
-                />
-              </div>
-              <div className="relative z-10">
-                <Icon className={`w-10 h-10 mb-6 transition-all duration-700 ${
-                  isActive ? "text-[#C9A84C] scale-110" : "text-[#E8DFB8]/20 group-hover:text-[#E8DFB8]/40"
-                }`} />
-                <h3 className={`text-2xl font-serif mb-3 transition-colors ${isActive ? "gold-gradient-text" : ""}`}>
-                  {system.name}
-                </h3>
-                <p className="text-[#E8DFB8]/40 text-sm leading-relaxed">{system.desc}</p>
-              </div>
-            </div>
-          );
-        })}
+        {systems.map((system) => (
+          <SystemCard 
+            key={system.id}
+            system={system}
+            isActive={subTab === system.id}
+            onClick={() => {
+              setSubTab(system.id);
+              setTimeout(() => {
+                const el = document.getElementById('divination-root');
+                el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }, 100);
+            }}
+          />
+        ))}
       </div>
 
-      <div className="pt-12 border-t border-white/5">
+      <div id="divination-root" className="pt-12 border-t border-white/5">
         <AnimatePresence mode="wait">
           <motion.div
             key={subTab}
@@ -166,13 +183,14 @@ export function ExploreView() {
         {isGuideOpen && (
           <OmniOracleGuide 
             onClose={() => setIsGuideOpen(false)} 
-            onHandoff={(data) => {
+            onHandoff={(data: any) => {
               setIsGuideOpen(false);
               setHandoffData(data);
               setSubTab(data.system);
               setTimeout(() => {
-                window.scrollTo({ top: 800, behavior: 'smooth' });
-              }, 500);
+                const el = document.getElementById('divination-root');
+                el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }, 100);
             }} 
           />
         )}

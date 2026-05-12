@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import LZString from 'lz-string';
 import { 
   saveToStore, 
@@ -9,46 +9,7 @@ import {
   deleteFromStore, 
   clearStore 
 } from '@/lib/storage';
-
-export type Message = {
-  role: 'user' | 'model';
-  content: string;
-};
-
-export type TarotCard = {
-  id: string;
-  name: string;
-  englishName: string;
-  arcana: 'Major' | 'Minor';
-  suit?: string;
-  isReversed: boolean;
-  keywords?: { upright: string[]; reversed: string[] };
-  coreTheme?: string;
-};
-
-export type JourneyDetails = 
-  | { type: 'tarot'; text: string; cards: TarotCard[]; mode?: string; spread?: string; question?: string; messages: Message[] }
-  | { type: 'bazi'; text: string; mode?: string; birthDate?: string; birthTime?: string; gender?: string; fullName?: string; birthPlace?: string; messages: Message[] }
-  | { type: 'iching'; text: string; data?: { method: string; question?: string; hexagrams?: unknown[] }; messages: Message[] }
-  | { type: 'daily'; text: string; sign: string; messages: Message[] }
-  | { type: 'astrology'; text: string; zodiac?: string; mode?: string; messages: Message[] }
-  | { type: 'face_reading'; text: string; imageType?: string; question?: string; messages: Message[] }
-  | { type: 'shadow_work'; text: string; issue?: string; messages: Message[] }
-  | { type: 'synastry'; text: string; partner?: any; question?: string; messages: Message[] }
-  | { type: 'subconscious'; text: string; content?: string; messages: Message[] }
-  | { type: 'time'; text: string; question?: string; messages: Message[] }
-  | { type: 'mirror'; text: string; messages: Message[] }
-  | { type: 'collective_mirror'; text: string; question?: string; messages: Message[] }
-  | { type: 'unified'; text: string; bazi?: unknown; astrology?: unknown; tarot?: unknown; messages: Message[] };
-
-export type JourneyEntry = {
-  id: string;
-  date: string;
-  type: JourneyDetails['type'];
-  title: string;
-  summary: string;
-  details?: JourneyDetails;
-};
+import { JourneyEntry, JourneyDetails } from '@/app/types/divination';
 
 const LEGACY_KEY = 'akasha_journey_v3';
 
@@ -56,43 +17,45 @@ export function useJourney() {
   const [entries, setEntries] = useState<JourneyEntry[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  useEffect(() => {
-    const loadJourney = async () => {
-      try {
-        // 1. Try atomic storage first
-        const atomicEntries = await getAllFromStore('journey-entries');
-        
-        if (atomicEntries && atomicEntries.length > 0) {
-          // Sort by date descending
-          setEntries(atomicEntries.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
-        } else {
-          // 2. Migration: Try legacy monolithic blob
-          const legacy = await getFromStore('reports', LEGACY_KEY);
-          if (legacy && typeof legacy === 'string') {
-            const decompressed = LZString.decompress(legacy);
-            if (decompressed) {
-              const legacyEntries: JourneyEntry[] = JSON.parse(decompressed);
-              setEntries(legacyEntries);
-              
-              // Migrate to atomic
-              console.log('[MIGRATION] Moving legacy entries to atomic storage...');
-              for (const entry of legacyEntries) {
-                await saveToStore('journey-entries', entry.id, entry);
-              }
-              // Clear legacy after success
-              await deleteFromStore('reports', LEGACY_KEY);
+  const loadJourney = useCallback(async () => {
+    try {
+      // 1. Try atomic storage first
+      const atomicEntries = await getAllFromStore('journey-entries');
+      
+      if (atomicEntries && atomicEntries.length > 0) {
+        // Sort by date descending
+        setEntries(atomicEntries.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+      } else {
+        // 2. Migration: Try legacy monolithic blob
+        const legacy = await getFromStore('reports', LEGACY_KEY);
+        if (legacy && typeof legacy === 'string') {
+          const decompressed = LZString.decompress(legacy);
+          if (decompressed) {
+            const legacyEntries: JourneyEntry[] = JSON.parse(decompressed);
+            
+            // Migrate to atomic
+            console.log('[MIGRATION] Moving legacy entries to atomic storage...');
+            for (const entry of legacyEntries) {
+              await saveToStore('journey-entries', entry.id, entry);
             }
+            
+            setEntries(legacyEntries.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+            
+            // Clear legacy after success
+            await deleteFromStore('reports', LEGACY_KEY);
           }
         }
-      } catch (e) {
-        console.error('Failed to load journey:', e);
-      } finally {
-        setIsLoaded(true);
       }
-    };
-
-    loadJourney();
+    } catch (e) {
+      console.error('Failed to load journey:', e);
+    } finally {
+      setIsLoaded(true);
+    }
   }, []);
+
+  useEffect(() => {
+    loadJourney();
+  }, [loadJourney]);
 
   const addEntry = async (entry: Omit<JourneyEntry, 'id' | 'date'>) => {
     const id = Math.random().toString(36).substring(2, 9);
@@ -110,11 +73,25 @@ export function useJourney() {
   };
 
   const updateEntry = async (id: string, updates: Partial<JourneyEntry>) => {
-    const entry = entries.find(e => e.id === id);
-    if (!entry) return;
+    // 1. Get latest from DB to avoid state lag
+    const existing = await getFromStore('journey-entries', id);
+    if (!existing) return;
 
-    const updatedEntry = { ...entry, ...updates };
+    // 2. Merge deep if it's details
+    let updatedEntry: JourneyEntry;
+    if (updates.details && existing.details) {
+       updatedEntry = {
+         ...existing,
+         ...updates,
+         details: { ...existing.details, ...updates.details } as JourneyDetails
+       };
+    } else {
+       updatedEntry = { ...existing, ...updates };
+    }
+
+    // 3. Update Memory State
     setEntries(prev => prev.map(e => e.id === id ? updatedEntry : e));
+    // 4. Update Database
     await saveToStore('journey-entries', id, updatedEntry);
   };
 
@@ -128,5 +105,13 @@ export function useJourney() {
     await clearStore('journey-entries');
   };
 
-  return { entries, addEntry, updateEntry, deleteEntry, clearJourney, isLoaded };
+  return { 
+    entries, 
+    addEntry, 
+    updateEntry, 
+    deleteEntry, 
+    clearJourney, 
+    isLoaded,
+    refreshJourney: loadJourney 
+  };
 }
