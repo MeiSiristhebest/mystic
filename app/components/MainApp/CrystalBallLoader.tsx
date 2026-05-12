@@ -1,16 +1,16 @@
 "use client";
 
-import { useMemo } from "react";
+import { useState } from "react";
 import { motion } from "motion/react";
 
 export default function CrystalBallLoader({ text }: { text?: string }) {
-  const sparkles = useMemo(() => [...Array(8)].map((_, i) => ({
+  const [sparkles] = useState(() => [...Array(8)].map((_, i) => ({
     id: i,
     x: Math.random() * 100 + "%",
     y: Math.random() * 100 + "%",
     duration: 2 + Math.random() * 2,
     delay: Math.random() * 2
-  })), []);
+  })));
 
   return (
     <div className="flex flex-col items-center justify-center space-y-8">

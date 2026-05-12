@@ -125,7 +125,7 @@ export default function SoulCard({ question, cards, motto, date, fullReading }: 
         
         <div className="text-center">
           <p className="text-[10px] text-amber-500/50 font-mono uppercase tracking-[0.2em] mb-1">
-            Akasha's Eye · AI Divination
+            Akasha&apos;s Eye · AI Divination
           </p>
           <p className="text-[9px] text-amber-700/60 font-mono mb-2">
             {date} · {new Array(5).fill('•').join(' ')}

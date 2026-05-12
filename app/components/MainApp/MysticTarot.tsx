@@ -7,7 +7,7 @@ import dynamic from "next/dynamic";
 
 import { CATEGORIES, SPREAD_MODES } from "./constants";
 import { useAIStream } from "@/hooks/useAIStream";
-import { AKASHA_PERSONA } from "@/lib/ai";
+import { AKASHA_PERSONA, MODELS } from "@/lib/ai";
 import { getDailyTarotCards } from "@/lib/tarot-data";
 import { useJourney } from "@/hooks/useJourney";
 import { useUserProfile } from "@/hooks/useUserProfile";
@@ -35,28 +35,31 @@ export function MysticTarot({ initialHandoff, clearHandoff }: MysticTarotProps =
   const [reading, setReading] = useState("");
   const [currentEntryId, setCurrentEntryId] = useState<string | null>(null);
 
-  const { stream, isLoading: isStreaming, abort } = useAIStream();
+  const { stream, isLoading: isStreaming, abort } = useAIStream({ model: MODELS.PRO });
   const { addEntry } = useJourney();
   const { getProfileContext } = useUserProfile();
   const setHandoff = useAppStore((state: any) => state.setHandoff);
 
   useEffect(() => {
     if (initialHandoff) {
-      const q = initialHandoff.question || initialHandoff.context;
-      const m = initialHandoff.modeId;
-      
-      if (q) setQuestion(q);
-      if (m) setSelectedSpread(m);
-      
-      // Auto-trigger if we have a full question
-      if (q && q.length > 5) {
-        const spread = SPREAD_MODES.find(s => s.id === (m || selectedSpread));
-        if (spread) {
-          setCards(getDailyTarotCards(spread.cardCount));
-          setStep("ritual");
+      const timer = setTimeout(() => {
+        const q = initialHandoff.question || initialHandoff.context;
+        const m = initialHandoff.modeId;
+        
+        if (q) setQuestion(q);
+        if (m) setSelectedSpread(m);
+        
+        // Auto-trigger if we have a full question
+        if (q && q.length > 5) {
+          const spread = SPREAD_MODES.find(s => s.id === (m || selectedSpread));
+          if (spread) {
+            setCards(getDailyTarotCards(spread.cardCount));
+            setStep("ritual");
+          }
         }
-      }
-      clearHandoff?.();
+        clearHandoff?.();
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [initialHandoff, clearHandoff, selectedSpread]);
 

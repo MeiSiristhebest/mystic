@@ -1,11 +1,14 @@
 export const MODELS = {
-  PRO: "gemini-3.1-pro-preview",           // For deep reasoning & orchestration
-  FLASH: "gemini-3-flash-preview",         // For rapid analysis
-  LITE: "gemini-3.1-flash-lite",           // Efficient stable inference
-  IMAGE_NANO: "gemini-3.1-flash-image-preview", // Nano Banana 2: High-efficiency image gen
-  IMAGE_PRO: "gemini-3-pro-image-preview",      // Nano Banana Pro: State-of-the-art 4K gen
-  RESEARCH: "deep-research-preview-04-2026"     // Agentic multi-step research
-};
+  PRO: "gemini-3.1-pro-preview",       // 25 RPM / 2M TPM / 250 RPD
+  FLASH: "gemini-3-flash-preview",     // 1K RPM / 2M TPM / 10K RPD
+  LITE: "gemini-3.1-flash-lite",       // 4K RPM / 4M TPM / 150K RPD
+} as const;
+
+export const FALLBACK_CHAIN = [
+  MODELS.PRO,
+  MODELS.FLASH,
+  MODELS.LITE
+];
 
 export const DEFAULT_MODEL = MODELS.FLASH;
 

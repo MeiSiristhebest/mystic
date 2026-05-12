@@ -1,16 +1,17 @@
 "use client";
 
 import { motion } from "motion/react";
+import { useState } from "react";
 
 export default function SubconsciousConstellation() {
-  const stars = [...Array(40)].map((_, i) => ({
+  const [stars] = useState(() => [...Array(40)].map((_, i) => ({
     id: i,
     x: Math.random() * 100,
     y: Math.random() * 100,
     size: Math.random() * 2 + 1,
     duration: Math.random() * 3 + 2,
     delay: Math.random() * 5
-  }));
+  })));
 
   return (
     <div className="relative w-full h-[400px] bg-[#050308] rounded-3xl overflow-hidden border border-white/5">

@@ -118,29 +118,30 @@ export default function IChingApp({
 
   useEffect(() => {
     if (initialHandoff) {
-      const q = initialHandoff.question || initialHandoff.context;
-      const m = initialHandoff.modeId;
-      
-      if (q) setQuestion(q);
-      if (m && ['liuyao', 'meihua', 'qimen'].includes(m)) {
-        setMode(m as any);
-      }
-      
-      // Auto-trigger for specific modes that don't require coin tossing
-      if (q && q.length > 5) {
-        if (m === 'meihua') {
-          // Trigger Mei Hua calculation logic (needs numbers usually, but can be derived or randomized)
-          const btn = document.getElementById('meihua-trigger');
-          if (btn) btn.click();
-        } else if (m === 'qimen') {
-          const btn = document.getElementById('qimen-trigger');
-          if (btn) btn.click();
+      const timer = setTimeout(() => {
+        const q = initialHandoff.question || initialHandoff.context;
+        const m = initialHandoff.modeId;
+        
+        if (q) setQuestion(q);
+        if (m && ['liuyao', 'meihua', 'qimen'].includes(m)) {
+          setMode(m as any);
         }
-      }
-      clearHandoff?.();
+        
+        // Auto-trigger for specific modes that don't require coin tossing
+        if (q && q.length > 5) {
+          if (m === 'meihua') {
+            const btn = document.getElementById('meihua-trigger');
+            if (btn) btn.click();
+          } else if (m === 'qimen') {
+            const btn = document.getElementById('qimen-trigger');
+            if (btn) btn.click();
+          }
+        }
+        clearHandoff?.();
+      }, 0);
+      return () => clearTimeout(timer);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialHandoff]);
+  }, [initialHandoff, clearHandoff]);
   const [error, setError] = useState('');
 
   const [currentEntryId, setCurrentEntryId] = useState<string | null>(null);

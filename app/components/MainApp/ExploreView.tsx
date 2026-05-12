@@ -37,17 +37,17 @@ export function ExploreView() {
   // Sync with global handoff (e.g. from TodayView)
   useEffect(() => {
     if (globalHandoff) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setHandoffData(globalHandoff);
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setSubTab(globalHandoff.system);
-      setGlobalHandoff(null); 
-      
-      setTimeout(() => {
-        window.scrollTo({ top: 800, behavior: 'smooth' });
-      }, 500);
+      const timer = setTimeout(() => {
+        setHandoffData(globalHandoff);
+        setSubTab(globalHandoff.system);
+        setGlobalHandoff(null); 
+        
+        setTimeout(() => {
+          window.scrollTo({ top: 800, behavior: 'smooth' });
+        }, 500);
+      }, 0);
+      return () => clearTimeout(timer);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [globalHandoff, setGlobalHandoff]);
 
   const systems = [

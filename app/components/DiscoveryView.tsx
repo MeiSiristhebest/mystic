@@ -107,21 +107,24 @@ export default function DiscoveryView({ onComplete }: { onComplete?: () => void 
 
   useEffect(() => {
     if (isLoaded && profile !== prevProfile) {
-      if (profile.name && profile.mbti && profile.jungianArchetype && step < 6) {
-        setStep(6);
-      }
-      setEnneagramAnswer(profile.enneagram || "");
-      setMbtiResult(profile.mbti || "");
-      setMbtiIdentity(profile.mbtiIdentity || "");
-      setSelectedArchetype(profile.jungianArchetype || "");
-      setFormData({
-        name: profile.name || "",
-        gender: profile.gender || "",
-        birthDate: profile.birthDate || "",
-        birthTime: profile.birthTime || "",
-        birthPlace: profile.birthPlace || ""
-      });
-      setPrevProfile(profile);
+      const timer = setTimeout(() => {
+        if (profile.name && profile.mbti && profile.jungianArchetype && step < 6) {
+          setStep(6);
+        }
+        setEnneagramAnswer(profile.enneagram || "");
+        setMbtiResult(profile.mbti || "");
+        setMbtiIdentity(profile.mbtiIdentity || "");
+        setSelectedArchetype(profile.jungianArchetype || "");
+        setFormData({
+          name: profile.name || "",
+          gender: profile.gender || "",
+          birthDate: profile.birthDate || "",
+          birthTime: profile.birthTime || "",
+          birthPlace: profile.birthPlace || ""
+        });
+        setPrevProfile(profile);
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [isLoaded, profile, prevProfile, step]);
 

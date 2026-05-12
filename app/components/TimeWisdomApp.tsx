@@ -97,11 +97,14 @@ export default function TimeWisdomApp() {
     } catch (e) {
       console.error(e);
     }
-  }, [hasGenerated, today, moonPhase, getProfileContext, sendMessage]);
+  }, [hasGenerated, today, moonPhase, getProfileContext, sendMessage, addEntry]);
 
   useEffect(() => {
     if (profile.birthDate && !hasGenerated && !isLoading) {
-      generateReading();
+      const timer = setTimeout(() => {
+        generateReading();
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [profile.birthDate, generateReading, hasGenerated, isLoading]);
 
@@ -116,7 +119,7 @@ export default function TimeWisdomApp() {
           <Clock className="w-8 h-8 text-blue-400" />
         </motion.div>
         <h1 className="text-4xl font-serif gold-gradient-text mb-4 tracking-widest">时间智慧</h1>
-        <p className="text-blue-200/60 font-serif italic">"在永恒的当下，锚定你的坐标"</p>
+        <p className="text-blue-200/60 font-serif italic">&quot;在永恒的当下，锚定你的坐标&quot;</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">

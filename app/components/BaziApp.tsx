@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, Send, X, Calendar, Clock, User, ChevronRight, Star, Download } from 'lucide-react';
 import MysticMarkdown from './MysticMarkdown';
 import BreathingLoading from './BreathingLoading';
-import { AKASHA_PERSONA } from '@/lib/ai';
+import { AKASHA_PERSONA, MODELS } from '@/lib/ai';
 import { usePosterGenerator } from '@/hooks/usePosterGenerator';
 import { useAIStream } from '@/hooks/useAIStream';
 import { getBaziData, getZiweiServerData } from '@/app/actions/aiActions';
@@ -87,27 +87,6 @@ export default function BaziApp({
   const { profile, getProfileContext } = useUserProfile();
   const { addEntry, updateEntry } = useJourney();
   const { isGeneratingPoster, handleGeneratePoster } = usePosterGenerator();
-  const { stream, isLoading: isReading, error: streamError, abort } = useAIStream();
-
-  useEffect(() => {
-    if (initialHandoff) {
-      const q = initialHandoff.question || initialHandoff.context;
-      const m = initialHandoff.modeId;
-      
-      if (q) setQuestion(q);
-      if (m && ['bazi', 'ziwei', 'liunian'].includes(m)) {
-        setMode(m);
-      }
-      
-      // Auto-trigger if we have enough info
-      if (q && q.length > 5) {
-        handleGenerate();
-      }
-      clearHandoff?.();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialHandoff]);
-
   const [birthDate, setBirthDate] = useState(profile.birthDate || '');
   const [birthTime, setBirthTime] = useState(profile.birthTime || '');
   const [gender, setGender] = useState(profile.gender === '女' ? 'female' : 'male');
@@ -120,6 +99,8 @@ export default function BaziApp({
   const [currentEntryId, setCurrentEntryId] = useState<string | null>(null);
 
   const [prevProfile, setPrevProfile] = useState(profile);
+  const [messages, setMessages] = useState<{ role: 'user' | 'model'; content: string }[]>([]);
+  const [isAskingFollowUp, setIsAskingFollowUp] = useState(false);
 
   if (profile !== prevProfile) {
     if (profile.birthDate) setBirthDate(profile.birthDate);
@@ -129,15 +110,8 @@ export default function BaziApp({
     if (profile.name) setFullName(profile.name);
     setPrevProfile(profile);
   }
-  
-  const [messages, setMessages] = useState<{ role: 'user' | 'model'; content: string }[]>([]);
-  const [isAskingFollowUp, setIsAskingFollowUp] = useState(false);
 
-  useEffect(() => {
-    if (onReadingChange) {
-      onReadingChange(isReading || isAskingFollowUp);
-    }
-  }, [isReading, isAskingFollowUp, onReadingChange]);
+  const { stream, isLoading: isReading, error: streamError, abort } = useAIStream({ model: MODELS.PRO });
 
   const handleGenerate = async () => {
     if (!birthDate || !birthTime) {
@@ -290,6 +264,33 @@ export default function BaziApp({
       setError('推演命理时遇到了星象干扰，请稍后再试。');
     }
   };
+
+  useEffect(() => {
+    if (initialHandoff) {
+      const timer = setTimeout(() => {
+        const q = initialHandoff.question || initialHandoff.context;
+        const m = initialHandoff.modeId;
+        
+        if (q) setQuestion(q);
+        if (m && ['bazi', 'ziwei', 'liunian'].includes(m)) {
+          setMode(m);
+        }
+        
+        // Auto-trigger if we have enough info
+        if (q && q.length > 5) {
+          handleGenerate();
+        }
+        clearHandoff?.();
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [initialHandoff, clearHandoff, handleGenerate]);
+
+  useEffect(() => {
+    if (onReadingChange) {
+      onReadingChange(isReading || isAskingFollowUp);
+    }
+  }, [isReading, isAskingFollowUp, onReadingChange]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();

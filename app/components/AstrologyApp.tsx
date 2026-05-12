@@ -101,25 +101,6 @@ export default function AstrologyApp({ initialHandoff, clearHandoff }: Astrology
   const { handleGeneratePoster, isGeneratingPoster } = usePosterGenerator();
   const posterRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (initialHandoff) {
-      const q = initialHandoff.question || initialHandoff.context;
-      const m = initialHandoff.modeId;
-      
-      if (q) setQuestion(q);
-      if (m && ["zodiac", "daily", "starchart", "mbti", "compatibility"].includes(m)) {
-        setMode(m as any);
-      }
-      
-      // Auto-trigger if question is substantial
-      if (q && q.length > 5) {
-        handleGenerate();
-      }
-      clearHandoff?.();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialHandoff]);
-
   const handleGenerate = async () => {
     setMessages([]);
     const profileContext = getProfileContext();
@@ -161,6 +142,27 @@ ${profileContext}
       details: { type: 'astrology', text: fullResponse, mode, messages: [{ role: 'model', content: fullResponse }] }
     });
   };
+
+  useEffect(() => {
+    if (initialHandoff) {
+      const timer = setTimeout(() => {
+        const q = initialHandoff.question || initialHandoff.context;
+        const m = initialHandoff.modeId;
+        
+        if (q) setQuestion(q);
+        if (m && ["zodiac", "daily", "starchart", "mbti", "compatibility"].includes(m)) {
+          setMode(m as any);
+        }
+        
+        // Auto-trigger if question is substantial
+        if (q && q.length > 5) {
+          handleGenerate();
+        }
+        clearHandoff?.();
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [initialHandoff, clearHandoff, handleGenerate]);
 
   return (
     <div className="w-full max-w-5xl mx-auto space-y-12 pb-20">

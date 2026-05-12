@@ -131,3 +131,25 @@
 - **Decision: Emotional Baseline Persistence**
   - **Reason**: Mood check-ins were transient and not reflected in the user's permanent journey history.
   - **Action**: Integrated MoodCheckIn with addEntry in SoulView, ensuring every emotional pulse is recorded in the Akashic timeline.
+
+## [2026-05-12] Phase 12: High-Availability & Production Hardening
+
+- **Decision: Intelligent Model Fallback Chain (Gemini 3.1)**
+  - **Reason**: To handle the strict RPD/RPM limits of the Pro model while ensuring a 100% uptime UX.
+  - **Action**: Implemented a systematic fallback chain `[PRO -> FLASH -> LITE]` in `app/api/ai/route.ts`.
+  - **Details**:
+    - **Tier 1 (PRO)**: `gemini-3.1-pro-preview` (Deep Analysis)
+    - **Tier 2 (FLASH)**: `gemini-3-flash-preview` (Standard Balance)
+    - **Tier 3 (LITE)**: `gemini-3.1-flash-lite` (High-Volume Backup, 4K RPM)
+- **Decision: Dynamic Model Dispatching**
+  - **Reason**: Complex divination tasks require higher reasoning than simple UI guidance.
+  - **Action**: Configured `BaziApp` and `MysticTarot` to prefer Tier 1, while `Orchestrator` uses Tier 2.
+- **Decision: Strict React Purity Enforcement**
+  - **Reason**: Impure `Math.random()` calls in render bodies caused non-deterministic UI and lint failures.
+  - **Action**: Migrated all random visual seed generation in `CrystalBallLoader`, `ShadowWorkMirror`, and `TarotComponents` to `useState` lazy initializers.
+- **Decision: Async State Synchronization (Handoff)**
+  - **Reason**: Synchronous `setState` calls in `useEffect` triggered "Cascading Render" warnings.
+  - **Action**: Wrapped all cross-view handoff logic in `setTimeout` across core components.
+- **Decision: Lint-Clean Production Target**
+  - **Reason**: Ensure 100% build success on Vercel/Next.js.
+  - **Action**: Resolved all remaining `react-hooks` and `immutability` errors. Verified via `pnpm run lint`.

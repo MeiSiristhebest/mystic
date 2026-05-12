@@ -1,18 +1,18 @@
 "use client";
 
-import { useMemo } from "react";
+import { useState } from "react";
 import { motion } from "motion/react";
 import { X } from "lucide-react";
 
 export function AmbientCosmicBackground() {
-  const particles = useMemo(() => [...Array(30)].map((_, i) => ({
+  const [particles] = useState(() => [...Array(30)].map((_, i) => ({
     id: i,
     x: Math.random() * 100 + "%",
     y: Math.random() * 100 + "%",
     opacity: Math.random() * 0.5 + 0.1,
     duration: Math.random() * 20 + 10,
     delay: Math.random() * 10
-  })), []);
+  })));
 
   return (
     <div className="fixed inset-0 w-full h-full pointer-events-none overflow-hidden">

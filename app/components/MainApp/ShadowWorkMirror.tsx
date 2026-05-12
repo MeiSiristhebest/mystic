@@ -1,8 +1,14 @@
 "use client";
 
 import { motion } from "motion/react";
+import { useState } from "react";
 
 export default function ShadowWorkMirror() {
+  const [offsets] = useState(() => [...Array(3)].map(() => ({
+    x: [Math.random() * 20, Math.random() * -20, Math.random() * 20],
+    y: [Math.random() * 20, Math.random() * -20, Math.random() * 20]
+  })));
+
   return (
     <div className="relative w-full h-full min-h-[400px] bg-[#050308] overflow-hidden flex items-center justify-center p-8">
       {/* Dark Mirror Base */}
@@ -28,8 +34,8 @@ export default function ShadowWorkMirror() {
             <motion.div
               key={i}
               animate={{ 
-                x: [Math.random() * 20, Math.random() * -20, Math.random() * 20],
-                y: [Math.random() * 20, Math.random() * -20, Math.random() * 20],
+                x: offsets[i].x,
+                y: offsets[i].y,
                 scale: [1, 1.1, 1],
                 opacity: [0.1, 0.2, 0.1]
               }}
