@@ -1,24 +1,34 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
-  Search, 
-  Trash2, 
-  ChevronRight, 
+  ChevronDown, 
   Calendar, 
-  History, 
-  Sparkles, 
+  Clock, 
+  Trash2, 
+  Search, 
+  Filter, 
+  Zap, 
+  ChevronRight, 
+  Download,
+  X,
+  History,
+  Sparkles,
   ArrowLeft,
-  Filter
+  Maximize2,
+  Minimize2
 } from 'lucide-react';
 import { useJourney } from '@/hooks/useJourney';
 import { useAIChat } from '@/hooks/useAIChat';
+import { useAIStream } from '@/hooks/useAIStream';
 import { useUserProfile } from '@/hooks/useUserProfile';
+import { MODELS, AKASHA_PERSONA } from '@/lib/ai';
 import { JourneyEntry } from '@/app/types/divination';
 import MysticChatInterface from './MainApp/MysticChatInterface';
 import EntryDetailRenderer from './MainApp/Journey/EntryDetailRenderer';
 import BreathingLoading from './BreathingLoading';
+import { usePosterGenerator } from '@/hooks/usePosterGenerator';
 
 export default function JourneyApp() {
   const { entries, deleteEntry, clearJourney, isLoaded, updateEntry } = useJourney();
@@ -26,6 +36,14 @@ export default function JourneyApp() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<string>('all');
   const [chatInput, setChatInput] = useState('');
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const [echoText, setEchoText] = useState("");
+  const [isEchoing, setIsEchoing] = useState(false);
+
+  const posterRef = useRef<HTMLDivElement>(null);
+  const { isGeneratingPoster, handleGeneratePoster } = usePosterGenerator();
+  const { stream } = useAIStream({ model: MODELS.FLASH });
+  const { profile } = useUserProfile();
 
   const selectedEntry = useMemo(() => 
     entries.find(e => e.id === selectedEntryId), 
@@ -33,8 +51,10 @@ export default function JourneyApp() {
 
   const filteredEntries = useMemo(() => {
     return entries.filter(e => {
-      const matchesSearch = e.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          e.summary.toLowerCase().includes(searchQuery.toLowerCase());
+      const title = e.title || '';
+      const summary = e.summary || '';
+      const matchesSearch = title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                           summary.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesType = filterType === 'all' || e.type === filterType;
       return matchesSearch && matchesType;
     });
@@ -44,26 +64,73 @@ export default function JourneyApp() {
     messages, setMessages, sendMessage, isLoading, isStreaming, setCurrentEntryId 
   } = useAIChat({ type: selectedEntry?.type || 'tarot' });
 
-  // Sync messages when entry is selected
+  // Sync messages and echo when entry is selected
   useEffect(() => {
     if (selectedEntry) {
       setMessages(selectedEntry.details?.messages || [{ role: 'model', content: selectedEntry.details?.text || selectedEntry.summary }]);
       setCurrentEntryId(selectedEntry.id);
+      setEchoText(selectedEntry.details?.echo || "");
     } else {
       setMessages([]);
       setCurrentEntryId(null);
+      setEchoText("");
+      setIsFullScreen(false);
     }
   }, [selectedEntry, setMessages, setCurrentEntryId]);
-
-  if (!isLoaded) return <BreathingLoading text="正在打开阿卡夏记录..." />;
 
   const handleBack = () => {
     setSelectedEntryId(null);
     setChatInput('');
+    setIsFullScreen(false);
   };
 
+  const handleGenerateEcho = async () => {
+    if (!selectedEntry || isEchoing) return;
+    setIsEchoing(true);
+    
+    const prompt = `
+<instruction>
+你是阿卡夏记录的守护者。请对用户过去的这段占卜记录进行“命运回响”分析。
+请结合用户当前的灵魂档案，分析这段记录在当下的现实意义，并给出一个跨越时空的深层建议。
+文字要简练、玄奥、充满诗意。
+</instruction>
+
+<user_profile>
+${JSON.stringify(profile)}
+</user_profile>
+
+<historical_entry>
+类型: ${selectedEntry.type}
+标题: ${selectedEntry.title}
+内容: ${selectedEntry.summary}
+</historical_entry>
+    `;
+
+    try {
+      let fullEcho = "";
+      for await (const chunk of stream(prompt, AKASHA_PERSONA)) {
+        fullEcho += chunk;
+        setEchoText(fullEcho);
+      }
+      
+      // Save echo to entry
+      updateEntry(selectedEntry.id, {
+        details: {
+          ...selectedEntry.details,
+          echo: fullEcho
+        }
+      });
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsEchoing(false);
+    }
+  };
+
+  if (!isLoaded) return <BreathingLoading text="正在打开阿卡夏记录..." />;
+
   return (
-    <div className="max-w-7xl mx-auto px-6 py-12 min-h-[80vh]">
+    <div className={`max-w-7xl mx-auto px-6 py-12 min-h-[80vh] ${isFullScreen ? 'overflow-hidden' : ''}`}>
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
         <div className="space-y-4">
           <div className="flex items-center gap-3 text-amber-500/60 uppercase tracking-[0.4em] text-xs">
@@ -106,20 +173,21 @@ export default function JourneyApp() {
                   className="w-full bg-black/40 border border-white/5 rounded-2xl py-4 pl-12 pr-6 text-amber-100 focus:border-amber-500/30 transition-all font-serif"
                 />
               </div>
-              <div className="flex items-center gap-2 bg-black/40 border border-white/5 rounded-2xl px-4 py-2">
+              <div className="flex items-center gap-2 bg-black/40 border border-white/10 rounded-2xl px-4 py-2 relative">
                 <Filter size={16} className="text-amber-500/40" />
                 <select 
                   value={filterType}
                   onChange={(e) => setFilterType(e.target.value)}
-                  className="bg-transparent text-amber-200/60 font-serif text-sm focus:outline-none"
+                  className="bg-transparent text-amber-100 font-serif text-sm focus:outline-none appearance-none cursor-pointer pr-8 pl-2 py-1 transition-colors min-w-[120px]"
                 >
-                  <option value="all">所有类别</option>
-                  <option value="tarot">塔罗占卜</option>
-                  <option value="bazi">命理八字</option>
-                  <option value="iching">周易占卜</option>
-                  <option value="astrology">星象解析</option>
-                  <option value="shadow_work">阴影工作</option>
+                  <option value="all" className="bg-[#080510]">所有类别</option>
+                  <option value="tarot" className="bg-[#080510]">塔罗占卜</option>
+                  <option value="bazi" className="bg-[#080510]">命理八字</option>
+                  <option value="iching" className="bg-[#080510]">周易占卜</option>
+                  <option value="astrology" className="bg-[#080510]">星象解析</option>
+                  <option value="shadow_work" className="bg-[#080510]">阴影工作</option>
                 </select>
+                <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-amber-500/40 pointer-events-none" />
               </div>
             </div>
 
@@ -159,72 +227,144 @@ export default function JourneyApp() {
             )}
           </motion.div>
         ) : (
-          <motion.div 
-            key="detail"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            className="space-y-12"
-          >
-            <button 
+          <>
+            {/* Modal Backdrop */}
+            <motion.div
+              key="backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               onClick={handleBack}
-              className="flex items-center gap-2 text-amber-500/60 hover:text-amber-500 transition-colors font-serif mb-8"
+              className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md"
+            />
+
+            <motion.div 
+              key="detail"
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ 
+                opacity: 1, 
+                scale: 1, 
+                y: 0,
+                width: isFullScreen ? '100vw' : '90vw',
+                height: isFullScreen ? '100vh' : '85vh',
+              }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className={`fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[110] bg-[#080510] overflow-y-auto shadow-2xl border border-white/10
+                ${isFullScreen ? 'rounded-0' : 'rounded-[2.5rem] max-w-5xl'} 
+                scrollbar-hide custom-scrollbar transition-all duration-500`}
             >
-              <ArrowLeft size={18} />
-              返回旅程
-            </button>
+            <div className={`mx-auto space-y-12 p-8 md:p-16 ${isFullScreen ? 'max-w-6xl' : 'max-w-full'}`}>
+              <div className="flex items-center justify-between sticky top-0 bg-[#080510]/80 backdrop-blur-md z-30 pb-6 mb-6">
+                <button 
+                  onClick={handleBack}
+                  className="flex items-center gap-2 text-amber-500/60 hover:text-amber-500 transition-colors font-serif"
+                >
+                  <ArrowLeft size={18} />
+                  返回记录
+                </button>
+                <div className="flex items-center gap-4">
+                  <button
+                    onClick={() => handleGeneratePoster(posterRef.current, `journey-${selectedEntry.id}.jpg`)}
+                    className="p-3 rounded-full bg-white/5 hover:bg-white/10 text-amber-500/60 hover:text-amber-500 transition-all"
+                    title="保存海报"
+                  >
+                    <Download size={18} />
+                  </button>
+                  <button 
+                    onClick={() => setIsFullScreen(!isFullScreen)}
+                    className="p-3 rounded-full bg-white/5 hover:bg-white/10 text-amber-500/60 hover:text-amber-500 transition-all"
+                    title={isFullScreen ? "收起" : "全屏预览"}
+                  >
+                    {isFullScreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+                  </button>
+                  <button 
+                    onClick={handleBack}
+                    className="p-3 rounded-full bg-white/5 hover:bg-white/10 text-amber-500/60 hover:text-amber-500 transition-all"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+              </div>
 
-            <div className="glass-panel p-8 md:p-12 rounded-3xl space-y-12 relative overflow-hidden">
-               <div className="absolute top-0 right-0 p-8 opacity-5">
-                 <Sparkles size={120} />
-               </div>
+              <div ref={posterRef} className="glass-panel p-8 md:p-12 rounded-[2.5rem] space-y-12 relative overflow-hidden bg-black/40">
+                <div className="absolute top-0 right-0 p-12 opacity-5">
+                  <Sparkles size={200} className="text-amber-500" />
+                </div>
 
-               <div className="space-y-6">
-                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                   <div className="space-y-2">
-                     <span className="text-xs font-mono text-amber-500/60 tracking-[0.5em] uppercase">{selectedEntry.type}</span>
-                     <h2 className="text-4xl font-serif text-amber-100">{selectedEntry.title}</h2>
-                   </div>
-                   <div className="flex items-center gap-6">
-                     <div className="text-right">
-                       <p className="text-[10px] text-white/20 uppercase font-mono tracking-widest mb-1">RECORDED ON</p>
-                       <p className="text-sm text-amber-200/40 font-serif">{new Date(selectedEntry.date).toLocaleString()}</p>
-                     </div>
-                     <button 
-                        onClick={(e) => { e.stopPropagation(); deleteEntry(selectedEntry.id); handleBack(); }}
-                        className="p-3 rounded-full hover:bg-red-500/10 text-white/10 hover:text-red-400 transition-all"
-                     >
-                       <Trash2 size={18} />
-                     </button>
-                   </div>
-                 </div>
-                 <div className="h-[1px] w-full bg-gradient-to-r from-amber-500/20 via-amber-500/5 to-transparent" />
-               </div>
+                <div className="space-y-6 relative z-10">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div className="space-y-3">
+                      <span className="text-xs font-mono text-amber-500/60 tracking-[0.5em] uppercase">{selectedEntry.type}</span>
+                      <h2 className="text-4xl md:text-5xl font-serif text-amber-100">{selectedEntry.title}</h2>
+                    </div>
+                    <div className="flex items-center gap-8">
+                      <div className="text-right">
+                        <p className="text-[10px] text-white/20 uppercase font-mono tracking-widest mb-1">RECORDED ON</p>
+                        <p className="text-sm text-amber-200/40 font-serif">{new Date(selectedEntry.date).toLocaleString()}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="h-[1px] w-full bg-gradient-to-r from-amber-500/20 via-amber-500/5 to-transparent" />
+                </div>
 
-               <EntryDetailRenderer entry={selectedEntry} />
+                <EntryDetailRenderer entry={selectedEntry} />
 
-               {/* Deep Dive Section */}
-               <div className="mt-20 pt-16 border-t border-white/5 space-y-12">
-                 <div className="text-center space-y-4">
-                    <h4 className="text-2xl font-serif gold-gradient-text tracking-widest">深度回响 · Deep Dive</h4>
-                    <p className="text-sm text-white/30 font-serif italic">基于这次占卜，你还可以继续向阿卡夏寻求更深层的洞见...</p>
-                 </div>
-                 
-                 <MysticChatInterface 
-                    messages={messages}
-                    input={chatInput}
-                    setInput={setChatInput}
-                    onSend={(e) => {
-                      e.preventDefault();
-                      sendMessage(chatInput);
-                      setChatInput('');
-                    }}
-                    isLoading={isLoading}
-                    isStreaming={isStreaming}
-                 />
-               </div>
+                {/* Fate Echo Section */}
+                {(echoText || isEchoing) ? (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-20 p-10 rounded-[32px] bg-amber-500/[0.03] border border-amber-500/10 space-y-6 relative"
+                  >
+                    <div className="absolute -top-4 left-10 px-6 py-1 bg-[#120c18] border border-amber-500/20 rounded-full text-[10px] font-serif text-amber-500 uppercase tracking-[0.4em]">
+                      命运回响 · Echo
+                    </div>
+                    <div className="flex justify-center">
+                        <p className="text-xl md:text-2xl font-serif text-amber-100/90 leading-relaxed italic text-center py-4">
+                        {echoText || <BreathingLoading text="正在感应时空回响..." />}
+                        </p>
+                    </div>
+                  </motion.div>
+                ) : (
+                  <div className="mt-16 flex justify-center">
+                    <button 
+                      onClick={handleGenerateEcho}
+                      className="group flex items-center gap-4 px-8 py-4 rounded-full bg-amber-500/5 border border-amber-500/20 text-amber-200/60 hover:text-amber-200 hover:bg-amber-500/10 transition-all font-serif tracking-widest"
+                    >
+                      <Zap size={16} className="text-amber-500" />
+                      <span>唤醒命运回响</span>
+                    </button>
+                  </div>
+                )}
+                
+                <div className="hidden show-in-poster mt-24 pt-12 border-t border-amber-500/10 text-center opacity-30">
+                  <p className="font-serif text-amber-200/60 tracking-[0.2em] text-center">Akashic Chronicle · Mystic Journey</p>
+                </div>
+              </div>
+
+              {/* Deep Dive Section */}
+              <div className="mt-20 pt-16 border-t border-white/5 space-y-12">
+                <div className="text-center space-y-4">
+                   <h4 className="text-3xl font-serif gold-gradient-text tracking-widest">深度对话 · Deep Dive</h4>
+                   <p className="text-sm text-[#E8DFB8]/40 font-serif italic">阿卡夏记录是流动的，你可以继续询问这次洞见的余波...</p>
+                </div>
+                
+                <MysticChatInterface 
+                   messages={messages.slice(1)} // Skip the initial reading as it's already shown above
+                   input={chatInput}
+                   setInput={setChatInput}
+                   onSend={(e) => {
+                     e.preventDefault();
+                     sendMessage(chatInput);
+                     setChatInput('');
+                   }}
+                   isLoading={isLoading}
+                   isStreaming={isStreaming}
+                />
+              </div>
             </div>
           </motion.div>
+        </>
         )}
       </AnimatePresence>
     </div>

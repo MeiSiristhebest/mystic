@@ -213,22 +213,24 @@ const moods = [
               <div className="flex items-center justify-between">
                 <h4 className="font-serif text-2xl tracking-[0.2em] gold-gradient-text">能量波动</h4>
               </div>
-              <div className="h-32 flex items-end gap-1 md:gap-2">
-                {energyLevels.map((h, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ height: 0 }}
-                    animate={{ height: `${h}%` }}
-                    transition={{ duration: 1, delay: i * 0.1 }}
-                    className="flex-1 bg-gradient-to-t from-[#C9A84C]/20 to-[#C9A84C]/60 rounded-t-lg relative group"
-                  >
-                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity text-xs text-[#C9A84C] font-mono">
-                      {Math.round(h)}
-                    </div>
-                  </motion.div>
-                ))}
+              <div className="flex flex-col items-center space-y-6">
+                <div className="h-32 flex items-end justify-center gap-3 w-full">
+                  {energyLevels.map((h, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ height: 0 }}
+                      animate={{ height: `${h}%` }}
+                      transition={{ duration: 1, delay: i * 0.1 }}
+                      className="w-8 bg-gradient-to-t from-[#C9A84C]/10 via-[#C9A84C]/40 to-[#C9A84C]/80 rounded-full relative group"
+                    >
+                      <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] text-[#C9A84C] font-mono whitespace-nowrap bg-black/60 px-2 py-1 rounded border border-amber-500/20">
+                        {Math.round(h)}%
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+                <MoodCheckIn onSelect={handleMoodSelect} />
               </div>
-              <MoodCheckIn onSelect={handleMoodSelect} />
             </div>
           </section>
         </div>

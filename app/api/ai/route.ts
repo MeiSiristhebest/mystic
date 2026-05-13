@@ -3,6 +3,8 @@ import { NextRequest } from "next/server";
 import { AKASHA_PERSONA, DEFAULT_MODEL, MODELS, FALLBACK_CHAIN } from "@/lib/ai";
 import { getCachedResponse, setCachedResponse, generateCacheKey } from "@/lib/ai-cache";
 
+export const maxDuration = 60;
+
 export async function POST(req: NextRequest) {
   try {
     const apiKey = process.env.GEMINI_API_KEY;

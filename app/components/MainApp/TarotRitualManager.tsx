@@ -102,7 +102,7 @@ export default function TarotRitualManager({ cards, onComplete }: TarotRitualMan
               ))}
             </div>
             
-            <p className="font-serif text-amber-200/60 tracking-[0.2em]">
+            <p className="font-serif text-amber-200/60 tracking-[0.2em] text-center">
               {phase === "dealing" ? "正在布阵..." : revealedCount < cards.length ? `请点击翻开第 ${revealedCount + 1} 张牌` : "阵法已成，正在解读..."}
             </p>
           </motion.div>

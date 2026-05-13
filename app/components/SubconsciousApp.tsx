@@ -5,6 +5,7 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 import { useAIChat } from "@/hooks/useAIChat";
 import { useJourney } from "@/hooks/useJourney";
 import BreathingLoading from "./BreathingLoading";
+import MysticMarkdown from "./MysticMarkdown";
 import { getSubconsciousPrompt } from '@/lib/prompts';
 import { MODELS } from "@/lib/ai";
 
@@ -173,15 +174,17 @@ export default function SubconsciousApp({ initialHandoff, clearHandoff }: Subcon
                 className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div 
-                  className={`max-w-[80%] rounded-2xl p-4 ${
+                  className={`max-w-[80%] rounded-2xl p-6 ${
                     msg.role === 'user' 
                       ? 'bg-amber-500/10 border border-amber-500/30 text-amber-100' 
                       : 'bg-zinc-900/80 border border-amber-500/20 text-amber-100/90'
                   }`}
                 >
-                  <div className="prose prose-invert prose-amber max-w-none text-sm md:text-base font-serif whitespace-pre-wrap leading-relaxed">
-                    {msg.content || (isLoading && idx === messages.length - 1 ? '...' : '')}
-                  </div>
+                  {msg.role === 'user' ? (
+                    <p className="font-serif whitespace-pre-wrap">{msg.content}</p>
+                  ) : (
+                    <MysticMarkdown content={msg.content || (isLoading && idx === messages.length - 1 ? '...' : '')} />
+                  )}
                 </div>
               </motion.div>
             ))

@@ -218,10 +218,10 @@ export default function DiscoveryView({ onComplete }: { onComplete?: () => void 
 
       <div className="relative z-10 max-w-4xl mx-auto px-6 py-12">
         {/* Subtle Progress Header */}
-        <div className="flex items-center justify-between mb-16 opacity-40">
+        <div className="flex flex-col items-center justify-center mb-16 opacity-40 space-y-4">
           <div className="flex gap-1">
             {[1,2,3,4,5,6].map(s => (
-              <div key={s} className={`h-1 rounded-full transition-all duration-500 ${s <= step ? 'w-8 bg-amber-500' : 'w-4 bg-white/10'}`} />
+              <div key={s} className={`h-1 rounded-full transition-all duration-500 ${s <= step ? 'w-12 bg-amber-500' : 'w-4 bg-white/10'}`} />
             ))}
           </div>
           <span className="text-[10px] font-serif tracking-[0.3em] uppercase text-amber-500/60">Soul Registry • {step}/6</span>

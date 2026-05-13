@@ -215,3 +215,40 @@
 - **Decision: Render Performance (Memoization & Lazy Initialization)**
   - **Reason**: High-frequency streaming updates caused excessive re-renders of the entire Markdown tree.
   - **Action**: Applied `React.memo` to `MysticMarkdown` and modular detail renderers. Verified 60fps streaming experience.
+
+## [2026-05-13] Phase 17: Mystic Immersive Experience Restoration
+
+- **Decision: Cinematic Omni-Oracle Restoration**
+  - **Reason**: Reverting regressions to restore the "movie-subtitle" interaction style.
+  - **Action**: Refactored `OmniOracleGuide.tsx` to use full-screen `AmbientCosmicBackground` and centered large-scale typography.
+- **Decision: Dashboard Layout Recovery (TodayView)**
+  - **Reason**: Restore high-end aesthetics lost in recent refactors.
+  - **Action**: Re-implemented the 3-card profile grid and horizontal energy bar in `TodayView.tsx` based on commit `7740c41`.
+- **Decision: Ritual Focused Mode (ExploreView)**
+  - **Reason**: Ensure users are not distracted by navigation elements during deep rituals.
+  - **Action**: Updated `ExploreView.tsx` to hide system selection grid when a sub-app is active.
+- **Decision: Advanced Journey Persistence & Visualization (Two-Stage Expansion)**
+  - **Reason**: Balance between quick review and immersive study.
+  - **Action**: Implemented a modal-first UX in `JourneyApp.tsx`. Entries open in a centered small screen first, with a manual toggle to expand to full-screen. Integrated `handleGeneratePoster` and `handleGenerateEcho`.
+- **Decision: AI Metadata Purge & Formatting**
+  - **Reason**: User interface was cluttered with `<thinking>` tags and unaligned text.
+  - **Action**: Updated `MysticMarkdown.tsx` to aggressively filter internal AI tags and implemented `centered` layout support for ritual results.
+
+## [2026-05-13] Phase 18: Stability & UX Polishing (The Sacred Polish)
+
+- **Decision: Prevent Render Loops in TodayView**
+  - **Reason**: Passing raw objects to hooks caused functional re-definitions on every render, triggering infinite AI generation cycles.
+  - **Action**: Memoized `aiOptions` in `TodayView.tsx`.
+- **Decision: Centralized Ritual Alignment (SoulView)**
+  - **Reason**: Energy bars and mood selectors were uncentered on wide displays, breaking the "Ritual Center" aesthetic.
+  - **Action**: Refactored `SoulView` and `MoodCheckIn` with centered flex containers and enhanced interactive scale effects.
+- **Decision: Journey Filter Accessibility**
+  - **Reason**: Browser-default select elements were illegible against the dark mystical theme.
+  - **Action**: Custom-styled the filter dropdown in `JourneyApp.tsx` with a persistent `ChevronDown` indicator.
+- **Decision: Global Message Sync (Slice 1 Logic)**
+  - **Reason**: Inconsistent slicing (`slice(2)` vs none) caused both missing user messages and duplicated initial readings.
+  - **Action**: Standardized on `slice(1)` across `AstrologyApp`, `TarotReadingResult`, and `JourneyApp` for all historical dialogue rendering.
+- **Decision: Markdown Integration for Psychological Modules**
+  - **Reason**: `ShadowWork` and `Subconscious` felt "plain" compared to the ritual-heavy modules.
+  - **Action**: Injected `MysticMarkdown` into these modules to provide rich formatting (Soul Motto, bold highlights) while preserving their unique color identities.
+

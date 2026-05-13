@@ -101,14 +101,21 @@ interface MysticMarkdownProps {
   cards?: TarotCard[];
   hideCards?: boolean;
   isLoading?: boolean;
+  centered?: boolean;
 }
 
-const MysticMarkdown = React.memo(({ content, cards, hideCards, isLoading }: MysticMarkdownProps) => {
+const MysticMarkdown = React.memo(({ content, cards, hideCards, isLoading, centered }: MysticMarkdownProps) => {
   // Pre-process markdown to fix common formatting issues from the model
   let association: any = null;
+  let soulMotto = "";
   let processedContent = content
-    // Filter out [SOUL_MOTTO] tags
-    .replace(/\[SOUL_MOTTO\][\s\S]*?\[\/SOUL_MOTTO\]/g, '')
+    // Extract [SOUL_MOTTO] tags
+    .replace(/\[SOUL_MOTTO\]([\s\S]*?)\[\/SOUL_MOTTO\]/g, (match, p1) => {
+      soulMotto = p1.trim();
+      return "";
+    })
+    .replace(/<thinking>[\s\S]*?<\/thinking>/g, '')
+    .replace(/<execute>[\s\S]*?<\/execute>/g, '')
     // Extract association tag
     .replace(/<mystic_association>([\s\S]*?)<\/mystic_association>/g, (match, p1) => {
       try {
@@ -230,7 +237,7 @@ const MysticMarkdown = React.memo(({ content, cards, hideCards, isLoading }: Mys
           ),
           p: ({ ...props }) => (
             <p
-              className="text-amber-50/90 leading-[2.2] mb-8 last:mb-0 text-[16px] md:text-[17px] tracking-[0.02em] font-light text-left"
+              className={`text-amber-50/90 leading-[2.2] mb-8 last:mb-0 text-[16px] md:text-[17px] tracking-[0.02em] font-light ${centered ? 'text-center' : 'text-left'}`}
               {...props}
             />
           ),
@@ -297,6 +304,20 @@ const MysticMarkdown = React.memo(({ content, cards, hideCards, isLoading }: Mys
       >
         {processedContent}
       </ReactMarkdown>
+      {soulMotto && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="mt-16 py-10 border-t border-b border-amber-500/20 text-center relative"
+        >
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 px-4 bg-[#0a0502] text-amber-500/40 text-[10px] tracking-[0.5em] uppercase">
+            今日格言
+          </div>
+          <p className="text-2xl md:text-3xl font-serif gold-gradient-text tracking-[0.1em] italic leading-relaxed">
+            「 {soulMotto} 」
+          </p>
+        </motion.div>
+      )}
       {association && <AssociationBubble association={association} />}
     </div>
   );

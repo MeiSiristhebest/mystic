@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Sparkles, Send, X, RefreshCw } from "lucide-react";
+import { Sparkles, Send, X, RefreshCw, ChevronRight } from "lucide-react";
 import dynamic from "next/dynamic";
 
 import { CATEGORIES, SPREAD_MODES } from "./constants";
@@ -92,7 +92,7 @@ export function MysticTarot({ initialHandoff, clearHandoff }: MysticTarotProps =
     });
 
     try {
-      await sendMessage(prompt, {
+      const res = await sendMessage(prompt, {
         title: `塔罗：${question.substring(0, 20)}...`,
         details: {
           type: 'tarot',
@@ -101,6 +101,7 @@ export function MysticTarot({ initialHandoff, clearHandoff }: MysticTarotProps =
           question
         }
       });
+      if (res) setReading(res);
     } catch (error) {
       console.error(error);
     }
@@ -249,10 +250,4 @@ export function MysticTarot({ initialHandoff, clearHandoff }: MysticTarotProps =
   );
 }
 
-function ChevronRight({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-    </svg>
-  );
-}
+

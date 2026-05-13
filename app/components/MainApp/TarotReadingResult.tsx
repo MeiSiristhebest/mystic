@@ -61,10 +61,10 @@ export default function TarotReadingResult({
 
         <div className="relative z-10 space-y-12">
           {/* Initial Reading */}
-          <MysticMarkdown content={reading} cards={cards} />
+          <MysticMarkdown content={reading} cards={cards} centered />
 
           {/* Follow-up Messages */}
-          {messages.slice(2).map((msg, idx) => (
+          {messages.slice(1).map((msg, idx) => (
             <motion.div
               key={idx}
               initial={{ opacity: 0, y: 10 }}

@@ -46,6 +46,7 @@ export interface TarotDetails {
   mode?: string;
   spread?: string;
   question?: string;
+  echo?: string;
   messages: Message[];
 }
 
@@ -58,6 +59,7 @@ export interface BaziDetails {
   gender?: string;
   fullName?: string;
   birthPlace?: string;
+  echo?: string;
   messages: Message[];
 }
 
@@ -71,6 +73,7 @@ export interface IChingDetails {
     num1?: number;
     num2?: number;
   };
+  echo?: string;
   messages: Message[];
 }
 
@@ -78,6 +81,7 @@ export interface DailyDetails {
   type: 'daily';
   text: string;
   sign: string;
+  echo?: string;
   messages: Message[];
 }
 
@@ -86,6 +90,7 @@ export interface AstrologyDetails {
   text: string;
   zodiac?: string;
   mode?: string;
+  echo?: string;
   messages: Message[];
 }
 
@@ -104,14 +109,14 @@ export type JourneyDetails =
   | IChingDetails 
   | DailyDetails 
   | AstrologyDetails
-  | { type: 'face_reading'; text: string; imageType?: string; question?: string; messages: Message[] }
-  | { type: 'shadow_work'; text: string; issue?: string; messages: Message[] }
-  | { type: 'synastry'; text: string; partner?: any; question?: string; messages: Message[] }
-  | { type: 'subconscious'; text: string; content?: string; messages: Message[] }
-  | { type: 'time'; text: string; question?: string; messages: Message[] }
-  | { type: 'mirror'; text: string; messages: Message[] }
-  | { type: 'collective_mirror'; text: string; question?: string; messages: Message[] }
-  | { type: 'unified'; text: string; bazi?: any; astrology?: any; tarot?: any; messages: Message[] }
+  | { type: 'face_reading'; text: string; imageType?: string; question?: string; echo?: string; messages: Message[] }
+  | { type: 'shadow_work'; text: string; issue?: string; echo?: string; messages: Message[] }
+  | { type: 'synastry'; text: string; partner?: any; question?: string; echo?: string; messages: Message[] }
+  | { type: 'subconscious'; text: string; content?: string; echo?: string; messages: Message[] }
+  | { type: 'time'; text: string; question?: string; echo?: string; messages: Message[] }
+  | { type: 'mirror'; text: string; echo?: string; messages: Message[] }
+  | { type: 'collective_mirror'; text: string; question?: string; echo?: string; messages: Message[] }
+  | { type: 'unified'; text: string; bazi?: any; astrology?: any; tarot?: any; echo?: string; messages: Message[] }
   | GenericDetails;
 
 export interface JourneyEntry {

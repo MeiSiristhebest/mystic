@@ -260,7 +260,7 @@ export default function AstrologyApp({ initialHandoff, clearHandoff }: Astrology
 
                 {/* Follow-up Messages */}
                 <div className="mt-12 space-y-8">
-                  {messages.slice(2).map((msg, idx) => (
+                  {messages.slice(1).map((msg, idx) => (
                     <motion.div
                       key={idx}
                       initial={{ opacity: 0, y: 10 }}

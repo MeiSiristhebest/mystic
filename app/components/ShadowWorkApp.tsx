@@ -5,6 +5,7 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 import { useAIChat } from "@/hooks/useAIChat";
 import { useJourney } from "@/hooks/useJourney";
 import BreathingLoading from "./BreathingLoading";
+import MysticMarkdown from "./MysticMarkdown";
 import { MODELS } from "@/lib/ai";
 
 interface ShadowWorkAppProps {
@@ -138,15 +139,17 @@ export default function ShadowWorkApp({ initialHandoff, clearHandoff }: ShadowWo
                 className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div 
-                  className={`max-w-[85%] rounded-2xl p-4 ${
+                  className={`max-w-[85%] rounded-2xl p-6 ${
                     msg.role === 'user' 
                       ? 'bg-zinc-800/50 border border-zinc-600/30 text-zinc-200' 
                       : 'bg-zinc-900/80 border border-zinc-700/50 text-zinc-300'
                   }`}
                 >
-                  <div className="prose prose-invert prose-zinc max-w-none text-sm md:text-base font-serif whitespace-pre-wrap leading-relaxed">
-                    {msg.content || (isLoading && idx === messages.length - 1 ? '...' : '')}
-                  </div>
+                  {msg.role === 'user' ? (
+                    <p className="font-serif whitespace-pre-wrap">{msg.content}</p>
+                  ) : (
+                    <MysticMarkdown content={msg.content || (isLoading && idx === messages.length - 1 ? '...' : '')} />
+                  )}
                 </div>
               </motion.div>
             ))
