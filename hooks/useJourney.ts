@@ -72,7 +72,7 @@ export function useJourney() {
     return id;
   };
 
-  const updateEntry = async (id: string, updates: Partial<JourneyEntry>) => {
+  const updateEntry = async (id: string, updates: Partial<Omit<JourneyEntry, 'details'>> & { details?: any }) => {
     // 1. Get latest from DB to avoid state lag
     const existing = await getFromStore('journey-entries', id);
     if (!existing) return;

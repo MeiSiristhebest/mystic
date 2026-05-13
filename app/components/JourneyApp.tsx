@@ -114,12 +114,14 @@ ${JSON.stringify(profile)}
       }
       
       // Save echo to entry
-      updateEntry(selectedEntry.id, {
-        details: {
-          ...selectedEntry.details,
-          echo: fullEcho
-        }
-      });
+      if (selectedEntry.details) {
+        updateEntry(selectedEntry.id, {
+          details: {
+            ...selectedEntry.details,
+            echo: fullEcho
+          }
+        });
+      }
     } catch (e) {
       console.error(e);
     } finally {
