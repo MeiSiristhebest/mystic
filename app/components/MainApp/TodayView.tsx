@@ -86,7 +86,7 @@ export function TodayView() {
       await addEntry({
         type: 'subconscious',
         title: `每日神谕：${dailyData.subMotto}`,
-        summary: dailyData.reading,
+        summary: cleanMysticContent(dailyData.reading),
         details: {
           type: 'subconscious',
           text: dailyData.reading,

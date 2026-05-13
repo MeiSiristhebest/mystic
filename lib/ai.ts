@@ -61,27 +61,47 @@ export async function* generateContentStream(
   signal?: AbortSignal,
   config: any = {}
 ) {
-  const response = await fetch('/api/ai', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ prompt, systemInstruction, config }),
-    signal
-  });
+  const maxRetries = 2;
+  let lastError: any = null;
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || 'Failed to generate content');
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await fetch('/api/ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, systemInstruction, config }),
+        signal
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Failed to generate content');
+      }
+
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error('No reader available');
+      
+      const decoder = new TextDecoder();
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        yield decoder.decode(value, { stream: true });
+      }
+      return; // Success, exit the retry loop
+    } catch (err: any) {
+      lastError = err;
+      if (err.name === 'AbortError') throw err; // Don't retry if aborted
+      
+      console.warn(`[AI Stream Attempt ${attempt + 1}] failed:`, err);
+      if (attempt < maxRetries) {
+        const delay = Math.pow(2, attempt) * 1000;
+        await new Promise(resolve => setTimeout(resolve, delay));
+        continue;
+      }
+    }
   }
 
-  const reader = response.body?.getReader();
-  if (!reader) throw new Error('No reader available');
-  
-  const decoder = new TextDecoder();
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    yield decoder.decode(value, { stream: true });
-  }
+  throw lastError;
 }
 
 export const SOCRATIC_PERSONA = `<system>

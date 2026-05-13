@@ -16,7 +16,13 @@ const serwist = new Serwist({
   skipWaiting: true,
   clientsClaim: true,
   navigationPreload: true,
-  runtimeCaching: defaultCache,
+  runtimeCaching: [
+    {
+      urlPattern: ({ url }) => url.pathname.startsWith("/api/ai"),
+      handler: "NetworkOnly",
+    },
+    ...defaultCache,
+  ],
 });
 
 serwist.addEventListeners();

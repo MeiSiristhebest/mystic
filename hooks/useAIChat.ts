@@ -69,10 +69,13 @@ export function useAIChat({
 
       // 2. Persistence Logic
       if (!isFollowUp && entryMetadata) {
+        const { cleanMysticContent } = await import('@/lib/utils');
+        const cleanSummary = cleanMysticContent(fullResponse);
+        
         const id = await addEntry({
           type,
           title: entryMetadata.title,
-          summary: fullResponse.substring(0, 100) + '...',
+          summary: cleanSummary.substring(0, 150) + (cleanSummary.length > 150 ? '...' : ''),
           details: {
             ...entryMetadata.details,
             text: fullResponse,

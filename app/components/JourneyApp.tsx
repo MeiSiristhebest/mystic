@@ -219,8 +219,15 @@ ${JSON.stringify(profile)}
                           {new Date(entry.date).toLocaleDateString()}
                         </div>
                       </div>
-                      <h3 className="text-xl font-serif text-amber-100 group-hover:text-amber-400 transition-colors line-clamp-2">{cleanMysticContent(entry.title || "")}</h3>
-                      <p className="text-sm text-white/40 font-serif leading-relaxed line-clamp-3">{cleanMysticContent(entry.summary)}</p>
+                      <h3 className="text-xl font-serif text-amber-100 group-hover:text-amber-400 transition-colors line-clamp-2">{cleanMysticContent(entry.title || "") || "无标题记录"}</h3>
+                      <p className="text-sm text-white/40 font-serif leading-relaxed line-clamp-3">
+                        {(() => {
+                          const cleanedSummary = cleanMysticContent(entry.summary || "");
+                          if (cleanedSummary) return cleanedSummary;
+                          const cleanedDetails = cleanMysticContent(entry.details?.text || "");
+                          return cleanedDetails.substring(0, 150);
+                        })() || "记录内容正在感应中..."}
+                      </p>
                     </div>
                     <div className="flex items-center justify-end pt-4 opacity-0 group-hover:opacity-100 transition-opacity">
                       <span className="text-xs text-amber-500 font-serif flex items-center gap-1">查看详情 <ChevronRight size={14} /></span>

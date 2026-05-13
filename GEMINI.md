@@ -311,3 +311,27 @@
 - **Decision: Export Ambiguity Resolution**
   - **Reason**: Duplicate exports of `AmbientCosmicBackground` and `CardFrame` in `TarotComponents.tsx` and `Visuals.tsx` caused production build failures.
   - **Action**: Removed duplicates from `TarotComponents.tsx` and centralized them in `Visuals.tsx`. Fixed ambiguous index exports.
+
+## [2026-05-13] Phase 23: Production Network Hardening (The Void Bridge)
+
+- **Decision: Service Worker API Exclusion**
+  - **Reason**: `net::ERR_SSL_PROTOCOL_ERROR` identified on `/api/ai` in production, likely due to Service Worker interception mismatches at the Vercel edge.
+  - **Action**: Configured Serwist to use `NetworkOnly` strategy for all paths starting with `/api/ai` in `app/sw.ts`.
+- **Decision: Client-Side Resilience (Retry Logic)**
+  - **Reason**: Deep divination tasks are prone to intermittent network failures or protocol resets.
+  - **Action**: Implemented a 2-attempt retry loop with exponential backoff in `generateContentStream` (`lib/ai.ts`).
+- **Decision: Protocol Stability Diagnosis**
+  - **Reason**: Address `TypeError: Failed to fetch` causing UI crashes in `TodayView`.
+  - **Action**: Enhanced error logging and graceful fallback handling in AI hooks.
+- **Decision: Summary Preview Reliability**
+  - **Reason**: AI responses starting with large `<thinking>` blocks resulted in empty previews in `JourneyApp` after tag stripping.
+  - **Action**:
+    - Updated `useAIChat.ts` to sanitize content *before* slicing for the summary.
+    - Updated `TodayView.tsx` to sanitize oracle readings before inscription.
+    - Implemented a display-side fallback in `JourneyApp.tsx` to use a snippet from the detail text if the summary is empty.
+- **Decision: Mood Selector Ergonomics (UI/UX)**
+  - **Reason**: The mood check-in component was "crowded," with icons and labels overlapping on smaller containers.
+  - **Action**:
+    - Refactored `MoodCheckIn.tsx` to remove redundant nested padding and backgrounds.
+    - Switched to a flexible wrapping layout with calculated widths and minimum spacing.
+    - Increased vertical margins between energy bars and selectors in `SoulView.tsx`.
