@@ -201,150 +201,158 @@ const moods = [
         </motion.div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Left Column: Archetype & Stats (8 cols) */}
-        <div className="lg:col-span-8 space-y-8">
-          {/* Hero Archetype Card */}
-          <section className="luxury-card p-10 relative overflow-hidden min-h-[460px] flex flex-col justify-end">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-8">
+          <section className="luxury-card p-10 relative overflow-hidden min-h-[400px] flex flex-col justify-center">
             <div className="absolute inset-0 z-0">
               <MysticImage 
                 prompt={`A glowing ethereal soul essence for ${archetype || 'Seeker'}, nebula heart, cosmic energy flow, sacred geometry`} 
-                className="w-full h-full opacity-40 scale-110 group-hover:scale-100 transition-transform duration-[20s]"
+                className="w-full h-full opacity-30"
                 aspectRatio="16:9"
               />
             </div>
-            <div className="absolute inset-0 bg-gradient-to-t from-[#080510] via-transparent to-transparent z-10" />
-            
-            <div className="relative z-20 space-y-6">
+            <div className="relative z-10 space-y-8">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full border border-amber-500/30 flex items-center justify-center bg-amber-500/10 backdrop-blur-md">
-                  <User className="w-6 h-6 text-amber-500" />
+                <div className="w-12 h-12 rounded-full border border-[#C9A84C]/40 flex items-center justify-center">
+                  <User className="w-6 h-6 text-[#C9A84C]" />
                 </div>
-                <div className="space-y-1">
-                  <p className="text-[10px] font-serif tracking-[0.4em] text-amber-500/60 uppercase">核心人格 Archetype</p>
-                  <h3 className="text-4xl md:text-5xl font-serif gold-gradient-text tracking-widest">
-                    {archetype || "尚未觉醒"}
-                  </h3>
-                </div>
-              </div>
-              
-              {!archetype && (
-                <button 
-                  onClick={() => setActiveTab("discovery")}
-                  className="px-6 py-2 rounded-full bg-amber-500/20 border border-amber-500/40 text-xs text-amber-200 hover:bg-amber-500/30 transition-all flex items-center gap-2 w-fit"
-                >
-                  <Wand2 className="w-3 h-3" /> 开启原型探索
-                </button>
-              )}
-            </div>
-          </section>
-
-          {/* Traits Grid */}
-          <section className="grid grid-cols-2 md:grid-cols-3 gap-6">
-            {[
-              { label: "太阳", value: sunSign, icon: "☀️" },
-              { label: "上升", value: ascendant, icon: "↗️" },
-              { label: "守护星", value: rulingPlanet, icon: "🪐" },
-              { label: "生肖", value: profile.zodiac || "未设置", icon: "🐉" },
-              { label: "八字", value: profile.bazi || "未设置", icon: "☯️" },
-              { label: "MBTI", value: mbti, icon: "🧠" },
-            ].map((trait, i) => (
-              <div key={i} className="luxury-card p-6 flex flex-col items-center text-center space-y-3 group hover:border-amber-500/30 transition-all">
-                <span className="text-2xl mb-1 opacity-50 group-hover:opacity-100 transition-opacity">{trait.icon}</span>
-                <p className="micro-label text-amber-500/40">{trait.label}</p>
-                <p className="font-serif text-lg text-amber-100">{trait.value}</p>
-              </div>
-            ))}
-          </section>
-
-          {/* Life Events Timeline */}
-          <section className="luxury-card p-10 space-y-10">
-            <div className="flex items-center justify-between">
-              <h4 className="font-serif text-2xl tracking-[0.2em] text-amber-100/80">生命节点</h4>
-              <div className="h-px flex-1 mx-8 bg-gradient-to-r from-amber-500/20 to-transparent" />
-            </div>
-            
-            <div className="relative space-y-12 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-px before:bg-gradient-to-b before:from-amber-500/40 before:via-amber-500/10 before:to-transparent">
-              {profile.lifeEvents && profile.lifeEvents.length > 0 ? (
-                profile.lifeEvents.slice(-4).map((event) => (
-                  <div key={event.id} className="relative pl-10 group">
-                    <div className="absolute left-0 top-1.5 w-4 h-4 rounded-full border-2 border-amber-500/40 bg-[#080510] z-10 group-hover:scale-125 group-hover:border-amber-500 transition-all" />
+                <div>
+                  {archetype ? (
+                    <>
+                      <h3 className="text-3xl font-serif gold-gradient-text">核心人格：{archetype}</h3>
+                      <p className="micro-label">Soul Core: The {profile.jungianArchetype?.split('(')[1]?.replace(')', '') || 'Seeker'}</p>
+                    </>
+                  ) : (
                     <div className="space-y-2">
-                      <span className="text-[10px] font-mono text-amber-500/40 tracking-widest uppercase">{event.date}</span>
-                      <p className="text-lg font-serif text-amber-100/90 leading-relaxed">{event.description}</p>
+                      <h3 className="text-2xl font-serif text-[#E8DFB8]/40 italic">核心人格：尚未觉醒</h3>
+                      <button 
+                        onClick={() => setActiveTab("discovery")}
+                        className="text-xs text-[#C9A84C] hover:underline flex items-center gap-1"
+                      >
+                        <Wand2 className="w-3 h-3" /> 开启原型探索，发现你的灵魂本色
+                      </button>
                     </div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-12 space-y-6 opacity-30">
-                  <p className="font-serif italic text-lg">暂无重大生命节点记录，在阿卡夏中留下你的足迹...</p>
+                  )}
                 </div>
-              )}
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                {[
+                  { label: "太阳", value: sunSign },
+                  { label: "上升", value: ascendant },
+                  { label: "下降", value: descendant },
+                  { label: "生肖", value: profile.zodiac || "未设置" },
+                  { label: "八字", value: profile.bazi || "未设置" },
+                  { label: "守护星", value: rulingPlanet },
+                  { label: "性别", value: profile.gender === 'male' ? '乾 (男)' : profile.gender === 'female' ? '坤 (女)' : '未设置' },
+                  { label: "MBTI", value: mbti },
+                  { label: "状态", value: profile.currentStatus ? "已同步" : "待更新" },
+                ].map((trait, i) => (
+                  <div key={i} className="cinematic-panel bg-black/40 backdrop-blur-xl p-6 rounded-2xl text-center border border-white/5">
+                    <p className="micro-label mb-2 text-[#C9A84C] opacity-80">{trait.label}</p>
+                    <p className="font-serif text-lg text-[#E8DFB8] drop-shadow-md">{trait.value}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="luxury-card p-6 md:p-8 space-y-6">
+              <h4 className="font-serif text-xl tracking-widest">核心人生议题</h4>
+              <div className="flex flex-wrap gap-3">
+                {coreIssues.map((word) => (
+                  <span key={word} className="px-4 py-2 rounded-full bg-white/5 border border-white/5 text-sm font-serif tracking-widest hover:border-[#C9A84C]/40 transition-colors">
+                    {word}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className="luxury-card p-6 md:p-8 space-y-6">
+              <div className="flex items-center justify-between">
+                <h4 className="font-serif text-2xl tracking-[0.2em] gold-gradient-text">能量波动</h4>
+              </div>
+              <div className="flex flex-col items-center space-y-6">
+                <div className="h-32 flex items-end justify-center gap-3 w-full">
+                  {energyLevels.map((h, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ height: 0 }}
+                      animate={{ height: `${h}%` }}
+                      transition={{ duration: 1, delay: i * 0.1 }}
+                      className="w-8 bg-gradient-to-t from-[#C9A84C]/10 via-[#C9A84C]/40 to-[#C9A84C]/80 rounded-full relative group"
+                    >
+                      <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] text-[#C9A84C] font-mono whitespace-nowrap bg-black/60 px-2 py-1 rounded border border-amber-500/20">
+                        {Math.round(h)}%
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+                <MoodCheckIn 
+                  onSelect={handleMoodSelect} 
+                  selectedMood={profile.emotionalBaseline?.find(e => e.date === new Date().toISOString().split('T')[0])?.words[0]}
+                />
+              </div>
             </div>
           </section>
         </div>
 
-        {/* Right Column: Energy & Advice (4 cols) */}
-        <div className="lg:col-span-4 space-y-8">
-          {/* Energy Fluctuation */}
+        <div className="space-y-8">
           <section className="luxury-card p-8 space-y-8">
-            <h4 className="font-serif text-xl tracking-widest text-center gold-gradient-text">能量波动</h4>
-            <div className="flex flex-col items-center space-y-8">
-              <div className="h-40 flex items-end justify-center gap-3 w-full px-4">
-                {energyLevels.map((h, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ height: 0 }}
-                    animate={{ height: `${h}%` }}
-                    className="flex-1 max-w-[12px] bg-gradient-to-t from-amber-500/5 via-amber-500/30 to-amber-500/60 rounded-full"
-                  />
-                ))}
-              </div>
-              <MoodCheckIn 
-                onSelect={handleMoodSelect} 
-                selectedMood={profile.emotionalBaseline?.find(e => e.date === new Date().toISOString().split('T')[0])?.words[0]}
-              />
-            </div>
-          </section>
-
-          {/* Core Issues */}
-          <section className="luxury-card p-8 space-y-6">
-            <h4 className="font-serif text-xl tracking-widest">核心议题</h4>
-            <div className="flex flex-wrap gap-2">
-              {coreIssues.map((word) => (
-                <span key={word} className="px-4 py-1.5 rounded-full bg-amber-500/5 border border-amber-500/10 text-xs font-serif text-amber-200/60">
-                  {word}
-                </span>
-              ))}
-            </div>
-          </section>
-
-          {/* Growth Advice */}
-          <section className="luxury-card p-8 space-y-8 border-amber-500/20 bg-amber-500/[0.02]">
-            <div className="flex items-center justify-between">
-              <h4 className="font-serif text-xl tracking-widest">成长建议</h4>
-              {isInitializingAdvice && <RefreshCw className="w-4 h-4 animate-spin text-amber-500/40" />}
-            </div>
-            <div className="space-y-8">
-              {dailyAdvice.length > 0 ? (
-                dailyAdvice.map((tip, i) => (
-                  <motion.div 
-                    key={i} 
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.1 }}
-                    className="flex gap-4 group"
-                  >
-                    <span className="text-amber-500/40 font-serif text-xs mt-1">0{i+1}</span>
-                    <p className="text-sm text-amber-100/70 font-serif leading-relaxed group-hover:text-amber-100 transition-colors">
-                      {cleanMysticContent(tip)}
-                    </p>
-                  </motion.div>
+            <h4 className="font-serif text-xl tracking-widest text-center">当前生命节点</h4>
+            <div className="space-y-6">
+              {profile.lifeEvents && profile.lifeEvents.length > 0 ? (
+                profile.lifeEvents.slice(-3).map((event) => (
+                  <div key={event.id} className="relative pl-6 border-l border-[#C9A84C]/20">
+                    <div className="absolute left-[-5px] top-0 w-2 h-2 rounded-full bg-[#C9A84C]" />
+                    <p className="text-xs text-[#C9A84C]/60 mb-1">{event.date}</p>
+                    <p className="text-sm font-serif leading-relaxed">{event.description}</p>
+                  </div>
                 ))
               ) : (
-                <p className="text-xs text-amber-200/20 italic text-center py-4">完善档案后，阿卡夏将为你提供个性化建议</p>
+                <div className="text-center py-8 space-y-4">
+                  <div className="relative w-32 h-32 mx-auto">
+                    <div className="absolute inset-0 bg-[#C9A84C]/10 blur-3xl rounded-full animate-pulse" />
+                    <MysticImage 
+                      prompt="A quiet serene landscape, misty mountains, zen atmosphere" 
+                      className="w-full h-full rounded-full border-2 border-[#C9A84C]/20"
+                      aspectRatio="1:1"
+                    />
+                  </div>
+                  <p className="text-sm text-[#E8DFB8]/40 italic">暂无重大生命节点记录</p>
+                </div>
               )}
             </div>
+          </section>
+
+          <section className="luxury-card p-8 space-y-6">
+            <h4 className="font-serif text-xl tracking-widest flex items-center justify-between">
+              成长建议
+              {isInitializingAdvice && <RefreshCw className="w-4 h-4 animate-spin text-amber-500/40" />}
+            </h4>
+            <ul className="space-y-6">
+              {dailyAdvice.length > 0 ? (
+                dailyAdvice.map((tip, i) => (
+                  <motion.li 
+                    key={i} 
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.2 }}
+                    className="flex items-start gap-4 group"
+                  >
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#C9A84C]/40 mt-2.5 group-hover:bg-[#C9A84C] group-hover:scale-150 transition-all shadow-[0_0_8px_rgba(201,168,76,0.5)]" />
+                    <p className="text-sm text-[#E8DFB8]/80 font-serif leading-relaxed">{cleanMysticContent(tip)}</p>
+                  </motion.li>
+                ))
+              ) : isInitializingAdvice ? (
+                <div className="space-y-4">
+                   {[1,2,3].map(i => (
+                     <div key={i} className="h-4 bg-white/5 rounded-full animate-pulse w-full" />
+                   ))}
+                </div>
+              ) : (
+                <p className="text-sm text-[#E8DFB8]/40 italic text-center">完善档案后，阿卡夏将为你提供个性化建议</p>
+              )}
+            </ul>
           </section>
         </div>
       </div>
