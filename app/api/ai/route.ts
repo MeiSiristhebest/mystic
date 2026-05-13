@@ -3,7 +3,8 @@ import { NextRequest } from "next/server";
 import { AKASHA_PERSONA, DEFAULT_MODEL, MODELS, FALLBACK_CHAIN } from "@/lib/ai";
 import { getCachedResponse, setCachedResponse, generateCacheKey } from "@/lib/ai-cache";
 
-export const maxDuration = 60;
+export const runtime = 'edge';
+export const maxDuration = 300;
 
 export async function POST(req: NextRequest) {
   try {

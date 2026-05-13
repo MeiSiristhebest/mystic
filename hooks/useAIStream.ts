@@ -19,12 +19,12 @@ export function useAIStream(options: { model?: string, config?: any } = {}) {
     }
     abortControllerRef.current = new AbortController();
     
-    // Set a timeout of 60 seconds (extended for Pro models)
+    // Set a timeout of 120 seconds (extended for Pro models and complex rituals)
     const timeoutId = setTimeout(() => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort(new Error('Request timed out'));
       }
-    }, 60000);
+    }, 120000);
 
     try {
       const responseStream = generateContentStream(
