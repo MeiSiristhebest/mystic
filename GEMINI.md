@@ -308,3 +308,6 @@
 - **Decision: Multi-View Integration**
   - **Reason**: Disjointed rendering logic across Journey, Today, and Soul views led to inconsistent text quality.
   - **Action**: Standardized summary rendering across `JourneyApp`, `TodayView`, `SoulView`, and `OmniOracleGuide` using the new purity engine.
+- **Decision: Export Ambiguity Resolution**
+  - **Reason**: Duplicate exports of `AmbientCosmicBackground` and `CardFrame` in `TarotComponents.tsx` and `Visuals.tsx` caused production build failures.
+  - **Action**: Removed duplicates from `TarotComponents.tsx` and centralized them in `Visuals.tsx`. Fixed ambiguous index exports.
