@@ -91,14 +91,14 @@ const compressImage = (base64Str: string, maxWidth = 1280, initialQuality = 0.85
       let result = canvas.toDataURL(format, quality);
       
       // Fallback if WebP not supported
-      if (result.startsWith('data:image/png')) {
+      if (result && result.startsWith('data:image/png')) {
         format = 'image/jpeg';
         result = canvas.toDataURL(format, quality);
       }
 
       const MAX_CHARS = 1000000; // Safe threshold for Firestore string
       
-      while (result.length > MAX_CHARS && quality > 0.2) {
+      while (result && result.length > MAX_CHARS && quality > 0.2) {
         quality -= 0.1;
         result = canvas.toDataURL(format, quality);
       }
@@ -247,7 +247,7 @@ export const MysticImage = ({
             src={imageUrl}
             alt={prompt}
             fill
-            unoptimized={imageUrl.startsWith('data:')}
+            unoptimized={imageUrl?.startsWith('data:') || imageUrl?.includes('unsplash.com')}
             className={`object-cover relative z-10 ${isFallback ? 'brightness-75 opacity-80' : ''}`}
             referrerPolicy="no-referrer"
           />

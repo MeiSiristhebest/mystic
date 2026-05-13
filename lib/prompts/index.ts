@@ -349,3 +349,30 @@ ${profileContext}
 [SOUL_MOTTO]一句充满力量的神秘学格言[/SOUL_MOTTO]
 </output_format>
 `;
+
+export const getSoulAdvicePrompt = (profileContext: string, recentHistory: string) => `
+<instruction>
+你是阿卡夏记录的守护者。请根据用户的灵魂档案和最近的探索历程，生成3条极具深度、个性化且富有启发性的“成长建议”。
+建议应当是具体的、可操作的，并且充满神秘学与心理学的智慧。
+建议必须针对用户的核心人格、MBTI、星象以及最近在占卜中表现出的生命课题。
+必须严格输出纯净的 JSON 格式。
+</instruction>
+
+<user_profile>
+\${profileContext}
+</user_profile>
+
+<recent_journey>
+\${recentHistory}
+</recent_journey>
+
+<output_schema>
+{
+  "tips": [
+    "Tip 1: 具体且充满哲理的建议",
+    "Tip 2: 关于内在探索的建议",
+    "Tip 3: 基于当前能量状态的建议"
+  ]
+}
+</output_schema>
+`;

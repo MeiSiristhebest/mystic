@@ -9,6 +9,7 @@ import { AmbientCosmicBackground } from "./Visuals";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { DivinationHandoff } from "@/app/types/divination";
 import BreathingLoading from "../BreathingLoading";
+import { cleanMysticContent } from "@/lib/utils";
 
 interface OmniOracleGuideProps {
   onClose: () => void;
@@ -63,10 +64,7 @@ ${historyContext}
       for await (const chunk of stream(prompt, ORCHESTRATOR_PERSONA)) {
         fullResponse += chunk;
         
-        const displayResponse = fullResponse
-          .replace(/<thinking>[\s\S]*?<\/thinking>/g, '')
-          .replace(/<execute>[\s\S]*?<\/execute>/g, '')
-          .trim();
+        const displayResponse = cleanMysticContent(fullResponse);
           
         setMessages([...newMsgs, { role: "model", content: displayResponse }]);
       }

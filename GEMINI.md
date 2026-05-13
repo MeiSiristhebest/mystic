@@ -252,3 +252,59 @@
   - **Reason**: `ShadowWork` and `Subconscious` felt "plain" compared to the ritual-heavy modules.
   - **Action**: Injected `MysticMarkdown` into these modules to provide rich formatting (Soul Motto, bold highlights) while preserving their unique color identities.
 
+## [2026-05-13] Phase 19: Build Stabilization & Immersive UX Polish
+
+- **Decision: Build Error Resolution (TodayView)**
+  - **Reason**: Redundant return object start in `useMemo` caused a Turbopack parsing failure.
+  - **Action**: Cleaned up the `useMemo` logic in `TodayView.tsx` and standardized `todayStr` date formatting for consistent caching.
+- **Decision: Infinite Loop Prevention (MysticImage)**
+  - **Reason**: Including `imageUrl` in the dependency array of a effect that calls `setImageUrl` triggered infinite re-renders.
+  - **Action**: Removed `imageUrl` from dependencies and optimized request key validation.
+- **Decision: Cinematic Interaction Restoration (OmniOracle)**
+  - **Reason**: User feedback requested a more dramatic "movie subtitle" experience.
+  - **Action**: Upgraded `OmniOracleGuide.tsx` with high-fidelity typography, dramatic `AnimatePresence` blurring, and centered cinematic layouts.
+- **Decision: Ritual Immersion Enhancement (ExploreView)**
+  - **Reason**: UI clutter from the selection grid persisted during active rituals.
+  - **Action**: Implemented conditional rendering in `ExploreView.tsx` to hide the selection gallery when a sub-app (Tarot, Bazi, etc.) is active.
+- **Decision: Advanced Centering for Markdown Lists**
+  - **Reason**: `MysticMarkdown` list elements were hardcoded to left-alignment, breaking the "Tarot Revelations" centered aesthetic.
+  - **Action**: Refactored `ul`, `ol`, and `li` renderers to support the `centered` prop dynamically.
+- **Decision: Journey Persistence Parity (TodayView)**
+  - **Reason**: Users wanted a way to save daily oracle readings to their permanent journey.
+  - **Action**: Added the "Inscribe to Journey" (铭刻至日记) functionality to the Oracle card.
+
+## [2026-05-13] Phase 20: Project-Wide Dynamic Refinement & Personalization
+
+- **Decision: Dynamic Dashboard Intelligence (TodayView)**
+  - **Reason**: Static placeholders like "Balance" and "Career Reading" broke the immersion of an AI-driven oracle.
+  - **Action**: Refactored `TodayView.tsx` to fetch `cosmicEnergy` and `energySuggestion` from the AI. Integrated real journey history for the "Quick Start" recommendation engine.
+- **Decision: Personalized Growth Engine (SoulView)**
+  - **Reason**: Static growth tips felt generic and disconnected from the user's specific spiritual progress.
+  - **Action**: Implemented `getSoulAdvicePrompt` and integrated it into `SoulView.tsx`. The system now synthesizes the user's Soul Profile and recent 5 journey entries to provide daily actionable wisdom.
+- **Decision: Cross-Module Persistence Caching**
+  - **Reason**: Frequent AI calls for dashboard content hit rate limits and caused UI lag.
+  - **Action**: Implemented versioned IndexedDB caching for both Today Oracle and Soul Advice, ensuring O(1) load times on repeat visits within the same day.
+
+## [2026-05-13] Phase 21: Production Stability Hardening (Deployment Sync)
+
+- **Decision: External Image Optimization Bypass**
+  - **Reason**: Next.js image proxy (`_next/image`) on Vercel was returning 404s for external Unsplash assets due to SSL/Tier limits.
+  - **Action**: Forced `unoptimized={true}` for Unsplash-based fallback images.
+- **Decision: PWA Manifest Unification**
+  - **Reason**: Mismatch between hardcoded `/manifest.json` in metadata and Next.js 14 auto-generated `/manifest.webmanifest`.
+  - **Action**: Removed manual manifest link in `layout.tsx` to let Next.js file-based metadata handle PWA discovery automatically.
+- **Decision: Data Integrity Guards**
+  - **Reason**: Occasional `TypeError: t.startsWith` in production logs due to race conditions during image compression.
+  - **Action**: Added optional chaining and null-checks to all string-based operations in `MysticImage.tsx`.
+
+## [2026-05-13] Phase 22: Content Purity & Tag Stripping (The Akashic Lens)
+
+- **Decision: Centralized Content Cleaning Utility**
+  - **Reason**: Raw Markdown symbols and internal AI tags (`<thinking>`, `<execute>`) were leaking into high-end UI elements like journey cards and dashboard suggestions.
+  - **Action**: Created `lib/utils.ts` with `cleanMysticContent` to provide a standardized way to strip formatting for compact displays.
+- **Decision: Streaming Purity Enforcement**
+  - **Reason**: During real-time AI generation, unclosed tags caused flickering visual clutter until the stream completed.
+  - **Action**: Enhanced regex patterns in `MysticMarkdown` and `cleanMysticContent` to aggressively strip tags even if they lack a closing pair at the end of a partial response.
+- **Decision: Multi-View Integration**
+  - **Reason**: Disjointed rendering logic across Journey, Today, and Soul views led to inconsistent text quality.
+  - **Action**: Standardized summary rendering across `JourneyApp`, `TodayView`, `SoulView`, and `OmniOracleGuide` using the new purity engine.

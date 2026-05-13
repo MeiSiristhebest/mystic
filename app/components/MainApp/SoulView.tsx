@@ -1,11 +1,11 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { motion } from "motion/react";
 import {
   User,
   Wand2,
-  Zap,
+  RefreshCw,
 } from "lucide-react";
 import { useJourney } from "@/hooks/useJourney";
 import { 
@@ -18,6 +18,11 @@ import { MysticImage } from "./MysticImage";
 import BreathingLoading from "../BreathingLoading";
 import { useAppStore } from "@/lib/store";
 import { MoodCheckIn } from "./MoodCheckIn";
+import { useAIStream } from "@/hooks/useAIStream";
+import { MODELS, AKASHA_PERSONA } from "@/lib/ai";
+import { getSoulAdvicePrompt } from "@/lib/prompts";
+import { getFromIndexedDB, saveToIndexedDB } from "@/lib/storage";
+import { cleanMysticContent } from "@/lib/utils";
 
 export function SoulView() {
   const profile = useAppStore((state) => state.profile);
@@ -26,14 +31,69 @@ export function SoulView() {
   const setActiveTab = useAppStore((state) => state.setActiveTab);
   const updateProfile = useAppStore((state) => state.updateProfile);
   
-  const { entries, addEntry } = useJourney();
+  const { entries, addEntry, isLoaded: journeyLoaded } = useJourney();
+  const [dailyAdvice, setDailyAdvice] = useState<string[]>([]);
+  const [isInitializingAdvice, setIsInitializingAdvice] = useState(true);
+
+  const aiOptions = useMemo(() => ({
+    model: MODELS.FLASH, // Use FLASH for faster dashboard loading
+    config: { responseMimeType: "application/json" }
+  }), []);
+
+  const { stream } = useAIStream(aiOptions);
+
+  const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
+
+  useEffect(() => {
+    if (!isLoaded || !journeyLoaded) return;
+
+    const initAdvice = async () => {
+      const cacheKey = `soul_advice_v1_${todayStr}`;
+      try {
+        const cached = await getFromIndexedDB(cacheKey);
+        if (cached && Array.isArray(cached)) {
+          setDailyAdvice(cached);
+          setIsInitializingAdvice(false);
+          return;
+        }
+      } catch (e) {
+        console.warn("Advice cache read failed", e);
+      }
+
+      const profileContext = JSON.stringify(profile);
+      const recentHistory = entries.slice(0, 5).map(e => `${e.title}: ${e.summary}`).join('\n');
+      const prompt = getSoulAdvicePrompt(profileContext, recentHistory);
+
+      let fullOutput = "";
+      try {
+        for await (const chunk of stream(prompt, AKASHA_PERSONA)) {
+          fullOutput += chunk;
+        }
+        const data = JSON.parse(fullOutput.replace(/```json|```/g, '').trim());
+        if (data.tips && Array.isArray(data.tips)) {
+          setDailyAdvice(data.tips);
+          await saveToIndexedDB(cacheKey, data.tips);
+        }
+      } catch (err) {
+        console.error("Failed to generate soul advice", err);
+        setDailyAdvice([
+          "在冥想中寻找内心的宁静",
+          "尝试用艺术表达潜意识",
+          "关注梦境中的符号指引"
+        ]);
+      } finally {
+        setIsInitializingAdvice(false);
+      }
+    };
+
+    initAdvice();
+  }, [isLoaded, journeyLoaded, profile, entries, stream, todayStr]);
   
   const handleMoodSelect = async (moodValue: string) => {
     const today = new Date();
     const dateStr = today.toISOString().split('T')[0];
     const mood = moods.find(m => m.value === moodValue);
     
-    // 1. Update Profile Store
     const currentBaseline = profile.emotionalBaseline || [];
     const existingIndex = currentBaseline.findIndex(e => e.date === dateStr);
     
@@ -47,7 +107,6 @@ export function SoulView() {
     
     updateProfile({ emotionalBaseline: newBaseline });
 
-    // 2. Add to Journey for persistence
     await addEntry({
       type: 'subconscious',
       title: `能量打卡：${mood?.label || "觉察"}`,
@@ -69,7 +128,6 @@ export function SoulView() {
   const mbti = profile.mbti || "未设置";
   let archetype = profile.jungianArchetype?.split('(')[0].trim() || "";
   
-  // Basic check for garbled text
   if (archetype && /[\u0080-\u00ff]/.test(archetype) && !/[\u4e00-\u9fa5]/.test(archetype)) {
     archetype = "";
   }
@@ -185,7 +243,7 @@ const moods = [
                   { label: "生肖", value: profile.zodiac || "未设置" },
                   { label: "八字", value: profile.bazi || "未设置" },
                   { label: "守护星", value: rulingPlanet },
-                  { label: "性别", value: profile.gender || "未设置" },
+                  { label: "性别", value: profile.gender === 'male' ? '乾 (男)' : profile.gender === 'female' ? '坤 (女)' : '未设置' },
                   { label: "MBTI", value: mbti },
                   { label: "状态", value: profile.currentStatus ? "已同步" : "待更新" },
                 ].map((trait, i) => (
@@ -267,19 +325,30 @@ const moods = [
           </section>
 
           <section className="luxury-card p-8 space-y-6">
-            <h4 className="font-serif text-xl tracking-widest">成长建议</h4>
-            <ul className="space-y-4">
-              {profile.currentStatus ? (
-                [
-                  "在冥想中寻找内心的宁静",
-                  "尝试用艺术表达潜意识",
-                  "关注梦境中的符号指引",
-                ].map((tip, i) => (
-                  <li key={i} className="flex items-start gap-3 group">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#C9A84C]/40 mt-2 group-hover:scale-150 transition-transform" />
-                    <p className="text-sm text-[#E8DFB8]/70 font-serif leading-relaxed">{tip}</p>
-                  </li>
+            <h4 className="font-serif text-xl tracking-widest flex items-center justify-between">
+              成长建议
+              {isInitializingAdvice && <RefreshCw className="w-4 h-4 animate-spin text-amber-500/40" />}
+            </h4>
+            <ul className="space-y-6">
+              {dailyAdvice.length > 0 ? (
+                dailyAdvice.map((tip, i) => (
+                  <motion.li 
+                    key={i} 
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.2 }}
+                    className="flex items-start gap-4 group"
+                  >
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#C9A84C]/40 mt-2.5 group-hover:bg-[#C9A84C] group-hover:scale-150 transition-all shadow-[0_0_8px_rgba(201,168,76,0.5)]" />
+                    <p className="text-sm text-[#E8DFB8]/80 font-serif leading-relaxed">{cleanMysticContent(tip)}</p>
+                  </motion.li>
                 ))
+              ) : isInitializingAdvice ? (
+                <div className="space-y-4">
+                   {[1,2,3].map(i => (
+                     <div key={i} className="h-4 bg-white/5 rounded-full animate-pulse w-full" />
+                   ))}
+                </div>
               ) : (
                 <p className="text-sm text-[#E8DFB8]/40 italic text-center">完善档案后，阿卡夏将为你提供个性化建议</p>
               )}

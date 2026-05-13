@@ -23,7 +23,6 @@ const jetbrains = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "阿卡夏之窗 | Eye of Akasha",
   description: "探索你的灵魂档案，解析星命与塔罗的深层联系。",
-  manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",

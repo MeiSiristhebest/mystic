@@ -4,13 +4,15 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { motion } from "motion/react";
 import {
   Sparkles,
-  RefreshCw,
   Download,
   Sun,
   Moon,
   Zap,
   User,
-  Activity
+  Activity,
+  RefreshCw,
+  ChevronRight,
+  BookOpen
 } from "lucide-react";
 
 // Components & Hooks
@@ -23,6 +25,7 @@ import { getSunSign } from "@/lib/astrology";
 import { getFromIndexedDB, saveToIndexedDB } from "@/lib/storage";
 import { useAppStore } from "@/lib/store";
 import { usePosterGenerator } from "@/hooks/usePosterGenerator";
+import { cleanMysticContent } from "@/lib/utils";
 
 export function TodayView() {
   const { profile, isLoaded: isProfileLoaded } = useUserProfile();
@@ -43,6 +46,8 @@ export function TodayView() {
     reading: string;
     subMotto: string;
     imagePrompt: string;
+    cosmicEnergy: string;
+    energySuggestion: string;
   } | null>(null);
   
   const [isInitializing, setIsInitializing] = useState(true);
@@ -51,7 +56,7 @@ export function TodayView() {
   const lastEntry = entries[0];
   const sunSign = profile.birthDate ? getSunSign(new Date(profile.birthDate)) : "探索者";
 
-  const { greeting, isNight, todayStr } = useMemo(() => {
+  const { greeting, isNight, todayStr, fullDateDisplay } = useMemo(() => {
     const d = new Date();
     const hour = d.getHours();
     let g = "夜安";
@@ -59,18 +64,15 @@ export function TodayView() {
     else if (hour >= 12 && hour < 18) g = "午安";
     else if (hour >= 18 && hour < 22) g = "晚安";
     
-    return { 
-      greeting: g, 
-      isNight: hour >= 18 || hour < 5,
     const year = d.getFullYear();
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
-    const tStr = `${year}-${month}-${day}`;
     
     return { 
       greeting: g, 
       isNight: hour >= 18 || hour < 5,
-      todayStr: tStr
+      todayStr: `${year}-${month}-${day}`,
+      fullDateDisplay: `${year}年${month}月${day}日`
     };
   }, []);
 
@@ -92,7 +94,6 @@ export function TodayView() {
           messages: [{ role: 'model', content: dailyData.reading }]
         }
       });
-      // Use custom notification if available, or just a state
     } catch (err) {
       console.error("Failed to inscribe", err);
     } finally {
@@ -104,7 +105,7 @@ export function TodayView() {
     if (!isLoaded) return;
     
     const initDaily = async () => {
-      const cacheKey = `daily_oracle_v5_${todayStr}`; 
+      const cacheKey = `daily_oracle_v8_${todayStr}`; 
       
       try {
         const cached = await getFromIndexedDB(cacheKey);
@@ -120,8 +121,8 @@ export function TodayView() {
       const prompt = `
 <instruction>
 你是阿卡夏记录的守护者。请为用户生成今日专属的灵魂寄语和神谕。
-现在的时刻是：${greeting}。
 请结合用户的档案信息，生成一段具有深度艺术感、玄奥且充满力量的文字。
+文字风格应接近诗歌，充满意象。
 必须严格输出纯净的 JSON 格式。
 </instruction>
 
@@ -131,9 +132,11 @@ ${JSON.stringify(profile)}
 
 <output_schema>
 {
-  "subMotto": "string (10-15 chars, poetic motto)",
-  "oracle": "string (30-60 chars, philosophical oracle)",
-  "imagePrompt": "string (artistic prompt for Nano Banana 2 image generation)"
+  "subMotto": "Poetic short motto (e.g. 命运的低语)",
+  "oracle": "Deep philosophical oracle text (30-60 chars)",
+  "imagePrompt": "Artistic cosmic mystical prompt with eye of akasha and sacred geometry",
+  "cosmicEnergy": "Short phrase describing today's cosmic vibe (e.g. 平衡, 激荡, 沉静)",
+  "energySuggestion": "One-sentence spiritual advice based on user profile and today's energy"
 }
 </output_schema>
       `;
@@ -150,6 +153,8 @@ ${JSON.stringify(profile)}
           reading: data.oracle,
           subMotto: data.subMotto,
           imagePrompt: data.imagePrompt,
+          cosmicEnergy: data.cosmicEnergy || "平衡",
+          energySuggestion: data.energySuggestion || "保持内心的宁静，在变幻中寻找恒常的真理。"
         };
         
         await saveToIndexedDB(cacheKey, newDaily);
@@ -158,9 +163,11 @@ ${JSON.stringify(profile)}
         console.error("Failed to generate daily reading:", err);
         setDailyData({
           date: todayStr,
-          reading: "枷锁已开，无需向世界索求公义，唯需向内心回归神性。",
-          subMotto: "你是星尘的碎片，也是宇宙的观测者。",
-          imagePrompt: "Abstract mystical cosmic art gold and purple"
+          reading: "即使在烈日熔金的繁华中，你的心亦如寒潭之水，映照着世间的渴望与疲惫。别让过度给予灼伤了真实的自我，学会在静默中为灵魂筑起一道清凉的屏障。",
+          subMotto: "守护那份隐秘的温柔",
+          imagePrompt: "Mystical eye of akasha, cosmic nebula, sacred geometry, gold and deep purple",
+          cosmicEnergy: "平衡",
+          energySuggestion: "建议今日独处三十分钟，以冷色调冥想平复内心如火的热忱，重拾理性的边界感。"
         });
       } finally {
         setIsInitializing(false);
@@ -168,157 +175,170 @@ ${JSON.stringify(profile)}
     };
 
     initDaily();
-  }, [isLoaded, profile, todayStr, greeting, stream]);
+  }, [isLoaded, profile, todayStr, stream]);
 
   if (isInitializing) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6">
-        <div className="relative">
-          <div className="absolute inset-0 bg-amber-500/20 blur-xl rounded-full animate-pulse" />
-          <RefreshCw className="w-10 h-10 text-amber-500 animate-spin relative" />
-        </div>
-        <p className="font-serif text-amber-200/40 tracking-[0.3em] animate-pulse text-sm">正在同步今日宇宙频率...</p>
+        <RefreshCw className="w-10 h-10 text-amber-500 animate-spin" />
+        <p className="font-serif text-amber-200/40 tracking-[0.3em] animate-pulse">正在同步今日宇宙频率...</p>
       </div>
     );
   }
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 10 }} 
-      animate={{ opacity: 1, y: 0 }} 
-      className="max-w-4xl mx-auto px-6 py-12 md:py-20 space-y-16"
+      initial={{ opacity: 0 }} 
+      animate={{ opacity: 1 }} 
+      className="max-w-6xl mx-auto px-6 py-12 md:py-16 space-y-20"
     >
-      {/* 1. 顶部三宫格 - 还原经典布局 */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="luxury-card p-8 flex flex-col items-center text-center space-y-4 group">
-          <div className="w-12 h-12 rounded-full border border-amber-500/10 flex items-center justify-center bg-amber-500/5 group-hover:bg-amber-500/10 transition-colors">
-            {isNight ? <Moon className="w-5 h-5 text-amber-200/40 group-hover:text-amber-200 transition-colors" /> : <Sun className="w-5 h-5 text-amber-200/40 group-hover:text-amber-200 transition-colors" />}
-          </div>
-          <div className="space-y-1">
-            <p className="text-[10px] font-serif tracking-[0.4em] text-amber-100/30 uppercase">太阳星座</p>
-            <p className="text-2xl font-serif text-amber-100">{sunSign}</p>
-          </div>
+      {/* 1. Header: Date & Greeting */}
+      <header className="space-y-6">
+        <div className="flex items-center gap-4 text-[10px] text-amber-200/30 font-serif tracking-[0.3em] uppercase">
+          <span>{fullDateDisplay}</span>
+          <span className="w-1 h-1 rounded-full bg-amber-500/20" />
+          <span>宇宙能量：{dailyData?.cosmicEnergy}</span>
         </div>
-        <div className="luxury-card p-8 flex flex-col items-center text-center space-y-4 group">
-          <div className="w-12 h-12 rounded-full border border-amber-500/10 flex items-center justify-center bg-amber-500/5 group-hover:bg-amber-500/10 transition-colors">
-            <User className="w-5 h-5 text-amber-200/40 group-hover:text-amber-200 transition-colors" />
-          </div>
-          <div className="space-y-1">
-            <p className="text-[10px] font-serif tracking-[0.4em] text-amber-100/30 uppercase">旅人身份</p>
-            <p className="text-2xl font-serif text-amber-100">{profile.name || "探索者"}</p>
-          </div>
-        </div>
-        <div className="luxury-card p-8 flex flex-col items-center text-center space-y-4 group">
-          <div className="w-12 h-12 rounded-full border border-amber-500/10 flex items-center justify-center bg-amber-500/5 group-hover:bg-amber-500/10 transition-colors">
-            <Activity className="w-5 h-5 text-amber-200/40 group-hover:text-amber-200 transition-colors" />
-          </div>
-          <div className="space-y-1">
-            <p className="text-[10px] font-serif tracking-[0.4em] text-amber-100/30 uppercase">灵魂档案</p>
-            <p className="text-2xl font-serif text-amber-100">{profile.mbti || "未觉醒"}</p>
-          </div>
-        </div>
-      </section>
+        <h1 className="text-6xl md:text-8xl font-serif text-amber-100/90 tracking-tight leading-none">
+          {greeting}, <span className="gold-gradient-text italic font-light">{profile.name || "旅人"}</span>
+        </h1>
+      </header>
 
-      {/* 2. 今日能量建议 - 还原长条栏 */}
-      <section className="luxury-card p-8 md:p-12 rounded-[2.5rem] flex flex-col md:flex-row items-center gap-8 group hover:border-amber-500/30 transition-all bg-[#C9A84C]/5 border-[#C9A84C]/20">
-        <div className="w-16 h-16 rounded-full bg-amber-500/10 flex items-center justify-center shrink-0 border border-amber-500/20 relative">
-          <div className="absolute inset-0 bg-amber-500/20 blur-xl rounded-full animate-pulse" />
-          <Zap className="w-7 h-7 text-amber-400 relative" />
-        </div>
-        <div className="space-y-3 flex-1">
-          <div className="flex items-center gap-3">
-             <p className="text-[10px] font-serif tracking-[0.5em] text-amber-200/40 uppercase">今日灵魂指引 · ORACLE</p>
-             <div className="h-px w-12 bg-amber-500/20" />
+      {/* 2. Main Oracle Card (Cinematic Overlay) */}
+      <section ref={posterRef} className="relative group">
+        <div className="relative aspect-[4/5] md:aspect-[1.4/1] rounded-[4rem] overflow-hidden shadow-[0_0_120px_rgba(0,0,0,0.9)] border border-white/10">
+          <div className="absolute inset-0 z-0">
+            <MysticImage 
+              prompt={dailyData?.imagePrompt || "Abstract mystical cosmic art"} 
+              aspectRatio="3:4" 
+              className="w-full h-full object-cover scale-100 group-hover:scale-105 transition-transform duration-[25s] ease-out opacity-80"
+            />
           </div>
-          <p className="text-xl md:text-2xl font-serif text-amber-50/90 leading-relaxed italic drop-shadow-[0_0_10px_rgba(201,168,76,0.2)]">
-            「 {dailyData?.reading.replace(/「|」/g, '') || "枷锁已开，无需向世界索求公义，唯需向内心回归神性。"} 」
-          </p>
-          <p className="text-sm text-amber-200/30 font-serif tracking-widest">
-            {dailyData?.subMotto || "你是星尘的碎片，也是宇宙的观测者。"}
-          </p>
-        </div>
-      </section>
+          
+          <div className="absolute inset-0 bg-gradient-to-t from-[#050308] via-transparent to-[#050308]/40 z-10" />
+          <div className="absolute inset-0 bg-black/10 z-10" />
+          <div className="absolute inset-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] pointer-events-none" />
 
-      {/* 3. 核心神谕卡 (Poster) */}
-      <section ref={posterRef} className="relative group p-1">
-        <div className="relative rounded-[3rem] overflow-hidden border border-white/10 shadow-[0_0_80px_rgba(0,0,0,0.6)]">
-          <div className="relative aspect-[4/5] md:aspect-[21/9] flex items-center justify-center overflow-hidden">
-            <div className="absolute inset-0 z-0">
-              <MysticImage 
-                prompt={dailyData?.imagePrompt || "Abstract mystical cosmic art"} 
-                aspectRatio="21:9" 
-                className="w-full h-full object-cover opacity-60 mix-blend-screen scale-105 group-hover:scale-110 transition-transform duration-[15s]"
-              />
+          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-8 md:p-24 text-center space-y-16">
+            <div className="space-y-3">
+              <div className="h-px w-12 bg-gradient-to-r from-transparent via-amber-500/40 to-transparent mx-auto" />
+              <span className="text-[10px] font-serif tracking-[0.6em] text-amber-500/60 uppercase">今日神谕</span>
             </div>
-            <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-[#050308]/90 z-10" />
-            
-            <div className="relative z-20 text-center px-10 py-16 flex flex-col items-center gap-10">
-               <div className="flex flex-wrap justify-center gap-4">
-                 <button 
-                  onClick={() => handleGeneratePoster(posterRef.current!, `oracle-${todayStr}.jpg`)}
-                  disabled={isGeneratingPoster}
-                  className="group relative px-8 py-4 rounded-full overflow-hidden transition-all hover:scale-105 active:scale-95 border border-amber-500/20"
-                >
-                  <div className="absolute inset-0 bg-amber-500/5 backdrop-blur-2xl" />
-                  <div className="relative flex items-center gap-4 text-amber-200/70 group-hover:text-amber-100 font-serif tracking-[0.5em] text-[10px] uppercase transition-colors">
-                    <Download className="w-4 h-4 group-hover:translate-y-1 transition-transform" />
-                    <span>{isGeneratingPoster ? "正在刻印..." : "收藏海报"}</span>
-                  </div>
-                </button>
 
+            <p className="text-2xl md:text-5xl lg:text-6xl font-serif text-amber-50/95 leading-[1.7] italic max-w-5xl drop-shadow-[0_0_40px_rgba(0,0,0,0.8)] px-4">
+              「 {dailyData?.reading ? cleanMysticContent(dailyData.reading).replace(/「|」/g, '') : "正在感应阿卡夏场域..."} 」
+            </p>
+
+            <div className="flex flex-col items-center gap-10">
+              <span className="text-xs md:text-xl text-amber-200/40 font-serif tracking-[0.4em] uppercase">{dailyData?.subMotto}</span>
+              
+              <div className="flex flex-wrap justify-center gap-6">
                 <button 
                   onClick={handleInscribe}
                   disabled={isInscribing}
-                  className="group relative px-8 py-4 rounded-full overflow-hidden transition-all hover:scale-105 active:scale-95 border border-amber-500/40 bg-amber-500/10"
+                  className="flex items-center gap-3 px-10 py-4 rounded-full bg-black/40 border border-white/10 text-amber-200/70 hover:text-amber-100 hover:border-amber-500/40 transition-all text-[10px] tracking-[0.3em] uppercase backdrop-blur-2xl group/btn"
                 >
-                  <div className="relative flex items-center gap-4 text-amber-200 group-hover:text-amber-100 font-serif tracking-[0.5em] text-[10px] uppercase transition-colors">
-                    <Sparkles className={`w-4 h-4 ${isInscribing ? 'animate-spin' : ''}`} />
-                    <span>{isInscribing ? "正在记录..." : "铭刻至日记"}</span>
-                  </div>
+                  <Sparkles className={`w-3.5 h-3.5 transition-transform group-hover/btn:scale-110 ${isInscribing ? 'animate-spin text-amber-500' : ''}`} />
+                  {isInscribing ? "记录中" : "铭刻至日记"}
                 </button>
-               </div>
+                <button 
+                  onClick={() => handleGeneratePoster(posterRef.current!, `oracle-${todayStr}.jpg`)}
+                  disabled={isGeneratingPoster}
+                  className="flex items-center gap-3 px-10 py-4 rounded-full bg-black/40 border border-white/10 text-amber-200/70 hover:text-amber-100 hover:border-amber-500/40 transition-all text-[10px] tracking-[0.3em] uppercase backdrop-blur-2xl group/btn"
+                >
+                  <Download className="w-3.5 h-3.5 group-hover/btn:translate-y-0.5 transition-transform" />
+                  {isGeneratingPoster ? "导出中" : "收藏卡片"}
+                </button>
+              </div>
             </div>
+          </div>
+          
+          <div className="absolute bottom-12 right-12 z-30 opacity-20 flex items-center gap-3">
+             <span className="text-[9px] font-serif tracking-[0.2em] text-amber-100/60 uppercase">长按保存卡片</span>
+             <Download className="w-3 h-3 text-amber-100/60" />
           </div>
         </div>
       </section>
 
-      {/* 4. 快速开始 - 还原大型卡片网格 */}
-      <section className="space-y-10">
-        <div className="flex items-center gap-6">
-          <h3 className="text-xl font-serif tracking-[0.4em] uppercase text-amber-100/60">深度探索</h3>
-          <div className="h-px flex-1 bg-gradient-to-r from-amber-500/20 to-transparent" />
+      {/* 3. Stats Grid (3-column) */}
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {[
+          { icon: Sun, label: "太阳", value: sunSign },
+          { icon: User, label: "性别", value: profile.gender || "未设定" },
+          { icon: Activity, label: "MBTI", value: profile.mbti || "未觉醒" }
+        ].map((stat, i) => (
+          <div key={i} className="luxury-card p-12 flex flex-col items-center text-center space-y-6 group hover:border-amber-500/20 transition-all duration-700">
+            <div className="w-16 h-16 rounded-3xl border border-amber-500/10 flex items-center justify-center bg-amber-500/5 group-hover:bg-amber-500/10 group-hover:scale-110 transition-all duration-700">
+              <stat.icon className="w-7 h-7 text-amber-200/30 group-hover:text-amber-200 transition-colors" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-[9px] font-serif tracking-[0.5em] text-amber-100/20 uppercase">{stat.label}</p>
+              <p className="text-3xl font-serif text-amber-100/80 tracking-wide">{stat.value}</p>
+            </div>
+          </div>
+        ))}
+      </section>
+
+      {/* 4. Energy Suggestion (Horizontal Bar) */}
+      <section className="luxury-card p-8 md:p-10 rounded-[3rem] flex flex-col md:flex-row items-center gap-8 md:gap-12 bg-[#C9A84C]/5 border-[#C9A84C]/20 group">
+        <div className="w-20 h-20 rounded-full bg-amber-500/10 flex items-center justify-center shrink-0 border border-amber-500/20 shadow-[0_0_40px_rgba(201,168,76,0.15)] group-hover:scale-105 transition-transform duration-700">
+          <Zap className="w-8 h-8 text-amber-400 fill-amber-400/20" />
+        </div>
+        <div className="space-y-3 text-center md:text-left flex-1">
+          <p className="text-[10px] font-serif tracking-[0.6em] text-amber-500/40 uppercase">今日能量建议</p>
+          <p className="text-xl md:text-2xl font-serif text-amber-50/90 leading-relaxed italic pr-4">
+            {cleanMysticContent(dailyData?.energySuggestion || "")}
+          </p>
+        </div>
+      </section>
+
+      {/* 5. Quick Start Section */}
+      <section className="space-y-12">
+        <div className="flex items-center gap-8">
+          <h3 className="text-2xl font-serif tracking-[0.5em] uppercase text-amber-100/40">快速开始</h3>
+          <div className="h-px flex-1 bg-gradient-to-r from-amber-500/10 to-transparent" />
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
           <button 
             onClick={() => {
               setHandoff({ system: 'tarot', context: '今日单牌占卜' });
               setActiveTab("explore");
             }}
-            className="luxury-card p-12 text-left space-y-8 group hover:bg-white/[0.04] transition-all relative overflow-hidden flex flex-col justify-between min-h-[280px]"
+            className="luxury-card p-12 text-left group transition-all min-h-[340px] flex flex-col justify-between relative overflow-hidden"
           >
-            <div className="absolute top-0 right-0 p-10 opacity-5 group-hover:opacity-10 transition-opacity">
-              <Sparkles className="w-24 h-24" />
+             <div className="absolute top-0 right-0 p-12 opacity-5 group-hover:opacity-10 group-hover:rotate-12 transition-all duration-1000">
+              <Sparkles className="w-28 h-28" />
             </div>
-            <p className="text-[10px] font-serif tracking-[0.5em] text-amber-500/30 group-hover:text-amber-500/50 uppercase">Daily Card</p>
-            <div className="space-y-3">
-              <h4 className="text-4xl font-serif gold-gradient-text tracking-widest">每日单牌占卜</h4>
-              <p className="text-sm text-white/30 font-serif leading-relaxed max-w-[240px]">抽取今日指引，洞察潜意识中的微妙波动。</p>
+            <div className="space-y-1">
+              <p className="text-[10px] font-serif tracking-[0.6em] text-amber-500/30 uppercase">TAROT</p>
+              <div className="h-px w-8 bg-amber-500/20" />
+            </div>
+            <div className="space-y-4 relative z-10">
+              <h4 className="text-5xl font-serif text-amber-50/90 tracking-widest">每日单牌占卜</h4>
+              <p className="text-base text-white/30 font-serif leading-relaxed max-w-xs">抽取今日指引，洞察潜意识中的微光。</p>
             </div>
           </button>
 
           <button 
             onClick={() => setActiveTab("journal")}
-            className="luxury-card p-12 text-left space-y-8 group hover:bg-white/[0.04] transition-all relative overflow-hidden flex flex-col justify-between min-h-[280px]"
+            className="luxury-card p-12 text-left group transition-all min-h-[340px] flex flex-col justify-between relative overflow-hidden"
           >
-            <div className="absolute top-0 right-0 p-10 opacity-5 group-hover:opacity-10 transition-opacity">
-              <Activity className="w-24 h-24" />
+            <div className="absolute top-0 right-0 p-12 opacity-5 group-hover:opacity-10 group-hover:-rotate-12 transition-all duration-1000">
+              <BookOpen className="w-28 h-28" />
             </div>
-            <p className="text-[10px] font-serif tracking-[0.5em] text-amber-500/30 group-hover:text-amber-500/50 uppercase">Chronicle</p>
-            <div className="space-y-3">
-              <h4 className="text-4xl font-serif text-white/80 tracking-widest">查阅阿卡夏记录</h4>
-              <p className="text-sm text-white/30 font-serif leading-relaxed">
-                {lastEntry ? `你最近一次的探索是“${lastEntry.title}”。` : "暂无最近记录，开启你的命运探索。"}
+            <div className="space-y-1">
+              <p className="text-[10px] font-serif tracking-[0.6em] text-amber-500/30 uppercase">JOURNAL</p>
+              <div className="h-px w-8 bg-amber-500/20" />
+            </div>
+            <div className="space-y-4 relative z-10">
+              <h4 className="text-5xl font-serif text-amber-50/90 tracking-widest">
+                {lastEntry ? "回顾往昔记录" : "开启首篇日记"}
+              </h4>
+              <p className="text-base text-white/30 font-serif leading-relaxed max-w-xs">
+                {lastEntry 
+                  ? `你最近的一份解读是“${lastEntry.title}”，点击继续探索。` 
+                  : "尚未有任何灵魂记录，点击开启你的阿卡夏之旅。"}
               </p>
             </div>
           </button>

@@ -114,10 +114,10 @@ const MysticMarkdown = React.memo(({ content, cards, hideCards, isLoading, cente
       soulMotto = p1.trim();
       return "";
     })
-    .replace(/<thinking>[\s\S]*?<\/thinking>/g, '')
-    .replace(/<execute>[\s\S]*?<\/execute>/g, '')
+    .replace(/<thinking>[\s\S]*?(?:<\/thinking>|$)/g, '')
+    .replace(/<execute>[\s\S]*?(?:<\/execute>|$)/g, '')
     // Extract association tag
-    .replace(/<mystic_association>([\s\S]*?)<\/mystic_association>/g, (match, p1) => {
+    .replace(/<mystic_association>([\s\S]*?)(?:<\/mystic_association>|$)/g, (match, p1) => {
       try {
         association = JSON.parse(p1.trim());
       } catch (e) {
