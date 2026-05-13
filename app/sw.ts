@@ -19,7 +19,7 @@ const serwist = new Serwist({
   runtimeCaching: [
     {
       urlPattern: ({ url }: { url: URL }) => url.pathname.startsWith("/api/ai"),
-      handler: "NetworkOnly",
+      handler: new NetworkOnly(),
     },
     ...defaultCache,
   ],
