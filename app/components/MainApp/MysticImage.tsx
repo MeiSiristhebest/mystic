@@ -205,7 +205,7 @@ export const MysticImage = ({
       setIsLoading(false);
       loadingRef.current = false;
     }
-  }, [prompt, aspectRatio, seed, imageUrl]);
+  }, [prompt, aspectRatio, seed]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect

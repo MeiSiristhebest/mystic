@@ -218,13 +218,20 @@ export default function DiscoveryView({ onComplete }: { onComplete?: () => void 
 
       <div className="relative z-10 max-w-4xl mx-auto px-6 py-12">
         {/* Subtle Progress Header */}
-        <div className="flex flex-col items-center justify-center mb-16 opacity-40 space-y-4">
-          <div className="flex gap-1">
+        <div className="flex flex-col items-center justify-center mb-16 space-y-4">
+          <div className="flex items-center gap-2">
             {[1,2,3,4,5,6].map(s => (
-              <div key={s} className={`h-1 rounded-full transition-all duration-500 ${s <= step ? 'w-12 bg-amber-500' : 'w-4 bg-white/10'}`} />
+              <motion.div 
+                key={s} 
+                animate={{ 
+                  width: s === step ? 32 : (s < step ? 12 : 8),
+                  opacity: s <= step ? 1 : 0.2
+                }}
+                className={`h-1 rounded-full transition-all duration-500 ${s <= step ? 'bg-amber-500' : 'bg-white/20'}`} 
+              />
             ))}
           </div>
-          <span className="text-[10px] font-serif tracking-[0.3em] uppercase text-amber-500/60">Soul Registry • {step}/6</span>
+          <span className="text-[10px] font-serif tracking-[0.5em] uppercase text-amber-500/40 ml-[0.5em]">Soul Registry • {step}/6</span>
         </div>
 
         <AnimatePresence mode="wait">

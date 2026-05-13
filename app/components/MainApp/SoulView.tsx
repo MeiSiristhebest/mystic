@@ -229,7 +229,10 @@ const moods = [
                     </motion.div>
                   ))}
                 </div>
-                <MoodCheckIn onSelect={handleMoodSelect} />
+                <MoodCheckIn 
+                  onSelect={handleMoodSelect} 
+                  selectedMood={profile.emotionalBaseline?.find(e => e.date === new Date().toISOString().split('T')[0])?.words[0]}
+                />
               </div>
             </div>
           </section>

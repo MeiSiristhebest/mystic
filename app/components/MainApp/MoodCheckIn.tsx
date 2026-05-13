@@ -11,7 +11,12 @@ const moods = [
   { emoji: "🌿", label: "正在疗愈", value: "healing" },
 ];
 
-export function MoodCheckIn({ onSelect }: { onSelect?: (mood: string) => void }) {
+interface MoodCheckInProps {
+  onSelect?: (mood: string) => void;
+  selectedMood?: string;
+}
+
+export function MoodCheckIn({ onSelect, selectedMood }: MoodCheckInProps) {
   return (
     <div className="w-full mt-6">
       <div className="p-6 md:p-8 bg-white/[0.02] backdrop-blur-xl rounded-[32px] border border-white/5">
@@ -19,24 +24,33 @@ export function MoodCheckIn({ onSelect }: { onSelect?: (mood: string) => void })
           此刻你的灵魂处于何种频率？
         </h3>
         <div className="grid grid-cols-3 md:grid-cols-6 gap-6 justify-items-center">
-          {moods.map((mood) => (
-            <button
-              key={mood.value}
-              onClick={() => onSelect?.(mood.value)}
-              className="flex flex-col items-center gap-4 group min-w-0 transition-all active:scale-90"
-            >
-              <motion.div
-                whileHover={{ scale: 1.2, y: -5, rotate: 5 }}
-                whileTap={{ scale: 0.9 }}
-                className="w-12 h-12 md:w-20 md:h-20 rounded-[2rem] bg-white/5 border border-white/10 flex items-center justify-center text-xl md:text-4xl group-hover:bg-amber-500/20 group-hover:border-amber-500/40 group-hover:shadow-[0_0_30px_rgba(245,158,11,0.2)] transition-all duration-500"
+          {moods.map((mood) => {
+            const isActive = selectedMood === mood.value || selectedMood === mood.label;
+            return (
+              <button
+                key={mood.value}
+                onClick={() => onSelect?.(mood.value)}
+                className={`flex flex-col items-center gap-4 group min-w-0 transition-all active:scale-90 ${isActive ? 'scale-110' : ''}`}
               >
-                {mood.emoji}
-              </motion.div>
-              <span className="text-[10px] md:text-xs font-serif text-amber-100/40 tracking-widest group-hover:text-amber-200 transition-colors text-center w-full">
-                {mood.label}
-              </span>
-            </button>
-          ))}
+                <motion.div
+                  whileHover={{ scale: 1.2, y: -5, rotate: 5 }}
+                  whileTap={{ scale: 0.9 }}
+                  className={`w-12 h-12 md:w-20 md:h-20 rounded-[2rem] flex items-center justify-center text-xl md:text-4xl transition-all duration-500 ${
+                    isActive 
+                      ? "bg-amber-500/30 border-amber-500/60 shadow-[0_0_40px_rgba(245,158,11,0.4)]" 
+                      : "bg-white/5 border border-white/10 group-hover:bg-amber-500/20 group-hover:border-amber-500/40"
+                  }`}
+                >
+                  {mood.emoji}
+                </motion.div>
+                <span className={`text-[10px] md:text-xs font-serif tracking-widest transition-colors text-center w-full ${
+                  isActive ? "text-amber-200 font-bold" : "text-amber-100/40 group-hover:text-amber-200"
+                }`}>
+                  {mood.label}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>

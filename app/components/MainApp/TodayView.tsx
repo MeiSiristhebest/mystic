@@ -62,9 +62,43 @@ export function TodayView() {
     return { 
       greeting: g, 
       isNight: hour >= 18 || hour < 5,
-      todayStr: d.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-')
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const tStr = `${year}-${month}-${day}`;
+    
+    return { 
+      greeting: g, 
+      isNight: hour >= 18 || hour < 5,
+      todayStr: tStr
     };
   }, []);
+
+  const { addEntry } = useJourney();
+  const [isInscribing, setIsInscribing] = useState(false);
+
+  const handleInscribe = async () => {
+    if (!dailyData || isInscribing) return;
+    setIsInscribing(true);
+    try {
+      await addEntry({
+        type: 'subconscious',
+        title: `每日神谕：${dailyData.subMotto}`,
+        summary: dailyData.reading,
+        details: {
+          type: 'subconscious',
+          text: dailyData.reading,
+          imagePrompt: dailyData.imagePrompt,
+          messages: [{ role: 'model', content: dailyData.reading }]
+        }
+      });
+      // Use custom notification if available, or just a state
+    } catch (err) {
+      console.error("Failed to inscribe", err);
+    } finally {
+      setIsInscribing(false);
+    }
+  };
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -219,17 +253,30 @@ ${JSON.stringify(profile)}
             <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-[#050308]/90 z-10" />
             
             <div className="relative z-20 text-center px-10 py-16 flex flex-col items-center gap-10">
-               <button 
-                onClick={() => handleGeneratePoster(posterRef.current!, `oracle-${todayStr}.jpg`)}
-                disabled={isGeneratingPoster}
-                className="group relative px-10 py-4 rounded-full overflow-hidden transition-all hover:scale-105 active:scale-95 border border-amber-500/20"
-              >
-                <div className="absolute inset-0 bg-amber-500/5 backdrop-blur-2xl" />
-                <div className="relative flex items-center gap-4 text-amber-200/70 group-hover:text-amber-100 font-serif tracking-[0.5em] text-[10px] uppercase transition-colors">
-                  <Download className="w-4 h-4 group-hover:translate-y-1 transition-transform" />
-                  <span>{isGeneratingPoster ? "正在刻印..." : "收藏今日神谕"}</span>
-                </div>
-              </button>
+               <div className="flex flex-wrap justify-center gap-4">
+                 <button 
+                  onClick={() => handleGeneratePoster(posterRef.current!, `oracle-${todayStr}.jpg`)}
+                  disabled={isGeneratingPoster}
+                  className="group relative px-8 py-4 rounded-full overflow-hidden transition-all hover:scale-105 active:scale-95 border border-amber-500/20"
+                >
+                  <div className="absolute inset-0 bg-amber-500/5 backdrop-blur-2xl" />
+                  <div className="relative flex items-center gap-4 text-amber-200/70 group-hover:text-amber-100 font-serif tracking-[0.5em] text-[10px] uppercase transition-colors">
+                    <Download className="w-4 h-4 group-hover:translate-y-1 transition-transform" />
+                    <span>{isGeneratingPoster ? "正在刻印..." : "收藏海报"}</span>
+                  </div>
+                </button>
+
+                <button 
+                  onClick={handleInscribe}
+                  disabled={isInscribing}
+                  className="group relative px-8 py-4 rounded-full overflow-hidden transition-all hover:scale-105 active:scale-95 border border-amber-500/40 bg-amber-500/10"
+                >
+                  <div className="relative flex items-center gap-4 text-amber-200 group-hover:text-amber-100 font-serif tracking-[0.5em] text-[10px] uppercase transition-colors">
+                    <Sparkles className={`w-4 h-4 ${isInscribing ? 'animate-spin' : ''}`} />
+                    <span>{isInscribing ? "正在记录..." : "铭刻至日记"}</span>
+                  </div>
+                </button>
+               </div>
             </div>
           </div>
         </div>

@@ -264,16 +264,16 @@ const MysticMarkdown = React.memo(({ content, cards, hideCards, isLoading, cente
             </blockquote>
           ),
           ul: ({ ...props }) => (
-            <ul className="space-y-4 mb-10 ml-2 text-left" {...props} />
+            <ul className={`space-y-4 mb-10 ml-2 ${centered ? 'flex flex-col items-center' : 'text-left'}`} {...props} />
           ),
           ol: ({ ...props }) => (
             <ol
-              className="space-y-4 mb-10 ml-6 list-decimal text-amber-200/80 marker:text-amber-500/70 font-serif text-[16px] md:text-[17px] text-left"
+              className={`space-y-4 mb-10 ml-6 list-decimal text-amber-200/80 marker:text-amber-500/70 font-serif text-[16px] md:text-[17px] ${centered ? 'flex flex-col items-center' : 'text-left'}`}
               {...props}
             />
           ),
           li: ({ ...props }) => (
-            <li className="text-amber-50/90 leading-[2.2] mb-4 last:mb-0 pl-6 relative before:content-['✦'] before:absolute before:left-0 before:top-[8px] before:text-amber-500/60 before:text-xs tracking-[0.02em] font-light text-left" {...props} />
+            <li className={`text-amber-50/90 leading-[2.2] mb-4 last:mb-0 pl-6 relative before:content-['✦'] before:absolute before:left-0 before:top-[8px] before:text-amber-500/60 before:text-xs tracking-[0.02em] font-light ${centered ? 'text-center' : 'text-left'}`} {...props} />
           ),
           hr: () => (
             <div className="w-full flex items-center justify-center my-14 relative">

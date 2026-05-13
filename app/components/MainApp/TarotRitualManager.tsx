@@ -102,8 +102,8 @@ export default function TarotRitualManager({ cards, onComplete }: TarotRitualMan
               ))}
             </div>
             
-            <p className="font-serif text-amber-200/60 tracking-[0.2em] text-center">
-              {phase === "dealing" ? "正在布阵..." : revealedCount < cards.length ? `请点击翻开第 ${revealedCount + 1} 张牌` : "阵法已成，正在解读..."}
+            <p className={`font-serif tracking-[0.3em] text-center transition-all duration-700 ${revealedCount === cards.length ? 'text-2xl text-amber-200 scale-110' : 'text-amber-200/60'}`}>
+              {phase === "dealing" ? "正在布阵..." : revealedCount < cards.length ? `请点击翻开第 ${revealedCount + 1} 张牌` : "✦ 阵法已成，正在接收深层感应 ✦"}
             </p>
           </motion.div>
         )}

@@ -16,7 +16,7 @@ import BreathingLoading from "../BreathingLoading";
 import { useAppStore } from "@/lib/store";
 import { DivinationHandoff } from "@/app/types/divination";
 
-const MysticTarot = dynamic(() => import("@/app/components/MainApp/MysticTarot").then(mod => mod.MysticTarot), { 
+const MysticTarot = dynamic(() => import("./MysticTarot").then(mod => mod.MysticTarot), { 
   loading: () => <BreathingLoading text="正在感应塔罗能量..." /> 
 });
 const AstrologyApp = dynamic(() => import("../AstrologyApp"), { 

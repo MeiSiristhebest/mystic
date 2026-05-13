@@ -175,21 +175,22 @@ ${JSON.stringify(profile)}
                   className="w-full bg-black/40 border border-white/5 rounded-2xl py-4 pl-12 pr-6 text-amber-100 focus:border-amber-500/30 transition-all font-serif"
                 />
               </div>
-              <div className="flex items-center gap-2 bg-black/40 border border-white/10 rounded-2xl px-4 py-2 relative">
-                <Filter size={16} className="text-amber-500/40" />
+              <div className="flex items-center gap-2 bg-black/60 border border-white/20 rounded-2xl px-4 py-2 relative group hover:border-amber-500/40 transition-all">
+                <Filter size={16} className="text-amber-500/60" />
                 <select 
                   value={filterType}
                   onChange={(e) => setFilterType(e.target.value)}
-                  className="bg-transparent text-amber-100 font-serif text-sm focus:outline-none appearance-none cursor-pointer pr-8 pl-2 py-1 transition-colors min-w-[120px]"
+                  className="bg-transparent text-amber-100 font-serif text-sm focus:outline-none appearance-none cursor-pointer pr-10 pl-2 py-2 transition-colors min-w-[140px]"
                 >
-                  <option value="all" className="bg-[#080510]">所有类别</option>
-                  <option value="tarot" className="bg-[#080510]">塔罗占卜</option>
-                  <option value="bazi" className="bg-[#080510]">命理八字</option>
-                  <option value="iching" className="bg-[#080510]">周易占卜</option>
-                  <option value="astrology" className="bg-[#080510]">星象解析</option>
-                  <option value="shadow_work" className="bg-[#080510]">阴影工作</option>
+                  <option value="all" className="bg-[#0f0a18] text-amber-100">所有类别</option>
+                  <option value="tarot" className="bg-[#0f0a18] text-amber-100">塔罗占卜</option>
+                  <option value="bazi" className="bg-[#0f0a18] text-amber-100">命理八字</option>
+                  <option value="iching" className="bg-[#0f0a18] text-amber-100">周易占卜</option>
+                  <option value="astrology" className="bg-[#0f0a18] text-amber-100">星象解析</option>
+                  <option value="shadow_work" className="bg-[#0f0a18] text-amber-100">阴影工作</option>
+                  <option value="subconscious" className="bg-[#0f0a18] text-amber-100">灵魂频率</option>
                 </select>
-                <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-amber-500/40 pointer-events-none" />
+                <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-amber-500/60 pointer-events-none group-hover:text-amber-500 transition-colors" />
               </div>
             </div>
 
