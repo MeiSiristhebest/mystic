@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { motion } from "motion/react";
 import { X, Sparkles, Compass, Download, Maximize2, Minimize2 } from "lucide-react";
 import { CardFrame } from "./Visuals";
@@ -176,8 +177,13 @@ export function CardMeaningModal({ isOpen, onClose, card, cache, setCache }: Car
   const [deepMeaning, setDeepMeaning] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
   const { isGeneratingPoster, handleGeneratePoster } = usePosterGenerator();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!isOpen || !card) return;
@@ -272,12 +278,12 @@ export function CardMeaningModal({ isOpen, onClose, card, cache, setCache }: Car
     }
   }, [isOpen, card, cache, setCache]);
 
-  if (!isOpen || !card) return null;
+  if (!isOpen || !card || !mounted) return null;
   
   const imageUrl = card.image || `https://www.trustedtarot.com/img/cards/${card.englishName?.toLowerCase().replace(/ /g, "-") || card.id?.toLowerCase()}.png`;
 
-  return (
-    <div className={`fixed inset-0 z-[100] flex items-center justify-center ${isFullscreen ? 'p-0' : 'p-4 md:p-6'} bg-[#08040c]/90 backdrop-blur-xl overflow-y-auto`} onClick={onClose}>
+  return createPortal(
+    <div className={`fixed inset-0 z-[99999] flex items-center justify-center ${isFullscreen ? 'p-0' : 'p-4 md:p-6'} bg-[#08040c]/90 backdrop-blur-xl overflow-y-auto`} onClick={onClose}>
        <motion.div 
          ref={modalRef}
          data-poster-container
@@ -395,6 +401,7 @@ export function CardMeaningModal({ isOpen, onClose, card, cache, setCache }: Car
             <p className="text-[10px] text-amber-500/30 font-mono">{new Date().toLocaleDateString()} · 仅供自我探索</p>
           </div>
        </motion.div>
-    </div>
+    </div>,
+    document.body
   );
 }

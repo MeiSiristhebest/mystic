@@ -60,10 +60,9 @@ export function TodayView() {
   const { greeting, isNight, todayStr, fullDateDisplay } = useMemo(() => {
     const d = new Date();
     const hour = d.getHours();
-    let g = "夜安";
+    let g = "晚安";
     if (hour >= 5 && hour < 12) g = "早安";
     else if (hour >= 12 && hour < 18) g = "午安";
-    else if (hour >= 18 && hour < 22) g = "晚安";
     
     const year = d.getFullYear();
     const month = String(d.getMonth() + 1).padStart(2, '0');
@@ -106,7 +105,7 @@ export function TodayView() {
     if (!isLoaded) return;
     
     const initDaily = async () => {
-      const cacheKey = `daily_oracle_v8_${todayStr}`; 
+      const cacheKey = `daily_oracle_v10_${todayStr}`; 
       
       // 1. Try local IndexedDB
       try {
@@ -135,23 +134,25 @@ export function TodayView() {
       
       const prompt = `
 <instruction>
-你是阿卡夏记录的守护者。请为用户生成今日专属的灵魂寄语和神谕。
-请结合用户的档案信息，生成一段具有深度艺术感、玄奥且充满力量的文字。
-文字风格应接近诗歌，充满意象。
-必须严格输出纯净的 JSON 格式。
+你是一位超然、充满大智慧的阿卡夏哲人与心灵导师。请为求问者生成一份极简、深邃、直击灵魂的今日灵感。
+【创作法则】：
+1. 每日神谕（oracle）：绝对不要生硬罗列求问者的命理术语或八字符号（不要出现类似庚金、四柱、自性化等生硬学术词汇）。请引述一句契合当下意境的伟大哲人名言（如荣格、尼采、赫尔曼·黑塞、老子等），或由你原创一两句极具诗意与生命哲理的箴言。字数控制在 25-45 字以内，意境悠远，给人启迪。
+2. 每日能量建议（energySuggestion）：不要再说千篇一律的“保持宁静”或“冥想30分钟”。请结合今日的星空运行意象与灵性气场，给出具有生活实操感、温暖且睿智的一句话心灵指引（例如：针对今日气场，建议如何看待得失、如何与人沟通、或推荐一种微小温暖的生活仪式）。
+
+请严格输出纯净的 JSON 格式，不要包含任何多余文字或 Markdown 标记。
 </instruction>
 
-<user_profile>
-${JSON.stringify(profile)}
-</user_profile>
+<user_state>
+探索者：${profile.name || "旅人"} | 气场：${profile.mbti || "灵性探索者"}
+</user_state>
 
 <output_schema>
 {
-  "subMotto": "Poetic short motto (e.g. 命运的低语)",
-  "oracle": "Deep philosophical oracle text (30-60 chars)",
-  "imagePrompt": "Artistic cosmic mystical prompt with eye of akasha and sacred geometry",
-  "cosmicEnergy": "Short phrase describing today's cosmic vibe (e.g. 平衡, 激荡, 沉静)",
-  "energySuggestion": "One-sentence spiritual advice based on user profile and today's energy"
+  "subMotto": "4-8字诗意四字短句（如：微光破晓 / 观照静默 / 风过疏竹 / 守护温柔）",
+  "oracle": "一两句极具深度的哲学箴言或名言（25-45字）",
+  "imagePrompt": "A breathtaking high-end mystical wallpaper prompt, cosmic stars, subtle sacred geometry, cinematic lighting",
+  "cosmicEnergy": "今日宇宙共振词（如：沉寂 / 蜕变 / 涌动 / 生长 / 和解）",
+  "energySuggestion": "一句温暖睿智、富于生活实操感与灵性觉察的行动指引"
 }
 </output_schema>
       `;
@@ -179,11 +180,11 @@ ${JSON.stringify(profile)}
         console.error("Failed to generate daily reading:", err);
         const fallbackDaily = {
           date: todayStr,
-          reading: "即使在烈日熔金的繁华中，你的心亦如寒潭之水，映照着世间的渴望与疲惫。别让过度给予灼伤了真实的自我，学会在静默中为灵魂筑起一道清凉的屏障。",
-          subMotto: "守护那份隐秘的温柔",
-          imagePrompt: "Mystical eye of akasha, cosmic nebula, sacred geometry, gold and deep purple",
-          cosmicEnergy: "平衡",
-          energySuggestion: "建议今日独处三十分钟，以冷色调冥想平复内心如火的热忱，重拾理性的边界感。"
+          reading: "「你的视野会变得清晰，仅当你往自己内心深处看去。往外看的人在做梦，往内看的人觉醒。」 —— 卡尔·荣格",
+          subMotto: "向内观照 · 觉醒",
+          imagePrompt: "Breathtaking high-end mystical wallpaper, deep cosmic nebula, ethereal golden sacred geometry, cinematic lighting",
+          cosmicEnergy: "觉照",
+          energySuggestion: "今日请试着在繁杂的讯息中抽身片刻，聆听内心真实的直觉引导，而非周遭的喧哗。"
         };
         await saveToIndexedDB(cacheKey, fallbackDaily);
         setDailyData(fallbackDaily);

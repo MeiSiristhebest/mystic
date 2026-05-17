@@ -1,4 +1,14 @@
+## [2026-05-18] Feature: Philosophical Daily Oracle Refinement & Precision Greeting Time Logic
+
+- **Decision: Precision 24-Hour Greeting Partition & Philosophical Poetic Prompt Engineering**
+  - **Reason**: At 00:27 (midnight), `d.getHours()` returned 0, which fell outside the 5-22 hour check in `TodayView` and defaulted to an awkward "夜安" (Good night). Furthermore, the AI prompt for the daily oracle fed the entire raw user profile JSON, causing the model to rigidly concatenate astrological/Bazi jargon ("庚金", "三午烈火", "自性化原型") into dense, convoluted horoscope paragraphs.
+  - **Action**: Partitioned the 24-hour cycle cleanly into `早安` (05:00-12:00), `午安` (12:00-18:00), and `晚安` (18:00-05:00) to eliminate awkward midnight greetings. Refined the `TodayView` prompt using strict persona instructions: prohibited raw Bazi/astrological jargon, instructed the model to quote philosophical luminaries (Jung, Nietzsche, Laozi) or compose poetic 30-word maxims, and redesigned the energy suggestion to provide actionable, warm lifestyle rituals. Updated cache keys to `v10` to instantly invalidate legacy cached readings.
+
 ## [2026-05-17] Feature: Fate Echo UI Modernization, History Purification & 100% Clean Build Stabilization
+
+- **Decision: React createPortal Root DOM Mounting for CardMeaningModal (Stacking Context Isolation)**
+  - **Reason**: When users opened `CardMeaningModal` inside `JourneyApp` (the historical diary modal), `JourneyApp`'s outer container `<motion.div>` had CSS transforms (`-translate-x-1/2`) and `overflow-y-auto`. In CSS specification, any transformed element creates a containing block and stacking context for `fixed` descendants. Thus, `fixed inset-0 z-[100]` on `CardMeaningModal` was trapped inside `JourneyApp`'s scrollable container, causing the single card interpretation to scroll with the parent modal and leak the background reading interface.
+  - **Action**: Refactored `CardMeaningModal` to mount directly onto `document.body` via React's `createPortal` with `z-[99999]`. This completely decouples the modal from any parent CSS transforms or stacking contexts, ensuring flawless 100% viewport coverage immune to background bleed during scrolling.
 
 - **Decision: Pristine Typography Left-Alignment/Justification, Unconstrained Fullscreen Modal & Unrolled Poster Export**
   - **Reason**: When AI generated bulleted lists or long paragraphs under `centered` mode, `flex flex-col items-center` caused each line to center irregularly, creating an awkward vertical jagged column that severely degraded Chinese reading flow. In `CardMeaningModal`, fullscreen mode remained boxed with margins/overlays, and internal `max-h-[60vh] overflow-y-auto` scrollbars caused `html-to-image` poster exports to clip overflowing text.
