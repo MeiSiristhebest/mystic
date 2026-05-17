@@ -220,7 +220,9 @@ const moods = [
                   {archetype ? (
                     <>
                       <h3 className="text-3xl font-serif gold-gradient-text">核心人格：{archetype}</h3>
-                      <p className="micro-label">Soul Core: The {profile.jungianArchetype?.split('(')[1]?.replace(')', '') || 'Seeker'}</p>
+                      <p className="micro-label">
+                        Soul Core: {(profile.jungianArchetype?.split('(')[1]?.replace(')', '').trim().toLowerCase().startsWith('the ') ? '' : 'The ') + (profile.jungianArchetype?.split('(')[1]?.replace(')', '').trim() || 'Seeker')}
+                      </p>
                     </>
                   ) : (
                     <div className="space-y-2">
@@ -243,7 +245,7 @@ const moods = [
                   { label: "生肖", value: profile.zodiac || "未设置" },
                   { label: "八字", value: profile.bazi || "未设置" },
                   { label: "守护星", value: rulingPlanet },
-                  { label: "性别", value: profile.gender === 'male' ? '乾 (男)' : profile.gender === 'female' ? '坤 (女)' : '未设置' },
+                  { label: "性别", value: (profile.gender === '男' || profile.gender === 'male') ? '乾 (男)' : (profile.gender === '女' || profile.gender === 'female') ? '坤 (女)' : profile.gender || '未设置' },
                   { label: "MBTI", value: mbti },
                   { label: "状态", value: profile.currentStatus ? "已同步" : "待更新" },
                 ].map((trait, i) => (

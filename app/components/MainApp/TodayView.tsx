@@ -264,7 +264,7 @@ ${JSON.stringify(profile)}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {[
           { icon: Sun, label: "太阳", value: sunSign },
-          { icon: User, label: "性别", value: profile.gender || "未设定" },
+          { icon: User, label: "性别", value: (profile.gender === '男' || profile.gender === 'male') ? '乾 (男)' : (profile.gender === '女' || profile.gender === 'female') ? '坤 (女)' : profile.gender || "未设定" },
           { icon: Activity, label: "MBTI", value: profile.mbti || "未觉醒" }
         ].map((stat, i) => (
           <div key={i} className="luxury-card p-12 flex flex-col items-center text-center space-y-6 group hover:border-amber-500/20 transition-all duration-700">

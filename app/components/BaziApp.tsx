@@ -65,10 +65,8 @@ export default function BaziApp({
   const handleGenerate = useCallback(async () => {
     if (!birthDate || !birthTime) return;
 
-    // Update profile store if needed
-    if (!profile.birthDate || profile.birthDate !== birthDate) {
-      updateProfile({ birthDate, birthTime, gender, name: fullName, birthPlace });
-    }
+    // Always update profile store to keep gender and birth info perfectly synced across modules
+    updateProfile({ birthDate, birthTime, gender, name: fullName, birthPlace });
 
     const data = await calculateBazi();
     if (!data) return;
