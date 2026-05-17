@@ -1,5 +1,13 @@
 ## [2026-05-17] Feature: Fate Echo UI Modernization, History Purification & 100% Clean Build Stabilization
 
+- **Decision: Fullscreen Journey Title Unabbreviation, In-Place AI Spread Matching & Card Glow Rectification**
+  - **Reason**: When past journey entries were expanded to fullscreen, titles remained abbreviated with ellipses. In `MysticTarot`, clicking the guidance match button navigated away from the page rather than selecting the best spread in-place. Additionally, active spread cards exhibited awkwardly oversized glow borders due to flex item stretching.
+  - **Action**: Refactored `JourneyApp` header layout to display the complete `details.question` when in fullscreen mode. Implemented `handleAutoMatch` in `MysticTarot` using `/api/ai` to dynamically select the most relevant `selectedCategory` and `selectedSpread` based on the user's question. Standardized spread cards to a fixed height (`h-[320px]`) with a precise absolute inset border (`absolute inset-0 border-2 border-amber-400/80 rounded-[2.5rem]`).
+
+- **Decision: Tarot Modal Flawless Purification, Fullscreen Expansion & High-Definition Poster Export**
+  - **Reason**: AI streaming interpretations occasionally output raw `**` bold syntax attached to CJK quotes or punctuation, causing unparsed markdown artifacts in `CardMeaningModal`. Furthermore, users needed the ability to expand single-card analyses to full screen and export elegant commemorative posters for sharing.
+  - **Action**: Extracted and centralized a robust `processMysticMarkdownContent` pre-parsing utility in `TarotComponents.tsx` and shared it with `MysticMarkdown.tsx`, achieving 100% DRY purification. Added Fullscreen expansion toggle (`Maximize2` / `Minimize2`) and high-definition poster export (`usePosterGenerator`) to `CardMeaningModal` with global `body.is-exporting` CSS hide/show rules in `globals.css`.
+
 - **Decision: Premium 3D Liuyao Coin Toss Ritual & Cross-Module Audio Integration**
   - **Reason**: The IChing hexagram casting interface lacked sensory depth, relying on inline broken bar placeholders and missing tactile sound feedback. Furthermore, Tarot card dealing required ASMR paper friction sound cues to enhance ritual realism.
   - **Action**: Created `IChingCoinToss.tsx` using 3D CSS gradients and `preserve-3d` to simulate ancient Chinese bronze coins (乾隆通宝/开元通宝). Integrated `framer-motion` spring trajectories for tossing and metallic clink audio (`playCoinSound`). Overhauled `IChingRitualManager` to coordinate the 6-step bottom-up stacking of Yin/Yang lines and changing line pulsing. Added periodic ASMR paper drawing sounds (`playCardSound`) to `TarotRitualManager` dealing phase.

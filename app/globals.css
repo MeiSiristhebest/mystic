@@ -332,3 +332,11 @@
   animation: spin 16s linear infinite;
 }
 
+body.is-exporting .hide-in-poster {
+  display: none !important;
+}
+
+body.is-exporting .show-in-poster {
+  display: block !important;
+}
+

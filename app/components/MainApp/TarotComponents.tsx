@@ -1,12 +1,73 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "motion/react";
-import { X, Sparkles, Compass } from "lucide-react";
+import { X, Sparkles, Compass, Download, Maximize2, Minimize2 } from "lucide-react";
 import { CardFrame } from "./Visuals";
 import ReactMarkdown from "react-markdown";
 import { generateContentStream, AKASHA_PERSONA } from "@/lib/ai";
 import { AssociationBubble } from "../AssociationBubble";
+import { usePosterGenerator } from "@/hooks/usePosterGenerator";
+
+export function processMysticMarkdownContent(rawText: string): { processedContent: string; association: any; soulMotto: string } {
+  let association: any = null;
+  let soulMotto = "";
+  let content = rawText || "";
+
+  content = content
+    .replace(/\[SOUL_MOTTO\]([\s\S]*?)\[\/SOUL_MOTTO\]/g, (match, p1) => {
+      soulMotto = p1.trim();
+      return "";
+    })
+    .replace(/<thinking>[\s\S]*?(?:<\/thinking>|$)/g, '')
+    .replace(/<execute>[\s\S]*?(?:<\/execute>|$)/g, '')
+    .replace(/<mystic_association>([\s\S]*?)(?:<\/mystic_association>|$)/g, (match, p1) => {
+      try { association = JSON.parse(p1.trim()); } catch (e) {}
+      return "";
+    })
+    .replace(/^-(?=\*\*|\*)/gm, '- ')
+    .replace(/\*\*\*\*([^\n]*?)\*\*\*\*/g, '**$1**')
+    .replace(/\*\*\*\s+\*\*/g, '**')
+    .replace(/\*\*\s+\*\*\*/g, '***')
+    .replace(/^(#+)\s+#+\s+/gm, '$1 ')
+    .replace(/^(#+)\s+([#*]+)\s+/gm, '$1 ')
+    // Fix spaces right before closing or after opening **
+    .replace(/\*\*\s+([^\n*]+?)\s+\*\*/g, '**$1**')
+    .replace(/([^\s*])\s+\*\*/g, '$1**')
+    .replace(/\*\*\s+([^\s*])/g, '**$1');
+
+  const tripleStars: string[] = [];
+  content = content.replace(/\*\*\*([\s\S]*?)\*\*\*/g, (match, p1) => {
+    if (!p1.trim()) return match;
+    tripleStars.push(p1.trim());
+    return `__MYSTIC_TRIPLE_${tripleStars.length - 1}__`;
+  });
+
+  const doubleStars: string[] = [];
+  content = content.replace(/\*\*([\s\S]*?)\*\*/g, (match, p1) => {
+    if (!p1.trim()) return match;
+    doubleStars.push(p1.trim());
+    return `__MYSTIC_DOUBLE_${doubleStars.length - 1}__`;
+  });
+
+  content = content.replace(/__MYSTIC_TRIPLE_(\d+)__/g, (match, p1) => {
+    return ' ***' + tripleStars[parseInt(p1)] + '*** ';
+  });
+
+  content = content.replace(/__MYSTIC_DOUBLE_(\d+)__/g, (match, p1) => {
+    return ' **' + doubleStars[parseInt(p1)] + '** ';
+  });
+
+  content = content.replace(/\*\*\*? ([.,:;!?，。：；！？、）】”’])/g, match => match.replace(' ', ''));
+  content = content.replace(/([（【“‘]) \*\*\*?/g, match => match.replace(' ', ''));
+
+  content = content
+    .replace(/([\u4e00-\u9fa5])([a-zA-Z0-9@#%&=\$\(\)\[\]\{\}])/g, '$1 $2')
+    .replace(/([a-zA-Z0-9@#%&=\$\(\)\[\]\{\}])([\u4e00-\u9fa5])/g, '$1 $2')
+    .replace(/ {2,}/g, ' ');
+
+  return { processedContent: content, association, soulMotto };
+}
 
 
 
@@ -114,6 +175,9 @@ const modalMarkdownComponents = {
 export function CardMeaningModal({ isOpen, onClose, card, cache, setCache }: CardMeaningModalProps) {
   const [deepMeaning, setDeepMeaning] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const { isGeneratingPoster, handleGeneratePoster } = usePosterGenerator();
 
   useEffect(() => {
     if (!isOpen || !card) return;
@@ -215,9 +279,11 @@ export function CardMeaningModal({ isOpen, onClose, card, cache, setCache }: Car
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 bg-[#08040c]/90 backdrop-blur-xl overflow-y-auto" onClick={onClose}>
        <motion.div 
+         ref={modalRef}
+         data-poster-container
          initial={{ opacity: 0, scale: 0.95, y: 20 }}
          animate={{ opacity: 1, scale: 1, y: 0 }}
-         className="max-w-4xl w-full p-8 md:p-14 rounded-[40px] space-y-8 relative overflow-hidden my-auto border border-amber-500/40 shadow-[0_0_100px_rgba(201,168,76,0.25)] bg-gradient-to-b from-[#1c0f26]/95 via-[#12081c]/95 to-[#0a0410]/95 backdrop-blur-2xl"
+         className={`${isFullscreen ? 'w-[96vw] h-[96vh] max-w-none p-8 md:p-16 flex flex-col justify-between overflow-y-auto' : 'max-w-4xl w-full p-8 md:p-14'} rounded-[40px] space-y-8 relative overflow-hidden my-auto border border-amber-500/40 shadow-[0_0_100px_rgba(201,168,76,0.25)] bg-gradient-to-b from-[#1c0f26]/95 via-[#12081c]/95 to-[#0a0410]/95 backdrop-blur-2xl transition-all duration-500`}
          onClick={(e) => e.stopPropagation()}
        >
           {/* Flawless Inner Golden Inset Ring */}
@@ -230,9 +296,31 @@ export function CardMeaningModal({ isOpen, onClose, card, cache, setCache }: Car
             <Compass className="w-80 h-80 text-amber-500/20 animate-spin-slow" />
           </div>
 
-          <button onClick={onClose} className="absolute top-7 right-7 p-2 text-amber-200/40 hover:text-amber-200 hover:bg-white/10 rounded-full transition-all z-20 cursor-pointer">
-             <X className="w-6 h-6" />
-          </button>
+          <div className="hidden show-in-poster text-center pt-4 pb-6 border-b border-amber-500/20 mb-8">
+            <h2 className="text-3xl font-serif text-amber-400 tracking-widest">阿卡夏之窗 · 秘仪深研</h2>
+            <p className="text-xs font-mono text-amber-500/60 mt-2 tracking-[0.4em] uppercase">AKASHIC TAROT REVELATION</p>
+          </div>
+
+          <div className="absolute top-7 right-7 flex items-center gap-2 z-20 hide-in-poster">
+             <button 
+               onClick={() => handleGeneratePoster(modalRef.current, `tarot-card-${card.id || 'wisdom'}`)} 
+               disabled={isGeneratingPoster || isLoading}
+               className="p-2.5 text-amber-200/60 hover:text-amber-200 hover:bg-white/10 rounded-full transition-all cursor-pointer disabled:opacity-30" 
+               title="保存分享海报"
+             >
+               <Download className={`w-5 h-5 ${isGeneratingPoster ? 'animate-bounce text-amber-400' : ''}`} />
+             </button>
+             <button 
+               onClick={() => setIsFullscreen(!isFullscreen)} 
+               className="p-2.5 text-amber-200/60 hover:text-amber-200 hover:bg-white/10 rounded-full transition-all cursor-pointer" 
+               title={isFullscreen ? "退出全屏" : "全屏放大"}
+             >
+               {isFullscreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
+             </button>
+             <button onClick={onClose} className="p-2.5 text-amber-200/60 hover:text-amber-200 hover:bg-white/10 rounded-full transition-all cursor-pointer" title="关闭">
+                <X className="w-6 h-6" />
+             </button>
+          </div>
 
           <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 relative z-10 items-stretch">
              <div className="flex flex-col items-center gap-4 mx-auto lg:mx-0 shrink-0 lg:sticky lg:top-0 py-2">
@@ -278,21 +366,10 @@ export function CardMeaningModal({ isOpen, onClose, card, cache, setCache }: Car
                   </div>
                 ) : (
                   (() => {
-                    let association: any = null;
-                    const processedContent = deepMeaning
-                      .replace(/<thinking>[\s\S]*?(?:<\/thinking>|$)/g, '')
-                      .replace(/<execute>[\s\S]*?(?:<\/execute>|$)/g, '')
-                      .replace(/<mystic_association>([\s\S]*?)(?:<\/mystic_association>|$)/g, (match, p1) => {
-                        try {
-                          association = JSON.parse(p1.trim());
-                        } catch (e) {
-                          console.error("Failed to parse association in modal", e);
-                        }
-                        return "";
-                      });
+                    const { processedContent, association } = processMysticMarkdownContent(deepMeaning);
 
                     return (
-                      <div className="space-y-4 max-h-[60vh] overflow-y-auto custom-scrollbar pr-4 text-left">
+                      <div className={`space-y-4 ${isFullscreen ? 'max-h-[80vh]' : 'max-h-[60vh]'} overflow-y-auto custom-scrollbar pr-4 text-left transition-all duration-500`}>
                         <div className="p-4 bg-amber-500/5 rounded-2xl border border-amber-500/20 italic text-amber-200 text-xs md:text-sm font-serif leading-relaxed mb-6">
                           「 {card.coreTheme || "此牌象征着宇宙中一段未被言说的真理，等待着你去领悟。"} 」
                         </div>
@@ -309,6 +386,11 @@ export function CardMeaningModal({ isOpen, onClose, card, cache, setCache }: Car
                   })()
                 )}
              </div>
+          </div>
+
+          <div className="hidden show-in-poster mt-12 pt-8 border-t border-amber-500/20 text-center space-y-2">
+            <p className="text-xs font-serif text-amber-500/60 tracking-[0.3em]">阿卡夏之窗 · 命理启示录</p>
+            <p className="text-[10px] text-amber-500/30 font-mono">{new Date().toLocaleDateString()} · 仅供自我探索</p>
           </div>
        </motion.div>
     </div>

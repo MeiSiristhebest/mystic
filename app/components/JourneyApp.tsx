@@ -376,7 +376,11 @@ ${JSON.stringify(profile)}
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div className="space-y-3">
                       <span className="text-xs font-mono text-amber-500/60 tracking-[0.5em] uppercase">{selectedEntry.type}</span>
-                      <h2 className="text-4xl md:text-5xl font-serif text-amber-100">{selectedEntry.title}</h2>
+                      <h2 className="text-3xl md:text-5xl font-serif text-amber-100 leading-tight">
+                        {isFullScreen && selectedEntry.details?.question
+                          ? (selectedEntry.title.startsWith("塔罗：") ? `塔罗：${selectedEntry.details.question}` : selectedEntry.details.question)
+                          : selectedEntry.title}
+                      </h2>
                     </div>
                     <div className="flex items-center gap-8">
                       <div className="text-right">

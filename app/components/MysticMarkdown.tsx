@@ -6,7 +6,7 @@ import { TarotCard } from "@/lib/tarot-data";
 import { useAppStore } from "@/lib/store";
 import { Compass, Sparkles, ArrowRight } from "lucide-react";
 import { AssociationBubble } from "./AssociationBubble";
-import { CardMeaningModal } from "./MainApp/TarotComponents";
+import { CardMeaningModal, processMysticMarkdownContent } from "./MainApp/TarotComponents";
 
 
 const StreamingParticles = React.memo(() => {
@@ -262,67 +262,7 @@ interface MysticMarkdownProps {
 
 const MysticMarkdown = React.memo(({ content, cards, hideCards, isLoading, centered }: MysticMarkdownProps) => {
   const [selectedCard, setSelectedCard] = useState<any>(null);
-  let association: any = null;
-  let soulMotto = "";
-  let processedContent = content
-    .replace(/\[SOUL_MOTTO\]([\s\S]*?)\[\/SOUL_MOTTO\]/g, (match, p1) => {
-      soulMotto = p1.trim();
-      return "";
-    })
-    .replace(/<thinking>[\s\S]*?(?:<\/thinking>|$)/g, '')
-    .replace(/<execute>[\s\S]*?(?:<\/execute>|$)/g, '')
-    .replace(/<mystic_association>([\s\S]*?)(?:<\/mystic_association>|$)/g, (match, p1) => {
-      try {
-        association = JSON.parse(p1.trim());
-      } catch (e) {
-        console.error("Failed to parse association", e);
-      }
-      return "";
-    })
-    .replace(/^-(?=\*\*|\*)/gm, '- ')
-    .replace(/\*\*\*\*([^\n]*?)\*\*\*\*/g, '**$1**')
-    .replace(/\*\*\*\s+\*\*/g, '**')
-    .replace(/\*\*\s+\*\*\*/g, '***')
-    .replace(/^(#+)\s+#+\s+/gm, '$1 ')
-    .replace(/^(#+)\s+([#*]+)\s+/gm, '$1 ')
-    .replace(/\*\*\s+([^\n*]+?)\s+\*\*/g, '**$1**');
-
-  const tripleStars: string[] = [];
-  processedContent = processedContent.replace(/\*\*\*([\s\S]*?)\*\*\*/g, (match, p1) => {
-    if (!p1.trim()) return match;
-    tripleStars.push(p1.trim());
-    return `__MYSTIC_TRIPLE_${tripleStars.length - 1}__`;
-  });
-
-  const doubleStars: string[] = [];
-  processedContent = processedContent.replace(/\*\*([\s\S]*?)\*\*/g, (match, p1) => {
-    if (!p1.trim()) return match;
-    doubleStars.push(p1.trim());
-    return `__MYSTIC_DOUBLE_${doubleStars.length - 1}__`;
-  });
-
-  processedContent = processedContent.replace(/__MYSTIC_TRIPLE_(\d+)__/g, (match, p1) => {
-    return ' ***' + tripleStars[parseInt(p1)] + '*** ';
-  });
-
-  processedContent = processedContent.replace(/__MYSTIC_DOUBLE_(\d+)__/g, (match, p1) => {
-    return ' **' + doubleStars[parseInt(p1)] + '** ';
-  });
-
-  processedContent = processedContent.replace(/\*\*\*? ([.,:;!?，。：；！？、）】”’])/g, (match) => {
-    return match.replace(' ', '');
-  });
-
-  processedContent = processedContent.replace(/([（【“‘]) \*\*\*?/g, (match) => {
-    return match.replace(' ', '');
-  });
-
-  // Automated Kerning: Elegant half-space between CJK characters and alphanumerics
-  processedContent = processedContent
-    .replace(/([\u4e00-\u9fa5])([a-zA-Z0-9@#%&=\$\(\)\[\]\{\}])/g, '$1 $2')
-    .replace(/([a-zA-Z0-9@#%&=\$\(\)\[\]\{\}])([\u4e00-\u9fa5])/g, '$1 $2');
-
-  processedContent = processedContent.replace(/ {2,}/g, ' ');
+  const { processedContent, association, soulMotto } = processMysticMarkdownContent(content);
 
   // Memoized components map based on 'centered' prop
   const componentsMap = useMemo(() => ({

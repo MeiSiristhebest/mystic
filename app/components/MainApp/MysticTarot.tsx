@@ -8,7 +8,7 @@ import dynamic from "next/dynamic";
 import { CATEGORIES, SPREAD_MODES } from "./constants";
 import { useAIStream } from "@/hooks/useAIStream";
 import { useAIChat } from "@/hooks/useAIChat";
-import { MODELS } from "@/lib/ai";
+import { MODELS, generateContent } from "@/lib/ai";
 import { getTarotPrompt } from '@/lib/prompts';
 import { getDailyTarotCards } from "@/lib/tarot-data";
 import { useJourney } from "@/hooks/useJourney";
@@ -44,6 +44,38 @@ export function MysticTarot({ initialHandoff, clearHandoff }: MysticTarotProps =
   const scrollBy = (offset: number) => {
     if (carouselRef.current) {
       carouselRef.current.scrollBy({ left: offset, behavior: 'smooth' });
+    }
+  };
+
+  const [isMatching, setIsMatching] = useState(false);
+
+  const handleAutoMatch = async () => {
+    if (!question.trim()) {
+      alert("请先在上方输入您心中的困惑...");
+      return;
+    }
+    setIsMatching(true);
+    try {
+      const categoriesMini = CATEGORIES.map(c => `${c.id}:${c.name}`).join('; ');
+      const spreadsMini = SPREAD_MODES.map(s => `${s.id}:${s.name}`).join('; ');
+      const prompt = `分析用户困惑：“${question}”。从分类表 [${categoriesMini}] 和牌阵表 [${spreadsMini}] 中，推测最完美匹配的一个分类ID和一个牌阵ID。返回严格JSON格式数据：{"categoryId":"...","spreadId":"..."}`;
+
+      const jsonStr = await generateContent(prompt, "你是一位精准的塔罗匹配师，只输出合法JSON。", { responseMimeType: 'application/json' });
+      const data = JSON.parse(jsonStr);
+      if (data.categoryId && CATEGORIES.some(c => c.id === data.categoryId)) {
+        setSelectedCategory(data.categoryId);
+      }
+      if (data.spreadId && SPREAD_MODES.some(s => s.id === data.spreadId)) {
+        setSelectedSpread(data.spreadId);
+        const sIdx = SPREAD_MODES.findIndex(s => s.id === data.spreadId);
+        if (sIdx >= 0 && carouselRef.current) {
+          carouselRef.current.scrollTo({ left: sIdx * 304, behavior: 'smooth' });
+        }
+      }
+    } catch (err) {
+      console.error("Matching failed:", err);
+    } finally {
+      setIsMatching(false);
     }
   };
 
@@ -111,7 +143,7 @@ export function MysticTarot({ initialHandoff, clearHandoff }: MysticTarotProps =
 
     try {
       const res = await sendMessage(prompt, {
-        title: `塔罗：${question.substring(0, 20)}...`,
+        title: `塔罗：${question.length > 25 ? question.substring(0, 25) + '...' : question}`,
         details: {
           type: 'tarot',
           cards,
@@ -194,10 +226,12 @@ export function MysticTarot({ initialHandoff, clearHandoff }: MysticTarotProps =
                 <div className="flex items-center justify-between flex-wrap gap-4">
                   <label className="block text-xs font-serif text-amber-500/60 uppercase tracking-[0.3em]">3. 选择牌阵</label>
                   <button 
-                    onClick={() => setHandoff({ system: 'oracle', question })}
-                    className="text-xs text-amber-400 hover:text-amber-300 transition-colors flex items-center gap-2 font-serif tracking-widest px-5 py-2.5 bg-amber-500/10 border border-amber-500/30 rounded-full hover:bg-amber-500/20 shadow-lg"
+                    onClick={handleAutoMatch}
+                    disabled={isMatching}
+                    className="text-xs text-amber-400 hover:text-amber-300 transition-colors flex items-center gap-2 font-serif tracking-widest px-5 py-2.5 bg-amber-500/10 border border-amber-500/30 rounded-full hover:bg-amber-500/20 shadow-lg disabled:opacity-50 cursor-pointer"
                   >
-                    <Sparkles className="w-4 h-4 text-amber-400" /> 唤醒全知向导匹配
+                    <Sparkles className={`w-4 h-4 text-amber-400 ${isMatching ? 'animate-spin' : ''}`} /> 
+                    {isMatching ? "智能感应匹配中..." : "智能感应匹配牌阵"}
                   </button>
                 </div>
 
@@ -215,9 +249,9 @@ export function MysticTarot({ initialHandoff, clearHandoff }: MysticTarotProps =
                       <button
                         key={spread.id}
                         onClick={() => setSelectedSpread(spread.id)}
-                        className={`w-[280px] min-h-[310px] shrink-0 snap-center rounded-[2.5rem] p-7 flex flex-col justify-between text-left transition-all duration-500 group relative border backdrop-blur-md cursor-pointer ${
+                        className={`w-[280px] h-[320px] shrink-0 snap-center rounded-[2.5rem] p-7 flex flex-col justify-between text-left transition-all duration-500 group relative border backdrop-blur-md cursor-pointer ${
                           selectedSpread === spread.id
-                            ? "bg-gradient-to-b from-amber-500/20 via-amber-500/10 to-black/60 border-amber-500/80 shadow-[0_0_40px_rgba(245,158,11,0.25)] ring-1 ring-amber-500/40 -translate-y-2"
+                            ? "bg-gradient-to-b from-amber-500/20 via-amber-500/10 to-black/80 border-amber-500 shadow-[0_0_25px_rgba(245,158,11,0.2)] -translate-y-2"
                             : "bg-black/50 border-white/10 hover:border-amber-500/40 hover:bg-black/70 hover:-translate-y-1"
                         }`}
                       >
@@ -246,10 +280,7 @@ export function MysticTarot({ initialHandoff, clearHandoff }: MysticTarotProps =
                         </div>
 
                         {selectedSpread === spread.id && (
-                          <motion.div 
-                            layoutId="active-spread"
-                            className="absolute inset-0 border-2 border-amber-500/40 rounded-[2.5rem] pointer-events-none"
-                          />
+                          <div className="absolute inset-0 border-2 border-amber-400/80 rounded-[2.5rem] pointer-events-none shadow-[inset_0_0_20px_rgba(245,158,11,0.15)]" />
                         )}
                       </button>
                     ))}
