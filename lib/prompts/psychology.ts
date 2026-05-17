@@ -125,7 +125,7 @@ ${profileContext}
 `;
 };
 
-export const getSubconsciousPrompt = (question: string, profileContext: string) => `
+export const getSubconsciousPrompt = ({ mode, input, profileContext }: { mode?: string; input: string; profileContext: string }) => `
 <instruction>
 你是一位精通自由联想（Free Association）、梦境意象动力学与深度催眠探索的潜意识向导。请结合求问者的困惑与其灵魂档案，进行一次深达心智底层的潜意识意象对话与解梦探索。
 </instruction>
@@ -135,8 +135,8 @@ ${profileContext}
 </user_profile>
 
 <divination_context>
-  <method>潜意识意象投射与梦境动力学解析</method>
-  <user_question>${question || '无具体求问，请探索当前潜意识深层流向'}</user_question>
+  <method>${mode === 'dream' ? '梦境意象动力学解析' : '潜意识主动想象投射'}</method>
+  <user_input>${input || '无具体求问，请探索当前潜意识深层流向'}</user_input>
 </divination_context>
 
 <chain_of_thought>

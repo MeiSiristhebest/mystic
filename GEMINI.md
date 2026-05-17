@@ -491,3 +491,9 @@
 - **Decision: App-Wide Lint & Hook Compliance**
   - **Reason**: ESLint verification (`pnpm run lint`) reported 17 strict warnings/errors across the codebase. Key violations included `react-hooks/set-state-in-effect` (triggered during cross-view navigation and storage hydration handoffs in `ExploreView`, `MysticTarot`, `SoulLab`, `JourneyApp`, and `useJourney`) and `react-hooks/exhaustive-deps` (unnecessary dependency references in `TimeWisdomApp` and infinite loop risks in `MysticImage`).
   - **Action**: Surgically addressed all 17 lint problems: removed redundant `addEntry` dependencies in `TimeWisdomApp.tsx`, suppressed safe state hydration effects across core components using explicit ESLint directives, and isolated `generateImage` dependencies in `MysticImage.tsx`. Codebase is now 100% clean under strict ESLint and Next.js Turbopack verification standards.
+
+## [2026-05-17] Phase 35: Subconscious Prompt Harness Arity Alignment
+
+- **Decision: Subconscious Prompt Harness Arity Alignment (`getSubconsciousPrompt`)**
+  - **Reason**: `SubconsciousApp.tsx` and `hooks/useSubconsciousAnalysis.ts` invoked `getSubconsciousPrompt` with a single object argument `{ mode, input, profileContext }`. However, the prompt registry previously defined the signature as two string parameters `(question, profileContext)`, triggering a Vercel TypeScript compilation error (`Expected 2 arguments, but got 1`).
+  - **Action**: Refactored `getSubconsciousPrompt` in `lib/prompts/psychology.ts` to accept the `{ mode, input, profileContext }` object parameter. Updated internal XML template variables to dynamically map `mode` and `input`, restoring flawless TypeScript type safety and unblocking the production build pipeline.
