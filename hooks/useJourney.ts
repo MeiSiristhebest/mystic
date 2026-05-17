@@ -61,7 +61,7 @@ export function useJourney() {
   }, [loadJourney]);
 
   const addEntry = async (entry: Omit<JourneyEntry, 'id' | 'date'>) => {
-    const id = Math.random().toString(36).substring(2, 9);
+    const id = crypto.randomUUID();
     const newEntry: JourneyEntry = {
       ...entry,
       id,

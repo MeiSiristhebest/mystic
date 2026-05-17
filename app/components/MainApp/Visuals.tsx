@@ -2,15 +2,16 @@
 
 import { useState } from "react";
 import { motion } from "motion/react";
+import { getCryptoRandom } from "@/lib/random";
 
 export function AmbientCosmicBackground() {
   const [particles] = useState(() => [...Array(30)].map((_, i) => ({
     id: i,
-    x: Math.random() * 100 + "%",
-    y: Math.random() * 100 + "%",
-    opacity: Math.random() * 0.5 + 0.1,
-    duration: Math.random() * 20 + 10,
-    delay: Math.random() * 10
+    x: getCryptoRandom() * 100 + "%",
+    y: getCryptoRandom() * 100 + "%",
+    opacity: getCryptoRandom() * 0.5 + 0.1,
+    duration: getCryptoRandom() * 20 + 10,
+    delay: getCryptoRandom() * 10
   })));
 
   return (

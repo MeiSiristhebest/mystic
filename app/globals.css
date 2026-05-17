@@ -318,3 +318,17 @@
 .preserve-3d {
   transform-style: preserve-3d;
 }
+
+@keyframes spin-reverse {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+@utility animate-spin-reverse {
+  animation: spin-reverse 8s linear infinite;
+}
+
+@utility animate-spin-slow {
+  animation: spin 16s linear infinite;
+}
+

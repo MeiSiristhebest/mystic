@@ -3,6 +3,7 @@ import { useAIStream } from '@/hooks/useAIStream';
 import { MODELS, AKASHA_PERSONA } from '@/lib/ai';
 import { useJourney } from '@/hooks/useJourney';
 import { useUserProfile } from '@/hooks/useUserProfile';
+import { cryptoCoinToss } from '@/lib/random';
 
 export type CoinResult = 'heads' | 'tails'; // heads=3, tails=2
 export type LineResult = 6 | 7 | 8 | 9; // 6:老阴, 7:少阳, 8:少阴, 9:老阳
@@ -23,8 +24,8 @@ export function useIChingRitual() {
     if (lines.length >= 6 || isTossing) return;
     
     setIsTossing(true);
-    // Simulate coin toss
-    const newToss: CoinResult[] = Array.from({ length: 3 }, () => Math.random() > 0.5 ? 'heads' : 'tails');
+    // Simulate coin toss with true CSPRNG
+    const newToss: CoinResult[] = Array.from({ length: 3 }, () => cryptoCoinToss());
     setCurrentToss(newToss);
 
     setTimeout(() => {

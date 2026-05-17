@@ -1,5 +1,7 @@
 'use client';
 
+import { getCryptoRandom } from './random';
+
 // Web Audio API context singleton
 let audioCtx: AudioContext | null = null;
 
@@ -23,9 +25,9 @@ export const playCardSound = () => {
   const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
   const data = buffer.getChannelData(0);
   
-  // Generate white noise
+  // Generate white noise with CSPRNG
   for (let i = 0; i < bufferSize; i++) {
-    data[i] = Math.random() * 2 - 1;
+    data[i] = getCryptoRandom() * 2 - 1;
   }
   
   const noise = ctx.createBufferSource();

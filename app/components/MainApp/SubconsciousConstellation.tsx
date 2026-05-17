@@ -2,15 +2,16 @@
 
 import { motion } from "motion/react";
 import { useState } from "react";
+import { getCryptoRandom } from "@/lib/random";
 
 export default function SubconsciousConstellation() {
   const [stars] = useState(() => [...Array(40)].map((_, i) => ({
     id: i,
-    x: Math.random() * 100,
-    y: Math.random() * 100,
-    size: Math.random() * 2 + 1,
-    duration: Math.random() * 3 + 2,
-    delay: Math.random() * 5
+    x: getCryptoRandom() * 100,
+    y: getCryptoRandom() * 100,
+    size: getCryptoRandom() * 2 + 1,
+    duration: getCryptoRandom() * 3 + 2,
+    delay: getCryptoRandom() * 5
   })));
 
   return (

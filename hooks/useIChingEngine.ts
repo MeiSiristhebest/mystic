@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { playCoinSound } from '@/lib/audio';
+import { getCryptoRandom } from '@/lib/random';
 
 export function useIChingEngine() {
   const [lines, setLines] = useState<number[]>([]);
@@ -23,9 +24,9 @@ export function useIChingEngine() {
     
     setTimeout(() => {
       const coins = [
-        Math.random() > 0.5 ? 2 : 3,
-        Math.random() > 0.5 ? 2 : 3,
-        Math.random() > 0.5 ? 2 : 3,
+        getCryptoRandom() > 0.5 ? 2 : 3,
+        getCryptoRandom() > 0.5 ? 2 : 3,
+        getCryptoRandom() > 0.5 ? 2 : 3,
       ];
       const sum = coins[0] + coins[1] + coins[2];
       setLines(prev => [...prev, sum]);

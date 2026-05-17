@@ -6,6 +6,8 @@ import { X, Sparkles, Compass } from "lucide-react";
 import { CardFrame } from "./Visuals";
 import ReactMarkdown from "react-markdown";
 import { generateContentStream, AKASHA_PERSONA } from "@/lib/ai";
+import { AssociationBubble } from "../AssociationBubble";
+
 
 
 export function TarotCardBack({ size = "medium", className = "" }: { size?: "small" | "medium" | "large", className?: string }) {
@@ -215,9 +217,18 @@ export function CardMeaningModal({ isOpen, onClose, card, cache, setCache }: Car
        <motion.div 
          initial={{ opacity: 0, scale: 0.95, y: 20 }}
          animate={{ opacity: 1, scale: 1, y: 0 }}
-         className="glass-panel max-w-4xl w-full p-6 md:p-12 rounded-[36px] space-y-8 relative overflow-hidden my-auto border border-amber-500/30 shadow-[0_0_80px_rgba(201,168,76,0.2)] bg-gradient-to-b from-[#140b1c]/90 to-[#0c0612]/95"
+         className="max-w-4xl w-full p-6 md:p-12 rounded-[36px] space-y-8 relative overflow-hidden my-auto border border-amber-500/40 shadow-[0_0_100px_rgba(201,168,76,0.25)] bg-gradient-to-b from-[#1c0f26]/95 via-[#12081c]/95 to-[#0a0410]/95 backdrop-blur-2xl"
          onClick={(e) => e.stopPropagation()}
        >
+          {/* Elegant Corner Flourishes */}
+          <div className="absolute top-0 left-0 w-16 h-16 border-t-2 border-l-2 border-amber-500/60 rounded-tl-[36px] pointer-events-none" />
+          <div className="absolute top-0 right-0 w-16 h-16 border-t-2 border-r-2 border-amber-500/60 rounded-tr-[36px] pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-16 h-16 border-b-2 border-l-2 border-amber-500/60 rounded-bl-[36px] pointer-events-none" />
+          <div className="absolute bottom-0 right-0 w-16 h-16 border-b-2 border-r-2 border-amber-500/60 rounded-br-[36px] pointer-events-none" />
+          
+          {/* Ambient glowing gold line across top */}
+          <div className="absolute top-0 left-1/4 right-1/4 h-[2px] bg-gradient-to-r from-transparent via-amber-400 to-transparent opacity-80 shadow-[0_0_15px_#C9A84C]" />
+
           <div className="absolute top-0 right-0 p-12 opacity-10 pointer-events-none select-none">
             <Compass className="w-80 h-80 text-amber-500/20 animate-spin-slow" />
           </div>
@@ -254,9 +265,13 @@ export function CardMeaningModal({ isOpen, onClose, card, cache, setCache }: Car
              <div className="flex-1 w-full space-y-6 pt-4 lg:pl-6 border-t lg:border-t-0 lg:border-l border-amber-500/20 min-h-[400px] flex flex-col justify-center">
                 {isLoading ? (
                   <div className="flex flex-col items-center justify-center space-y-6 py-20 my-auto text-center">
-                    <div className="relative flex items-center justify-center w-24 h-24">
-                      <div className="absolute inset-0 rounded-full border-2 border-amber-500/20 border-t-amber-500 animate-spin" />
-                      <div className="absolute inset-2 rounded-full border border-purple-500/20 border-b-purple-500 animate-spin-reverse" />
+                    <div className="relative flex items-center justify-center w-28 h-28">
+                      {/* Outer Clockwise Golden Ring */}
+                      <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-amber-500 border-r-amber-500/30 shadow-[0_0_25px_rgba(201,168,76,0.5)] animate-spin" />
+                      {/* Inner Counter-Clockwise Purple Ring */}
+                      <div className="absolute inset-2 rounded-full border-2 border-transparent border-b-purple-400 border-l-purple-500/30 shadow-[0_0_20px_rgba(168,85,247,0.4)] animate-spin-reverse" />
+                      {/* Ambient Core Ring */}
+                      <div className="absolute inset-5 rounded-full border border-amber-500/20 animate-pulse bg-amber-500/5" />
                       <Sparkles className="w-8 h-8 text-amber-400 animate-pulse" />
                     </div>
                     <div className="space-y-2">
@@ -265,14 +280,36 @@ export function CardMeaningModal({ isOpen, onClose, card, cache, setCache }: Car
                     </div>
                   </div>
                 ) : (
-                  <div className="space-y-4 max-h-[60vh] overflow-y-auto custom-scrollbar pr-4 text-left">
-                     <div className="p-4 bg-amber-500/5 rounded-2xl border border-amber-500/20 italic text-amber-200 text-xs md:text-sm font-serif leading-relaxed mb-6">
-                       「 {card.coreTheme || "此牌象征着宇宙中一段未被言说的真理，等待着你去领悟。"} 」
-                     </div>
-                     <ReactMarkdown components={modalMarkdownComponents}>
-                       {deepMeaning}
-                     </ReactMarkdown>
-                  </div>
+                  (() => {
+                    let association: any = null;
+                    const processedContent = deepMeaning
+                      .replace(/<thinking>[\s\S]*?(?:<\/thinking>|$)/g, '')
+                      .replace(/<execute>[\s\S]*?(?:<\/execute>|$)/g, '')
+                      .replace(/<mystic_association>([\s\S]*?)(?:<\/mystic_association>|$)/g, (match, p1) => {
+                        try {
+                          association = JSON.parse(p1.trim());
+                        } catch (e) {
+                          console.error("Failed to parse association in modal", e);
+                        }
+                        return "";
+                      });
+
+                    return (
+                      <div className="space-y-4 max-h-[60vh] overflow-y-auto custom-scrollbar pr-4 text-left">
+                        <div className="p-4 bg-amber-500/5 rounded-2xl border border-amber-500/20 italic text-amber-200 text-xs md:text-sm font-serif leading-relaxed mb-6">
+                          「 {card.coreTheme || "此牌象征着宇宙中一段未被言说的真理，等待着你去领悟。"} 」
+                        </div>
+                        <ReactMarkdown components={modalMarkdownComponents}>
+                          {processedContent}
+                        </ReactMarkdown>
+                        {association && (
+                          <div className="mt-8 pt-6 border-t border-amber-500/20">
+                            <AssociationBubble association={association} />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()
                 )}
              </div>
           </div>

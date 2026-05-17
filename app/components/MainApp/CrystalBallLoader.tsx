@@ -2,14 +2,15 @@
 
 import { useState } from "react";
 import { motion } from "motion/react";
+import { getCryptoRandom } from "@/lib/random";
 
 export default function CrystalBallLoader({ text }: { text?: string }) {
   const [sparkles] = useState(() => [...Array(12)].map((_, i) => ({
     id: i,
-    x: Math.random() * 100 + "%",
-    y: Math.random() * 100 + "%",
-    duration: 1.5 + Math.random() * 2.5,
-    delay: Math.random() * 2
+    x: getCryptoRandom() * 100 + "%",
+    y: getCryptoRandom() * 100 + "%",
+    duration: 1.5 + getCryptoRandom() * 2.5,
+    delay: getCryptoRandom() * 2
   })));
 
   return (

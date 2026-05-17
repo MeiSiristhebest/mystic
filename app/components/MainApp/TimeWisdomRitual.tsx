@@ -3,6 +3,7 @@
 import { motion } from "motion/react";
 import { Clock, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { getCryptoRandom } from "@/lib/random";
 
 export default function TimeWisdomRitual({ onComplete }: { onComplete: () => void }) {
   const [year, setYear] = useState(2026);
@@ -10,7 +11,7 @@ export default function TimeWisdomRitual({ onComplete }: { onComplete: () => voi
   useEffect(() => {
     const timer = setInterval(() => {
       setYear(y => {
-        const next = y + (Math.random() > 0.5 ? 1 : -1) * Math.floor(Math.random() * 50);
+        const next = y + (getCryptoRandom() > 0.5 ? 1 : -1) * Math.floor(getCryptoRandom() * 50);
         if (Math.abs(next - 2026) > 2000) return 2026;
         return next;
       });

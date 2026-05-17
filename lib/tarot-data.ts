@@ -1,15 +1,8 @@
-export interface TarotCard {
-  id: string;
-  name: string;
-  englishName: string;
-  image: string;
-  rank: string;
-  arcana: 'Major' | 'Minor';
-  suit?: string;
-  isReversed: boolean;
-  keywords: { upright: string[]; reversed: string[] };
-  coreTheme: string;
-}
+import { getCryptoRandom } from './random';
+
+import { TarotCard } from '@/app/types/divination';
+
+export type { TarotCard };
 
 export const MAJOR_ARCANA_DATA: Omit<TarotCard, 'id' | 'isReversed'>[] = [
   {
@@ -401,23 +394,15 @@ export function generateDeck(): TarotCard[] {
 export function shuffleDeck(deck: TarotCard[]): TarotCard[] {
   const shuffled = [...deck];
   
-  const getRandom = () => {
-    if (typeof window !== 'undefined' && window.crypto && window.crypto.getRandomValues) {
-      const array = new Uint32Array(1);
-      window.crypto.getRandomValues(array);
-      return array[0] / (0xffffffff + 1);
-    }
-    return Math.random();
-  };
-
   for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(getRandom() * (i + 1));
+    const j = Math.floor(getCryptoRandom() * (i + 1));
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    shuffled[i].isReversed = getRandom() > 0.5;
+    shuffled[i].isReversed = getCryptoRandom() > 0.5;
   }
-  shuffled[0].isReversed = getRandom() > 0.5;
+  shuffled[0].isReversed = getCryptoRandom() > 0.5;
   return shuffled;
 }
+
 
 export function getDailyTarotCards(count: number): TarotCard[] {
   const deck = generateDeck();

@@ -38,6 +38,11 @@ export interface TarotCard {
   isReversed: boolean;
   keywords: { upright: string[]; reversed: string[] };
   coreTheme: string;
+  mythology?: string;
+  loveIntimacy?: string;
+  careerWealth?: string;
+  somaticEnergy?: string;
+  soulBlueprint?: string;
 }
 
 export interface TarotDetails {

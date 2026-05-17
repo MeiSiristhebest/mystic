@@ -9,6 +9,7 @@ import BreathingLoading from "./BreathingLoading";
 import MysticMarkdown from "./MysticMarkdown";
 import { getSynastryPrompt } from '@/lib/prompts';
 import { MODELS, SYNASTRY_PERSONA } from "@/lib/ai";
+import { cryptoShuffle, getCryptoRandom } from "@/lib/random";
 
 export default function SynastryApp() {
   const { profile, getProfileContext } = useUserProfile();
@@ -37,10 +38,10 @@ export default function SynastryApp() {
     setCurrentEntryId(null);
 
     const deck = generateDeck();
-    const shuffled = [...deck].sort(() => 0.5 - Math.random());
+    const shuffled = cryptoShuffle(deck);
     const selected = shuffled.slice(0, 3).map(card => ({
       ...card,
-      isReversed: Math.random() > 0.5
+      isReversed: getCryptoRandom() > 0.5
     }));
     setDrawnCards(selected);
 

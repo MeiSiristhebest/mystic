@@ -2,11 +2,12 @@
 
 import { motion } from "motion/react";
 import { useState } from "react";
+import { getCryptoRandom } from "@/lib/random";
 
 export default function ShadowWorkMirror() {
   const [offsets] = useState(() => [...Array(3)].map(() => ({
-    x: [Math.random() * 20, Math.random() * -20, Math.random() * 20],
-    y: [Math.random() * 20, Math.random() * -20, Math.random() * 20]
+    x: [getCryptoRandom() * 20, getCryptoRandom() * -20, getCryptoRandom() * 20],
+    y: [getCryptoRandom() * 20, getCryptoRandom() * -20, getCryptoRandom() * 20]
   })));
 
   return (
