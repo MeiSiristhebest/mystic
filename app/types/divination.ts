@@ -136,4 +136,6 @@ export interface DivinationHandoff {
   question?: string;
   context?: string;
   autoTrigger?: boolean;
+  prefillQuestion?: string;
+  soulLabTab?: 'shadow' | 'subconscious';
 }

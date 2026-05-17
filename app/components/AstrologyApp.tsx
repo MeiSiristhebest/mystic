@@ -155,7 +155,7 @@ export default function AstrologyApp({ initialHandoff, clearHandoff }: Astrology
   useEffect(() => {
     if (initialHandoff) {
       const timer = setTimeout(() => {
-        const q = initialHandoff.question || initialHandoff.context;
+        const q = initialHandoff.prefillQuestion || initialHandoff.question || initialHandoff.context;
         const m = initialHandoff.modeId;
         
         if (q) setQuestion(q);
@@ -163,8 +163,8 @@ export default function AstrologyApp({ initialHandoff, clearHandoff }: Astrology
           setMode(m as any);
         }
         
-        // Auto-trigger if question is substantial
-        if (q && q.length > 5) {
+        // Auto-trigger if question is substantial and autoTrigger is not explicitly false
+        if (initialHandoff.autoTrigger !== false && q && q.length > 5) {
           handleGenerate();
         }
         clearHandoff?.();

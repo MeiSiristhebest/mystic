@@ -22,7 +22,7 @@ export default function ShadowWorkApp({ initialHandoff, clearHandoff }: ShadowWo
   useEffect(() => {
     if (initialHandoff) {
       const timer = setTimeout(() => {
-        const q = initialHandoff.question || initialHandoff.context;
+        const q = initialHandoff.prefillQuestion || initialHandoff.question || initialHandoff.context;
         if (q) setInput(q);
         // DO NOT auto-accept disclaimer. User MUST read and click.
         clearHandoff?.();

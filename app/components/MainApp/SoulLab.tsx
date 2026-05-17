@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Moon, Eye } from "lucide-react";
 import dynamic from "next/dynamic";
@@ -20,8 +20,16 @@ interface SoulLabProps {
 
 export default function SoulLab({ initialHandoff, clearHandoff }: SoulLabProps) {
   const [activeTab, setActiveTab] = useState<"shadow" | "subconscious">(
-    initialHandoff?.system === "subconscious" ? "subconscious" : "shadow"
+    initialHandoff?.soulLabTab === "subconscious" || initialHandoff?.system === "subconscious" ? "subconscious" : "shadow"
   );
+
+  useEffect(() => {
+    if (initialHandoff?.soulLabTab === "subconscious" || initialHandoff?.system === "subconscious") {
+      setActiveTab("subconscious");
+    } else if (initialHandoff?.soulLabTab === "shadow") {
+      setActiveTab("shadow");
+    }
+  }, [initialHandoff]);
 
   return (
     <div className="w-full">

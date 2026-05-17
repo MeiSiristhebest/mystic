@@ -110,7 +110,7 @@ export default function BaziApp({
   // Handoff Logic
   useEffect(() => {
     if (initialHandoff) {
-      const q = initialHandoff.question || initialHandoff.context;
+      const q = initialHandoff.prefillQuestion || initialHandoff.question || initialHandoff.context;
       const m = initialHandoff.modeId as any;
       if (q) setQuestion(q);
       if (m && ['bazi', 'ziwei', 'liunian'].includes(m)) setMode(m);

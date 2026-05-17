@@ -4,6 +4,7 @@ import { useJourney } from '@/hooks/useJourney';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { AKASHA_PERSONA, SOCRATIC_PERSONA, MODELS } from '@/lib/ai';
 import { SPREAD_MODES, CATEGORIES } from '@/app/components/MainApp/constants';
+import { getTarotJsonPrompt } from '@/lib/prompts';
 
 export function useTarotReading() {
   const [messages, setMessages] = useState<{ role: 'user' | 'model'; content: string }[]>([]);
@@ -39,34 +40,14 @@ export function useTarotReading() {
         .join("\n");
 
       const profileContext = getProfileContext();
-
-      const prompt = `
-<instruction>
-你正在进行一次正式的塔罗占卜仪式。请基于提供的牌阵和用户信息，生成一份结构化的解读报告。
-必须严格输出 JSON 格式。
-</instruction>
-
-<divination_context>
-  <spread_mode>${currentMode.name}</spread_mode>
-  <category>${categoryName}</category>
-</divination_context>
-
-<user_profile>
-  ${profileContext}
-  ${zodiacSign ? `<zodiac>${zodiacSign}</zodiac>` : ""}
-</user_profile>
-
-<drawn_cards>
-  ${cardsList}
-</drawn_cards>
-
-<output_schema>
-{
-  "reading": "markdown string (with headers ## 🔮 牌阵解析, ## 🌌 牌面连结, ## 🌟 最终指引)",
-  "soulMotto": "string (short motto within 20 chars)"
-}
-</output_schema>
-      `;
+      const prompt = getTarotJsonPrompt({
+        spreadMode: currentMode.name,
+        categoryName,
+        profileContext,
+        zodiacSign,
+        cardsList,
+        question
+      });
 
       let fullResponse = "";
       setMessages([{ role: 'model', content: "" }]);

@@ -24,7 +24,7 @@ export default function SubconsciousApp({ initialHandoff, clearHandoff }: Subcon
   useEffect(() => {
     if (initialHandoff) {
       const timer = setTimeout(() => {
-        const q = initialHandoff.question || initialHandoff.context;
+        const q = initialHandoff.prefillQuestion || initialHandoff.question || initialHandoff.context;
         const m = initialHandoff.modeId;
         
         if (q) setInput(q);

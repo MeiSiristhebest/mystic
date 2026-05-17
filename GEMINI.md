@@ -1,3 +1,12 @@
+## [2026-05-17] Feature: Prompt Engineering Componentization & Global Journey Handoff
+
+- **Decision: Centralized Prompt Registry (lib/prompts/index.ts)**
+  - **Reason**: Scattered and hardcoded prompt strings lacked maintainability and multi-system synthesis.
+  - **Action**: Componentized `getShadowWorkPrompt`, `getCollectiveMirrorPrompt`, `getSubconsciousPrompt`, `getSynastryPrompt`, `getTimeWisdomPrompt`, and `getTarotJsonPrompt` in `lib/prompts/index.ts`. Enforced rigorous constraint rules to eliminate superficial personality tagging (e.g. "Because you are INTJ") and integrated multi-dimensional thinking frameworks.
+- **Decision: Global Journey Handoff & Reopen Rituals (JourneyApp.tsx)**
+  - **Reason**: Users needed a seamless pathway to forward insights from their past journey entries into fresh divination rituals.
+  - **Action**: Expanded `useAppStore` handoff structure with `prefillQuestion` and `soulLabTab`. Implemented the "以此为问 · 续启仪轨" action grid in `JourneyApp.tsx` modal, enabling one-click transitions into Tarot, Bazi, Astrology, and Shadow Work rituals with preserved context.
+
 ## [2026-05-10] Feature: Security & Architecture Overhaul
 
 - **Decision: Server-Side AI API Route**
@@ -436,3 +445,25 @@
 - **Decision: Esoteric Emoji Expressiveness in Prompt Engineering**
   - **Reason**: Pure ASCII text lacked the multi-layered symbolic resonance needed for intuitive esoteric readings.
   - **Action**: Updated `AKASHA_PERSONA` and `ORCHESTRATOR_PERSONA` in `lib/ai.ts` with explicit instructions obligating the AI to enrich its responses with evocative mystical and astrological emojis (🌌 🔮 🌿 🌙 ✨ ⚡ 🧿 🗝️ 🎴 🪞 🪐 🌸).
+
+## [2026-05-17] Phase 29: Fate Echo Layout Leap & Tag Desensitization (The Akashic Timeline)
+
+- **Decision: Layout Upgrade from Monolithic `<p>` to High-Fidelity `MysticMarkdown`**
+  - **Reason**: In `JourneyApp.tsx`, the generated Fate Echo text was wrapped inside a standard `<p>` tag, causing complex multi-heading markdown outputs to collapse into an unformatted, un-spaced single block of text.
+  - **Action**: Replaced the `<p>` container in `JourneyApp.tsx` with `MysticMarkdown`, unlocking full access to Shrine Monolith headings (`H1`), Astrolabe dividers (`H2`), Drop Caps, and interactive association bubbles.
+- **Decision: Zero-Tag Enforcement & CoT Harness in Echo Prompt**
+  - **Reason**: The initial Echo prompt lacked internal reasoning and strict constraints, causing the AI to blurt out raw MBTI classifications (e.g. "INTJ") and numerology labels (e.g. "2号人") directly to the user.
+  - **Action**: Embedded strict `<chain_of_thought>` and `<constraints>` in `handleGenerateEcho`. The AI is now explicitly prohibited from naming personality acronyms or raw labels, forcing it to articulate psychological dynamics through poetic, invisible observations.
+- **Decision: Automated Divination Handoff via `<mystic_association>`**
+  - **Reason**: Diary reviews should act as gateways to new rituals rather than static text archives.
+  - **Action**: Configured the Echo prompt to conclude with a structured `<mystic_association>` tag. `MysticMarkdown` automatically renders an interactive `AssociationBubble` that triggers one-click state handoff and navigation to recommended divination modules.
+
+## [2026-05-17] Phase 30: Dynamic Time-Lapse Resonance & Energy Fermentation (The Living Diary)
+
+- **Decision: Real-Time Energy Fermentation Calculation (`JourneyApp`)**
+  - **Reason**: Static date labels (e.g. "2026-05-17") in diary cards treated mystical insights as dead archives, failing to reflect how spiritual awakenings evolve over time.
+  - **Action**: Injected dynamic time-lapse calculation logic directly into the journey card footer. The application now compares `entry.date` against the current timestamp to assign living, evolving energetic states:
+    1. **Day 0**: `✦ 当下气数 · 正在显化` (Active Emergence)
+    2. **Days 1 - 7**: `⏳ 沉淀 X 天 · 命运齿轮转动中` (Turning Gears of Fate)
+    3. **Days 8 - 30**: `🔮 已过 X 天 · 适宜深度回响` (Prime Echo Window)
+    4. **Days > 30**: `🌌 往昔印记 · 沉淀 X 天` (Akashic Anchor)

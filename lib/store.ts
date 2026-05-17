@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { zustandStorage } from '@/lib/storage';
+import { DivinationHandoff } from '@/app/types/divination';
 
 export interface LifeEvent {
   id: string;
@@ -67,8 +68,8 @@ interface AppState {
   updateProfile: (newProfile: Partial<UserProfile>) => void;
   clearProfile: () => void;
   setLoaded: (loaded: boolean) => void;
-  handoff: any;
-  setHandoff: (handoff: any) => void;
+  handoff: DivinationHandoff | null;
+  setHandoff: (handoff: DivinationHandoff | null) => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -108,7 +109,7 @@ export const useAppStore = create<AppState>()(
       
       clearProfile: () => set({ profile: DEFAULT_PROFILE }),
       handoff: null,
-      setHandoff: (handoff: any) => set({ handoff }),
+      setHandoff: (handoff: DivinationHandoff | null) => set({ handoff }),
     }),
     {
       name: 'mystic-app-storage',

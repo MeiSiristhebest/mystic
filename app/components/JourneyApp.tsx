@@ -28,10 +28,16 @@ import { JourneyEntry } from '@/app/types/divination';
 import MysticChatInterface from './MainApp/MysticChatInterface';
 import EntryDetailRenderer from './MainApp/Journey/EntryDetailRenderer';
 import BreathingLoading from './BreathingLoading';
+import MysticMarkdown from './MysticMarkdown';
 import { usePosterGenerator } from '@/hooks/usePosterGenerator';
 import { cleanMysticContent } from '@/lib/utils';
+import { useAppStore } from '@/lib/store';
 
 export default function JourneyApp() {
+  const setActiveTab = useAppStore((state) => state.setActiveTab);
+  const setActiveSubTab = useAppStore((state) => state.setActiveSubTab);
+  const setHandoff = useAppStore((state) => state.setHandoff);
+
   const { entries, deleteEntry, clearJourney, isLoaded, updateEntry } = useJourney();
   const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -91,20 +97,48 @@ export default function JourneyApp() {
     
     const prompt = `
 <instruction>
-你是阿卡夏记录的守护者。请对用户过去的这段占卜记录进行“命运回响”分析。
-请结合用户当前的灵魂档案，分析这段记录在当下的现实意义，并给出一个跨越时空的深层建议。
-文字要简练、玄奥、充满诗意。
+你是阿卡夏记录的守护者。请对用户过去的这段占卜记录进行“命运回响”复盘分析。
+请结合用户当前的灵魂档案，剖析这段往事在当下时空的深层共振与现实意义，并给出一个跨越时空的破局建议。
 </instruction>
+
+<divination_context>
+  <method>阿卡夏时空命运回响断算法</method>
+  <historical_type>${selectedEntry.type}</historical_type>
+  <historical_title>${selectedEntry.title}</historical_title>
+  <historical_summary>${selectedEntry.summary}</historical_summary>
+</divination_context>
 
 <user_profile>
 ${JSON.stringify(profile)}
 </user_profile>
 
-<historical_entry>
-类型: ${selectedEntry.type}
-标题: ${selectedEntry.title}
-内容: ${selectedEntry.summary}
-</historical_entry>
+<chain_of_thought>
+在给出正式回答前，请先在内部 <thinking> 标签内进行严密推导：
+1. 审视过往事件与当下时间节点的星象/五行运转逻辑。
+2. 挖掘事件背后未完成的灵魂课题。
+3. 挑选最契合的下一步探索工具（如塔罗、八字、面相、星盘等）作为仪轨流转指引。
+</chain_of_thought>
+
+<constraints>
+- 【严禁暴露或生硬提及】任何人格或命理标签名称（如“因为你是 INTJ”、“作为 2号人”等），必须将其内化为深邃无形的性格特质观察。
+- 语言必须充满古典神谕感与诗意，自然点缀神秘学 Emoji（如 🌌 🔮 🌿 🌙 ✨ 等）。
+</constraints>
+
+<output_format>
+请使用高质感 Markdown 排版，严格且只包含以下三个二级标题：
+## 🪐 时空共振与灵脉折射
+（约 200 字，分析往日占卜在当下所泛起的涟漪与深层因果）
+
+## 🗝️ 当下时空的现实觉察
+（约 250 字，指出这段往事正在如何影响或指引目前的决策）
+
+## 🌿 跨越维度的灵性箴言
+（约 200 字，给出超然物外的行动或心态转念指引）
+
+在文章最后，必须输出一个契合的关联推荐：
+<mystic_association>{"target": "模块名", "reason": "一段充满仪式感的推荐语，指引其开启新的仪轨", "system": "系统名", "modeId": "模式ID"}</mystic_association>
+- 可选模块/系统名：塔罗占卜(tarot)、八字排盘(eastern)、星盘探索(astrology)、流年避坑(eastern/liunian)、周易占卜(eastern/iching)、阴影工作(shadow_work)、灵魂频率(subconscious)。
+</output_format>
     `;
 
     try {
@@ -128,6 +162,25 @@ ${JSON.stringify(profile)}
     } finally {
       setIsEchoing(false);
     }
+  };
+
+  const handleReopenRitual = (subTab: string, modeId?: string, soulLabTab?: 'shadow' | 'subconscious') => {
+    if (!selectedEntry) return;
+    const questionToForward = selectedEntry.title?.replace(/^(塔罗|时间智慧|八字|易经|星象)[：:]\s*/, '') || selectedEntry.title || "";
+    
+    setHandoff({
+      system: subTab,
+      modeId: modeId,
+      prefillQuestion: questionToForward,
+      soulLabTab: soulLabTab,
+      autoTrigger: false
+    });
+    
+    setActiveTab('explore');
+    setActiveSubTab(subTab);
+    setSelectedEntryId(null);
+    setIsFullScreen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   if (!isLoaded) return <BreathingLoading text="正在打开阿卡夏记录..." />;
@@ -229,8 +282,20 @@ ${JSON.stringify(profile)}
                         })() || "记录内容正在感应中..."}
                       </p>
                     </div>
-                    <div className="flex items-center justify-end pt-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <span className="text-xs text-amber-500 font-serif flex items-center gap-1">查看详情 <ChevronRight size={14} /></span>
+                    <div className="flex items-center justify-between pt-4 border-t border-white/5 mt-4">
+                      {(() => {
+                        const days = Math.floor((Date.now() - new Date(entry.date).getTime()) / (1000 * 60 * 60 * 24));
+                        if (days === 0) {
+                          return <span className="text-[10px] text-amber-500/80 font-serif flex items-center gap-1"><Clock size={10} /> ✦ 当下气数 · 正在显化</span>;
+                        } else if (days <= 7) {
+                          return <span className="text-[10px] text-purple-400/80 font-serif flex items-center gap-1"><Clock size={10} /> ⏳ 沉淀 {days} 天 · 命运齿轮转动中</span>;
+                        } else if (days <= 30) {
+                          return <span className="text-[10px] text-amber-400 font-serif flex items-center gap-1"><Sparkles size={10} /> 🔮 已过 {days} 天 · 适宜深度回响</span>;
+                        } else {
+                          return <span className="text-[10px] text-white/40 font-serif flex items-center gap-1"><History size={10} /> 🌌 往昔印记 · 沉淀 {days} 天</span>;
+                        }
+                      })()}
+                      <span className="text-xs text-amber-500 font-serif flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">查看详情 <ChevronRight size={14} /></span>
                     </div>
                   </motion.div>
                 ))}
@@ -325,15 +390,17 @@ ${JSON.stringify(profile)}
                   <motion.div 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="mt-20 p-10 rounded-[32px] bg-amber-500/[0.03] border border-amber-500/10 space-y-6 relative"
+                    className="mt-20 p-8 md:p-12 rounded-[32px] bg-[#0c0617]/40 border border-amber-500/20 space-y-6 relative overflow-hidden shadow-[0_15px_50px_rgba(0,0,0,0.5)]"
                   >
-                    <div className="absolute -top-4 left-10 px-6 py-1 bg-[#120c18] border border-amber-500/20 rounded-full text-[10px] font-serif text-amber-500 uppercase tracking-[0.4em]">
+                    <div className="absolute -top-4 left-10 px-6 py-1.5 bg-[#120c18] border border-amber-500/40 rounded-full text-[10px] font-serif text-amber-500 uppercase tracking-[0.4em] shadow-[0_0_15px_rgba(217,119,6,0.3)] z-20">
                       命运回响 · Echo
                     </div>
-                    <div className="flex justify-center">
-                        <p className="text-xl md:text-2xl font-serif text-amber-100/90 leading-relaxed italic text-center py-4">
-                        {echoText ? cleanMysticContent(echoText) : <BreathingLoading text="正在感应时空回响..." />}
-                        </p>
+                    <div className="w-full pt-6">
+                      {echoText ? (
+                        <MysticMarkdown content={echoText} isLoading={isEchoing} />
+                      ) : (
+                        <BreathingLoading text="正在倾听过往时空的共鸣..." />
+                      )}
                     </div>
                   </motion.div>
                 ) : (
@@ -372,6 +439,64 @@ ${JSON.stringify(profile)}
                    isLoading={isLoading}
                    isStreaming={isStreaming}
                 />
+              </div>
+
+              {/* 命运大阵：以此为问，续启仪轨 */}
+              <div className="mt-20 pt-16 border-t border-amber-500/10 space-y-8">
+                <div className="text-center space-y-3">
+                  <h4 className="text-2xl font-serif gold-gradient-text tracking-widest flex items-center justify-center gap-2">
+                    <Sparkles className="w-5 h-5 text-amber-500" />
+                    以此为问 · 续启仪轨
+                    <Sparkles className="w-5 h-5 text-amber-500" />
+                  </h4>
+                  <p className="text-xs text-[#E8DFB8]/40 font-serif italic">将往昔之惑或回响箴言铭刻为锚，转动命运齿轮，于不同维度寻求全新开示</p>
+                </div>
+                
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+                  <button
+                    onClick={() => handleReopenRitual('tarot', undefined)}
+                    className="group p-5 rounded-3xl bg-amber-500/5 border border-amber-500/20 hover:border-amber-500/60 hover:bg-amber-500/10 transition-all text-center space-y-2 flex flex-col items-center"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform">
+                      🔮
+                    </div>
+                    <span className="font-serif text-sm text-amber-100 group-hover:text-amber-300">西方塔罗</span>
+                    <span className="text-[10px] text-white/30 font-serif block">倾听潜意识卡牌镜像</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleReopenRitual('eastern', 'bazi')}
+                    className="group p-5 rounded-3xl bg-amber-500/5 border border-amber-500/20 hover:border-amber-500/60 hover:bg-amber-500/10 transition-all text-center space-y-2 flex flex-col items-center"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform">
+                      ☯️
+                    </div>
+                    <span className="font-serif text-sm text-amber-100 group-hover:text-amber-300">八字推演</span>
+                    <span className="text-[10px] text-white/30 font-serif block">参透先天干支气数</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleReopenRitual('astrology', 'zodiac')}
+                    className="group p-5 rounded-3xl bg-amber-500/5 border border-amber-500/20 hover:border-amber-500/60 hover:bg-amber-500/10 transition-all text-center space-y-2 flex flex-col items-center"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform">
+                      🌌
+                    </div>
+                    <span className="font-serif text-sm text-amber-100 group-hover:text-amber-300">星盘探索</span>
+                    <span className="text-[10px] text-white/30 font-serif block">观照天体引力波长</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleReopenRitual('soul', undefined, 'shadow')}
+                    className="group p-5 rounded-3xl bg-amber-500/5 border border-amber-500/20 hover:border-amber-500/60 hover:bg-amber-500/10 transition-all text-center space-y-2 flex flex-col items-center"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform">
+                      🪞
+                    </div>
+                    <span className="font-serif text-sm text-amber-100 group-hover:text-amber-300">阴影工作</span>
+                    <span className="text-[10px] text-white/30 font-serif block">疗愈底层核心创伤</span>
+                  </button>
+                </div>
               </div>
             </div>
           </motion.div>

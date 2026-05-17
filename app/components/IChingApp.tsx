@@ -98,7 +98,7 @@ export default function IChingApp({
   // Handoff Logic
   useEffect(() => {
     if (initialHandoff) {
-      const q = initialHandoff.question || initialHandoff.context;
+      const q = initialHandoff.prefillQuestion || initialHandoff.question || initialHandoff.context;
       const m = initialHandoff.modeId;
       if (q) setQuestion(q);
       if (m && ['liuyao', 'meihua', 'qimen'].includes(m)) setMode(m);

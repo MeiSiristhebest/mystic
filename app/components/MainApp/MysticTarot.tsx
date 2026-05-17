@@ -57,7 +57,7 @@ export function MysticTarot({ initialHandoff, clearHandoff }: MysticTarotProps =
 
   useEffect(() => {
     if (initialHandoff) {
-      const q = initialHandoff.question || initialHandoff.context;
+      const q = initialHandoff.prefillQuestion || initialHandoff.question || initialHandoff.context;
       const m = initialHandoff.modeId;
       
       if (q) setQuestion(q);
