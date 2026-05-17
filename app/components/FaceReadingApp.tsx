@@ -29,6 +29,7 @@ export default function FaceReadingApp({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const posterRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const { addEntry, updateEntry } = useJourney();
   const { profile, getProfileContext } = useUserProfile();
@@ -38,6 +39,12 @@ export default function FaceReadingApp({
   useEffect(() => {
     onReadingChange?.(isStreaming || isAskingFollowUp);
   }, [isStreaming, isAskingFollowUp, onReadingChange]);
+
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+    }
+  }, [messages]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

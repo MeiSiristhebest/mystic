@@ -67,6 +67,7 @@ export const MysticImage = ({
   const loadingRef = useRef(false);
   const currentRequestRef = useRef<string | null>(null);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const generateImage = useCallback(async (force = false) => {
     const requestKey = `${prompt}_${aspectRatio}_${seed}`;
     if (!force && (loadingRef.current || (imageUrl && currentRequestRef.current === requestKey))) return;

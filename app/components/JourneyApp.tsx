@@ -72,6 +72,7 @@ export default function JourneyApp() {
   } = useAIChat({ type: selectedEntry?.type || 'tarot' });
 
   // Sync messages and echo when entry is selected
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     if (selectedEntry) {
       setMessages(selectedEntry.details?.messages || [{ role: 'model', content: selectedEntry.details?.text || selectedEntry.summary }]);

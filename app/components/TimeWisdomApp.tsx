@@ -86,7 +86,7 @@ export default function TimeWisdomApp() {
     } catch (e) {
       console.error(e);
     }
-  }, [hasGenerated, today, moonPhase, getProfileContext, sendMessage, addEntry]);
+  }, [hasGenerated, today, moonPhase, getProfileContext, sendMessage]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();

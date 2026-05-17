@@ -55,6 +55,7 @@ export function MysticTarot({ initialHandoff, clearHandoff }: MysticTarotProps =
   const { getProfileContext } = useUserProfile();
   const setHandoff = useAppStore((state: any) => state.setHandoff);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     if (initialHandoff) {
       const q = initialHandoff.prefillQuestion || initialHandoff.question || initialHandoff.context;

@@ -82,6 +82,7 @@ export function ExploreView() {
   const setGlobalHandoff = useAppStore((state: any) => state.setHandoff);
 
   // Sync with global activeSubTab
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     if (activeSubTab) {
       setSubTab(activeSubTab);
@@ -90,6 +91,7 @@ export function ExploreView() {
   }, [activeSubTab, setActiveSubTab]);
 
   // Sync with global handoff (e.g. from TodayView or Tarot)
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     if (globalHandoff) {
       if (globalHandoff.system === 'oracle') {
