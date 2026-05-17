@@ -402,3 +402,37 @@
 - **Decision: Akashic Epilogue Flourish (`Akashic Seal`)**
   - **Reason**: Unbounded text blocks ending abruptly left users feeling unmoored. Deep divination readings demand a formal closing seal to conclude the ceremony.
   - **Action**: Incorporated a persistent Akashic closing matrix (`✦ 铭刻于阿卡夏矩阵 · 洞悉天命之流 ✦`) flanked by fading horizontal light beams at the absolute bottom of `MysticMarkdown`, providing a perfectly grounded and sacred epilogue to every long-form reading.
+
+## [2026-05-17] Phase 26: Deep Dive Chat Interface Restoration & Premium Styling (The Oracle's Echo)
+
+- **Decision: Removal of `messages.length` Blocking Condition in `MysticChatInterface`**
+  - **Reason**: In `JourneyApp`, the primary reading is rendered via `EntryDetailRenderer` and skipped in the chat array (`messages.slice(1)`). Because the sliced array started empty (`length === 0`), the condition `messages.length > 0` incorrectly blocked the follow-up chat input box from rendering, removing the interactive "Deep Dive" feature in user diaries.
+  - **Action**: Removed the `messages.length` constraint from the input rendering condition in `MysticChatInterface`, guaranteeing that users can seamlessly initiate follow-up inquiries in both historical diaries and active ritual modes.
+- **Decision: Premium Input Ergonomics & Illuminated Focus States**
+  - **Reason**: Standard dark input fields felt disconnected from the luxurious esoterica aesthetic.
+  - **Action**: Redesigned the chat input form with an obsidian glass pill container (`bg-[#0a0612]/90 border-[#C9A84C]/40`), inserting an underlying golden blur aura that illuminates upon focus (`group-focus-within:opacity-100`). Styled the submit button with a champagne-gold gradient and soft shadow (`shadow-[0_0_15px_rgba(201,168,76,0.5)]`).
+
+## [2026-05-17] Phase 27: Sacred Seal Engraving Typography (The Illuminated Monoliths)
+
+- **Decision: High-Fidelity Editorial Typography Hierarchy (`MysticMarkdown`)**
+  - **Reason**: Standard web typography lacked the sacred, ancient gravitas of illuminated manuscripts or celestial star charts, causing long reading blocks to feel uninspired.
+  - **Action**: Completely overhauled all heading levels and structural dividers into exquisite liturgical artifacts:
+    1. **H1 (The Shrine Monolith)**: Enclosed titles within an upper celestial wireframe (`✦ SACRED REVELATION ✦`) and a lower glowing spinning rune (`⎊`), combined with a liquid gold metallic gradient scale (`scale-105 hover:scale-110`).
+    2. **H2 (The Astrolabe Compass)**: Framed sub-headings with pulsating golden diamonds (`⟡`) and anchored them with a glowing horizontal crosshair line (`shadow-[0_0_10px_#E8DFB8]`).
+    3. **H3 (The Foil Insignia)**: Enclosed minor titles in a curved inset pill container with glowing starburst markers (`✧`).
+    4. **Blockquote (Holographic Obsidian Tablets)**: Added dual-layer glowing vertical pillars (`bg-gradient-to-b from-[#C9A84C] via-[#FFFDF6] to-[#C9A84C]`) and an underlying 3D watermarked quotation seal (`”` rotated in background).
+    5. **Hr (The Octagram Portal Divider)**: Replaced standard horizontal lines with a rotating golden diamond crystal flanked by fading light rays.
+
+## [2026-05-17] Phase 28: Classical Drop Cap Accents & Dual Sacred Badges (The Voice of Akasha)
+
+- **Decision: Classical Drop Cap Styling for Paragraphs (`first-letter`)**
+  - **Reason**: To emulate the liturgical gravitas of Western illuminated scriptures and ancient grimoires, normal uniform paragraph text required an elevated initial tone.
+  - **Action**: Injected CSS `first-letter` styling into `MemoP` (`first-letter:text-2xl md:first-letter:text-3xl first-letter:text-[#C9A84C] first-letter:drop-shadow-[0_0_10px_#C9A84C]`), rendering the opening character of every single paragraph as a glowing golden illuminated initial.
+- **Decision: Distinct Dialogue Entity Badging & Container Differentiation**
+  - **Reason**: In follow-up dialogues, uniform message cards caused visual blending between user queries and AI divine responses.
+  - **Action**: Completely restructured message containers in `MysticChatInterface` and `TarotReadingResult`:
+    1. **Seeker Bubble (`user`)**: Styled with a warm, grounded copper-obsidian gradient (`from-[#2a170d]/90 to-[#180c06]/90 border-[#d97706]/40`) and topped with a dedicated Seeker insignia (`👤 觉察者 · SEEKER`).
+    2. **Akasha Bubble (`model`)**: Styled as a cosmic obsidian monolith (`from-[#0c0617]/95 to-[#06020a]/95 border-[#C9A84C]/40`) with background galaxy watermarks (`🌌`) and topped with an Oracle insignia (`🌌 阿卡夏神谕 · AKASHA CHRONICLE`).
+- **Decision: Esoteric Emoji Expressiveness in Prompt Engineering**
+  - **Reason**: Pure ASCII text lacked the multi-layered symbolic resonance needed for intuitive esoteric readings.
+  - **Action**: Updated `AKASHA_PERSONA` and `ORCHESTRATOR_PERSONA` in `lib/ai.ts` with explicit instructions obligating the AI to enrich its responses with evocative mystical and astrological emojis (🌌 🔮 🌿 🌙 ✨ ⚡ 🧿 🗝️ 🎴 🪞 🪐 🌸).

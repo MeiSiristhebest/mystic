@@ -69,18 +69,30 @@ export default function TarotReadingResult({
               key={idx}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              className={`flex w-full ${msg.role === 'user' ? 'justify-end' : 'justify-center'}`}
             >
-              <div className={`max-w-[85%] rounded-2xl p-6 ${
-                msg.role === 'user' 
-                  ? 'bg-amber-500/10 border border-amber-500/20 text-amber-100' 
-                  : 'bg-white/5 border border-white/10 text-amber-100/80'
-              }`}>
-                <MysticMarkdown 
-                  content={msg.content} 
-                  isLoading={isLoading && idx === messages.length - 3} 
-                />
-              </div>
+              {msg.role === 'user' ? (
+                <div 
+                  className="max-w-[95%] md:max-w-[80%] rounded-[2.5rem] p-7 md:p-8 bg-gradient-to-br from-[#2a170d]/90 to-[#180c06]/90 border border-[#d97706]/40 text-[#fef3c7] shadow-[0_15px_35px_rgba(217,119,6,0.15)] backdrop-blur-md relative"
+                >
+                  <div className="flex items-center gap-2 mb-4 pb-3 border-b border-[#d97706]/20 text-[#d97706] text-xs font-mono tracking-widest uppercase">
+                    <span className="w-2 h-2 rounded-full bg-[#d97706] animate-ping" />
+                    <span>👤 觉察者 · SEEKER</span>
+                  </div>
+                  <p className="font-serif text-base md:text-lg leading-relaxed text-justify">{msg.content}</p>
+                </div>
+              ) : (
+                <div 
+                  className="max-w-[100%] md:max-w-[95%] rounded-[3rem] p-8 md:p-12 bg-gradient-to-br from-[#0c0617]/95 via-[#080310]/95 to-[#06020a]/95 border border-[#C9A84C]/40 text-[#E8DFB8] shadow-[0_20px_50px_rgba(201,168,76,0.2)] backdrop-blur-xl relative overflow-hidden w-full"
+                >
+                  <div className="absolute top-0 right-0 p-8 opacity-10 font-serif text-6xl text-[#C9A84C] select-none pointer-events-none">🌌</div>
+                  <div className="flex items-center gap-3 mb-8 pb-4 border-b border-[#C9A84C]/20 text-[#C9A84C] text-xs font-mono tracking-[0.4em] uppercase">
+                    <span className="w-2 h-2 rounded-full bg-[#C9A84C] shadow-[0_0_10px_#C9A84C] animate-pulse" />
+                    <span>🌌 阿卡夏神谕 · AKASHA CHRONICLE</span>
+                  </div>
+                  <MysticMarkdown content={msg.content} isLoading={isLoading && idx === messages.length - 3} />
+                </div>
+              )}
             </motion.div>
           ))}
           

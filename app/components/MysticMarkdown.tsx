@@ -113,39 +113,48 @@ const AssociationBubble = React.memo(({ association }: { association: any }) => 
 AssociationBubble.displayName = "AssociationBubble";
 
 const MemoH1 = React.memo(({ children }: { children?: React.ReactNode }) => (
-  <div className="relative w-full flex flex-col items-center justify-center mb-16 mt-20 group">
-    <div className="absolute top-0 w-48 h-px bg-gradient-to-r from-transparent via-[#C9A84C]/80 to-transparent shadow-[0_0_15px_#C9A84C]"></div>
-    <h1 className="text-4xl md:text-5xl font-serif text-transparent bg-clip-text bg-gradient-to-b from-[#E8DFB8] to-[#C9A84C] text-center tracking-[0.25em] drop-shadow-[0_0_25px_rgba(201,168,76,0.4)] py-8 font-medium">
+  <div className="relative w-full flex flex-col items-center justify-center mb-20 mt-24 group select-none">
+    <div className="flex items-center gap-4 mb-6 text-[#C9A84C]/70 text-[11px] tracking-[0.7em] uppercase font-mono">
+      <span className="w-16 h-px bg-gradient-to-r from-transparent to-[#C9A84C]/80" />
+      <span>✦ SACRED REVELATION ✦</span>
+      <span className="w-16 h-px bg-gradient-to-l from-transparent to-[#C9A84C]/80" />
+    </div>
+    <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif text-transparent bg-clip-text bg-gradient-to-b from-[#FFFDF6] via-[#E8DFB8] to-[#C9A84C] text-center tracking-[0.25em] drop-shadow-[0_0_35px_rgba(201,168,76,0.6)] py-4 font-normal scale-105 group-hover:scale-110 transition-transform duration-700">
       {children}
     </h1>
-    <div className="absolute bottom-0 w-48 h-px bg-gradient-to-r from-transparent via-[#C9A84C]/80 to-transparent shadow-[0_0_15px_#C9A84C]"></div>
-    <span className="absolute -top-4 text-[#C9A84C]/60 text-2xl animate-pulse">✧</span>
-    <span className="absolute -bottom-4 text-[#C9A84C]/60 text-2xl animate-pulse">✧</span>
+    <div className="flex items-center gap-3 mt-6">
+      <div className="w-32 h-[2px] bg-gradient-to-r from-transparent via-[#C9A84C] to-transparent shadow-[0_0_15px_#C9A84C]" />
+      <span className="text-[#C9A84C] text-lg animate-spin-slow">⎊</span>
+      <div className="w-32 h-[2px] bg-gradient-to-r from-transparent via-[#C9A84C] to-transparent shadow-[0_0_15px_#C9A84C]" />
+    </div>
   </div>
 ));
 MemoH1.displayName = "MemoH1";
 
 const MemoH2 = React.memo(({ children }: { children?: React.ReactNode }) => (
-  <div className="w-full flex flex-col items-center mb-12 mt-20">
-    <h2 className="text-2xl md:text-3xl font-serif text-transparent bg-clip-text bg-gradient-to-r from-[#E8DFB8] via-[#C9A84C] to-[#E8DFB8] pb-5 flex items-center gap-6 drop-shadow-[0_0_15px_rgba(201,168,76,0.3)] relative text-center tracking-widest bg-[length:200%_auto] animate-[gradient_8s_ease_infinite]">
-      <span className="text-[#C9A84C]/50 text-xl drop-shadow-none">⟡</span>
+  <div className="w-full flex flex-col items-center mb-16 mt-20 select-none">
+    <h2 className="text-2xl md:text-3xl lg:text-4xl font-serif text-transparent bg-clip-text bg-gradient-to-r from-[#FFFDF6] via-[#C9A84C] to-[#FFFDF6] pb-4 flex items-center gap-6 drop-shadow-[0_0_20px_rgba(201,168,76,0.5)] relative text-center tracking-widest bg-[length:200%_auto] animate-[gradient_8s_ease_infinite]">
+      <span className="text-[#C9A84C] text-xl drop-shadow-[0_0_12px_#C9A84C] animate-pulse">⟡</span>
       {children}
-      <span className="text-[#C9A84C]/50 text-xl drop-shadow-none">⟡</span>
+      <span className="text-[#C9A84C] text-xl drop-shadow-[0_0_12px_#C9A84C] animate-pulse">⟡</span>
     </h2>
-    <div className="w-64 h-px bg-gradient-to-r from-transparent via-[#C9A84C]/40 to-transparent mt-2 relative">
-      <div className="absolute inset-0 bg-[#C9A84C]/20 blur-sm"></div>
+    <div className="w-80 h-[1px] bg-gradient-to-r from-transparent via-[#C9A84C]/60 to-transparent relative mt-1">
+      <div className="absolute inset-0 bg-[#C9A84C]/40 blur-sm" />
+      <div className="absolute -top-[1.5px] left-1/2 -translate-x-1/2 w-4 h-[4px] rounded-full bg-[#E8DFB8] shadow-[0_0_10px_#E8DFB8]" />
     </div>
   </div>
 ));
 MemoH2.displayName = "MemoH2";
 
 const MemoH3 = React.memo(({ children }: { children?: React.ReactNode }) => (
-  <div className="w-full flex justify-center mb-8 mt-14">
-    <h3 className="text-xl md:text-2xl font-serif text-[#E8DFB8]/90 flex items-center gap-4 tracking-wider text-center drop-shadow-md">
-      <span className="text-[#C9A84C]/70 text-lg">✦</span>
-      {children}
-      <span className="text-[#C9A84C]/70 text-lg">✦</span>
-    </h3>
+  <div className="w-full flex justify-center mb-12 mt-16 select-none">
+    <div className="inline-flex items-center gap-6 px-10 py-3 rounded-full bg-gradient-to-r from-transparent via-[#C9A84C]/15 to-transparent border-y border-[#C9A84C]/30 shadow-[inset_0_0_20px_rgba(201,168,76,0.15)]">
+      <span className="text-[#C9A84C] text-lg animate-pulse">✧</span>
+      <h3 className="text-xl md:text-2xl font-serif text-[#E8DFB8] tracking-widest text-center font-normal drop-shadow-md">
+        {children}
+      </h3>
+      <span className="text-[#C9A84C] text-lg animate-pulse">✧</span>
+    </div>
   </div>
 ));
 MemoH3.displayName = "MemoH3";
@@ -158,7 +167,7 @@ const MemoP = React.memo(({ children, className }: { children?: React.ReactNode,
     transition={{ duration: 0.9, ease: [0.2, 0.8, 0.2, 1] }}
     className={className}
   >
-    <p className="leading-[2.4] tracking-[0.04em] text-[#E8DFB8]/90 font-light font-serif text-[17px] md:text-lg break-words text-justify selection:bg-[#C9A84C]/30 selection:text-white">
+    <p className="leading-[2.4] tracking-[0.04em] text-[#E8DFB8]/90 font-light font-serif text-[17px] md:text-lg break-words text-justify selection:bg-[#C9A84C]/30 selection:text-white first-letter:text-2xl md:first-letter:text-3xl first-letter:font-serif first-letter:text-[#C9A84C] first-letter:font-normal first-letter:mr-1 first-letter:drop-shadow-[0_0_10px_#C9A84C]">
       {children}
     </p>
   </motion.div>
@@ -166,7 +175,7 @@ const MemoP = React.memo(({ children, className }: { children?: React.ReactNode,
 MemoP.displayName = "MemoP";
 
 const MemoStrong = React.memo(({ children }: { children?: React.ReactNode }) => (
-  <strong className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#E8DFB8] via-[#C9A84C] to-[#E8DFB8] drop-shadow-[0_0_15px_rgba(201,168,76,0.6)] mx-0.5 tracking-wider bg-[length:200%_auto] selection:text-white">
+  <strong className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#FFFDF6] via-[#C9A84C] to-[#E8DFB8] drop-shadow-[0_0_15px_rgba(201,168,76,0.8)] px-1.5 py-0.5 mx-0.5 tracking-wider bg-[length:200%_auto] selection:text-white border-b border-[#C9A84C]/40 bg-[#C9A84C]/5 rounded-md">
     {children}
   </strong>
 ));
@@ -183,15 +192,15 @@ const MemoBlockquote = React.memo(({ children }: { children?: React.ReactNode })
     whileInView={{ opacity: 1, scale: 1 }}
     viewport={{ once: true }}
     transition={{ duration: 0.8 }}
-    className="relative my-14 p-10 md:p-12 text-left rounded-[2.5rem] obsidian-glass border border-[#C9A84C]/30 shadow-[0_30px_60px_rgba(0,0,0,0.6)] overflow-hidden group selection:bg-[#C9A84C]/30 selection:text-white"
+    className="relative my-16 p-10 md:p-14 text-left rounded-[3rem] obsidian-glass border border-[#C9A84C]/40 shadow-[0_30px_70px_rgba(0,0,0,0.8)] overflow-hidden group selection:bg-[#C9A84C]/30 selection:text-white"
   >
-    <div className="absolute inset-0 bg-gradient-to-br from-[#C9A84C]/10 via-transparent to-[#C9A84C]/5 z-0" />
-    <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] pointer-events-none z-0" />
-    <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-[#C9A84C] via-[#E8DFB8] to-[#C9A84C] shadow-[0_0_20px_#C9A84C] z-10" />
+    <div className="absolute inset-0 bg-gradient-to-br from-[#C9A84C]/15 via-transparent to-[#C9A84C]/10 z-0" />
+    <div className="absolute inset-0 opacity-25 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] pointer-events-none z-0" />
+    <div className="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-b from-[#C9A84C] via-[#FFFDF6] to-[#C9A84C] shadow-[0_0_25px_#C9A84C] z-10" />
     
-    <span className="absolute right-6 -top-6 text-[#C9A84C]/10 text-[120px] font-serif select-none pointer-events-none z-0 rotate-12 transition-transform duration-1000 group-hover:rotate-0">”</span>
+    <span className="absolute right-8 -top-8 text-[#C9A84C]/15 text-[140px] font-serif select-none pointer-events-none z-0 rotate-12 transition-transform duration-1000 group-hover:rotate-0">”</span>
     
-    <div className="relative z-10 leading-[2.4] text-lg md:text-xl font-serif text-[#E8DFB8]/90 italic font-light tracking-wide">
+    <div className="relative z-10 leading-[2.4] text-lg md:text-xl font-serif text-[#E8DFB8]/95 italic font-light tracking-wide pt-2">
       {children}
     </div>
   </motion.blockquote>
@@ -239,9 +248,14 @@ const MemoLi = React.memo(({ children, className }: { children?: React.ReactNode
 MemoLi.displayName = "MemoLi";
 
 const MemoHr = React.memo(() => (
-  <div className="w-full flex flex-col items-center justify-center my-20 relative gap-3">
-    <Sparkles className="w-5 h-5 text-[#C9A84C]/40 animate-pulse" />
-    <div className="w-full h-px bg-gradient-to-r from-transparent via-[#C9A84C]/30 to-transparent" />
+  <div className="w-full flex items-center justify-center my-24 relative select-none">
+    <div className="flex-1 h-[1px] bg-gradient-to-r from-transparent via-[#C9A84C]/40 to-transparent" />
+    <div className="px-8 flex items-center gap-3 text-[#C9A84C]">
+      <span className="text-sm animate-pulse">✧</span>
+      <span className="w-3 h-3 rotate-45 border border-[#C9A84C] shadow-[0_0_12px_#C9A84C] inline-block" />
+      <span className="text-sm animate-pulse">✧</span>
+    </div>
+    <div className="flex-1 h-[1px] bg-gradient-to-r from-transparent via-[#C9A84C]/40 to-transparent" />
   </div>
 ));
 MemoHr.displayName = "MemoHr";

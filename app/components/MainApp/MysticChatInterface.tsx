@@ -42,21 +42,30 @@ export default function MysticChatInterface({
         {messages.map((msg, idx) => (
           <div 
             key={idx} 
-            className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-center'}`}
+            className={`flex flex-col w-full ${msg.role === 'user' ? 'items-end' : 'items-center'}`}
           >
-            <div 
-              className={`max-w-[95%] md:max-w-[85%] rounded-2xl p-6 ${
-                msg.role === 'user' 
-                  ? 'bg-amber-900/40 border border-amber-500/30 text-amber-100' 
-                  : 'bg-black/20 markdown-body w-full'
-              }`}
-            >
-              {msg.role === 'user' ? (
-                <p className="font-serif">{msg.content}</p>
-              ) : (
+            {msg.role === 'user' ? (
+              <div 
+                className="max-w-[95%] md:max-w-[80%] rounded-[2.5rem] p-7 md:p-8 bg-gradient-to-br from-[#2a170d]/90 to-[#180c06]/90 border border-[#d97706]/40 text-[#fef3c7] shadow-[0_15px_35px_rgba(217,119,6,0.15)] backdrop-blur-md relative"
+              >
+                <div className="flex items-center gap-2 mb-4 pb-3 border-b border-[#d97706]/20 text-[#d97706] text-xs font-mono tracking-widest uppercase">
+                  <span className="w-2 h-2 rounded-full bg-[#d97706] animate-ping" />
+                  <span>👤 觉察者 · SEEKER</span>
+                </div>
+                <p className="font-serif text-base md:text-lg leading-relaxed text-justify">{msg.content}</p>
+              </div>
+            ) : (
+              <div 
+                className="max-w-[100%] md:max-w-[95%] rounded-[3rem] p-8 md:p-12 bg-gradient-to-br from-[#0c0617]/95 via-[#080310]/95 to-[#06020a]/95 border border-[#C9A84C]/40 text-[#E8DFB8] shadow-[0_20px_50px_rgba(201,168,76,0.2)] backdrop-blur-xl relative overflow-hidden w-full"
+              >
+                <div className="absolute top-0 right-0 p-8 opacity-10 font-serif text-6xl text-[#C9A84C] select-none pointer-events-none">🌌</div>
+                <div className="flex items-center gap-3 mb-8 pb-4 border-b border-[#C9A84C]/20 text-[#C9A84C] text-xs font-mono tracking-[0.4em] uppercase">
+                  <span className="w-2 h-2 rounded-full bg-[#C9A84C] shadow-[0_0_10px_#C9A84C] animate-pulse" />
+                  <span>🌌 阿卡夏神谕 · AKASHA CHRONICLE</span>
+                </div>
                 <MysticMarkdown content={msg.content} />
-              )}
-            </div>
+              </div>
+            )}
           </div>
         ))}
         
@@ -71,21 +80,22 @@ export default function MysticChatInterface({
       </div>
 
       {/* Input Form */}
-      {!isStreaming && !isLoading && messages.length > 0 && (
-        <form onSubmit={onSend} className="relative mt-8">
+      {!isStreaming && !isLoading && (
+        <form onSubmit={onSend} className="relative mt-8 group">
+          <div className="absolute inset-0 bg-gradient-to-r from-[#C9A84C]/20 via-transparent to-[#C9A84C]/20 rounded-full blur-md opacity-50 group-focus-within:opacity-100 transition-opacity" />
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={placeholder}
-            className="w-full bg-black/40 border border-amber-500/30 rounded-full py-4 pl-6 pr-16 text-amber-100 placeholder-amber-700/50 focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all font-serif"
+            className="relative w-full bg-[#0a0612]/90 border border-[#C9A84C]/40 rounded-full py-4.5 pl-8 pr-16 text-[#E8DFB8] placeholder-[#C9A84C]/50 focus:outline-none focus:border-[#C9A84C] focus:shadow-[0_0_25px_rgba(201,168,76,0.3)] transition-all font-serif text-base md:text-lg"
           />
           <button
             type="submit"
             disabled={!input.trim()}
-            className="absolute right-2 top-1/2 -translate-y-1/2 p-3 bg-amber-600 hover:bg-amber-500 text-amber-50 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-3.5 bg-gradient-to-r from-[#C9A84C] to-[#E8DFB8] hover:opacity-90 text-[#080510] rounded-full transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-[0_0_15px_rgba(201,168,76,0.5)] z-10"
           >
-            <Send size={18} />
+            <Send size={18} className="translate-x-0.5" />
           </button>
         </form>
       )}
