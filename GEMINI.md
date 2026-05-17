@@ -1,5 +1,8 @@
 ## [2026-05-17] Feature: Fate Echo UI Modernization, History Purification & 100% Clean Build Stabilization
 
+- **Decision: Tarot Card Interactive Details Restoration in Historical Journey**
+  - **Reason**: Users reported being unable to view specific card meanings when clicking tarot cards inside historical diary entries (`JourneyApp`).
+  - **Action**: Identified that historical readings use `MysticMarkdown` to render card arrays, which previously lacked click interaction and modal support. Injected `selectedCard` state and integrated `CardMeaningModal` into `MysticMarkdown.tsx`, restoring full interactive exploration of card themes and upright/reversed keywords directly within the Akashic chronicle.
 - **Decision: Fate Echo ("命运回响") UI Modernization & Unclipped Framing**
   - **Reason**: The Fate Echo section in `JourneyApp.tsx` suffered from visual clipping and lacked clear hierarchical separation from the primary reading and chat logs.
   - **Action**: Architected a beautifully framed, high-end container with radiant glow effects (`bg-gradient-to-br from-[#1c0f07]/80 ... backdrop-blur-xl`), clear title header, and dedicated "重新共鸣" re-trigger action, delivering an unclipped and premium immersive experience.

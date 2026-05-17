@@ -1,10 +1,11 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import Image from "next/image";
 import { motion } from "motion/react";
 import { TarotCard } from "@/lib/tarot-data";
 import { useAppStore } from "@/lib/store";
 import { Compass, Sparkles, ArrowRight } from "lucide-react";
+import { CardMeaningModal } from "./MainApp/TarotComponents";
 
 const StreamingParticles = React.memo(() => {
   const particles = useMemo(() => {
@@ -325,6 +326,7 @@ interface MysticMarkdownProps {
 }
 
 const MysticMarkdown = React.memo(({ content, cards, hideCards, isLoading, centered }: MysticMarkdownProps) => {
+  const [selectedCard, setSelectedCard] = useState<any>(null);
   let association: any = null;
   let soulMotto = "";
   let processedContent = content
@@ -429,7 +431,11 @@ const MysticMarkdown = React.memo(({ content, cards, hideCards, isLoading, cente
           {cards.map((card, idx) => {
             const imageUrl = card.image || `https://www.trustedtarot.com/img/cards/${card.englishName.toLowerCase().replace(/ /g, "-")}.png`;
             return (
-              <div key={idx} className="relative w-24 h-40 md:w-32 md:h-52 rounded-2xl overflow-hidden border border-[#C9A84C]/40 shadow-[0_15px_40px_rgba(0,0,0,0.9)] hover:scale-105 transition-transform duration-500 group">
+              <div 
+                key={idx} 
+                onClick={() => setSelectedCard(card)}
+                className="relative w-24 h-40 md:w-32 md:h-52 rounded-2xl overflow-hidden border border-[#C9A84C]/40 shadow-[0_15px_40px_rgba(0,0,0,0.9)] hover:scale-105 hover:border-[#C9A84C] cursor-pointer transition-all duration-500 group"
+              >
                 <img
                   src={imageUrl}
                   alt={card.name}
@@ -479,6 +485,12 @@ const MysticMarkdown = React.memo(({ content, cards, hideCards, isLoading, cente
       </div>
 
       {association && <AssociationBubble association={association} />}
+
+      <CardMeaningModal 
+        isOpen={!!selectedCard} 
+        onClose={() => setSelectedCard(null)} 
+        card={selectedCard} 
+      />
     </div>
   );
 });
