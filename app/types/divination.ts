@@ -16,6 +16,7 @@ export type DivinationType =
   | 'daily' 
   | 'astrology' 
   | 'face_reading' 
+  | 'palm_reading'
   | 'shadow_work' 
   | 'synastry' 
   | 'subconscious' 
@@ -109,7 +110,7 @@ export type JourneyDetails =
   | IChingDetails 
   | DailyDetails 
   | AstrologyDetails
-  | { type: 'face_reading'; text: string; imageType?: string; question?: string; echo?: string; messages: Message[] }
+  | { type: 'face_reading' | 'palm_reading'; text: string; imageType?: string; imageUrl?: string; readingType?: string; question?: string; echo?: string; messages: Message[] }
   | { type: 'shadow_work'; text: string; issue?: string; echo?: string; messages: Message[] }
   | { type: 'synastry'; text: string; partner?: any; question?: string; echo?: string; messages: Message[] }
   | { type: 'subconscious'; text: string; content?: string; echo?: string; messages: Message[] }

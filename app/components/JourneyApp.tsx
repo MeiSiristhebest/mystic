@@ -241,6 +241,8 @@ ${JSON.stringify(profile)}
                   <option value="bazi" className="bg-[#0f0a18] text-amber-100">命理八字</option>
                   <option value="iching" className="bg-[#0f0a18] text-amber-100">周易占卜</option>
                   <option value="astrology" className="bg-[#0f0a18] text-amber-100">星象解析</option>
+                  <option value="face_reading" className="bg-[#0f0a18] text-amber-100">面相骨相</option>
+                  <option value="palm_reading" className="bg-[#0f0a18] text-amber-100">手相掌纹</option>
                   <option value="shadow_work" className="bg-[#0f0a18] text-amber-100">阴影工作</option>
                   <option value="subconscious" className="bg-[#0f0a18] text-amber-100">灵魂频率</option>
                 </select>

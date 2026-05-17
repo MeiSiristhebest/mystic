@@ -139,7 +139,7 @@ export default function FaceReadingApp({
       
       updateEntry(currentEntryId, { 
         details: { 
-          type: 'face_reading',
+          type: type === "face" ? "face_reading" : "palm_reading",
           text: fullText, 
           imageType: type, 
           question, 

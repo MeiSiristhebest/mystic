@@ -473,3 +473,9 @@
 - **Decision: Dual-Arity Prompt Harness for Collective Mirror (`getCollectiveMirrorPrompt`)**
   - **Reason**: `CollectiveMirrorApp.tsx` invoked `getCollectiveMirrorPrompt` with two arguments (`sanitizedQuestion`, `profileContext`), whereas `hooks/useCollectiveMirror.ts` invoked it with one argument (`profileContext`). The prompt registry previously only defined a single `profileContext` parameter, causing a Vercel build failure during TypeScript compilation (`Expected 1 arguments, but got 2`).
   - **Action**: Refactored `getCollectiveMirrorPrompt` in `lib/prompts/psychology.ts` to accept `(questionOrProfile: string, optionalProfileContext?: string)`. Implemented robust internal parameter resolution to correctly map `question` and `profileContext` regardless of arity, restoring strict TypeScript type compatibility and unblocking production deployment on Vercel.
+
+## [2026-05-17] Phase 32: Palm Reading Type Registry & Journey Details Parity
+
+- **Decision: Palm Reading Type Registry & Journey Details Parity (`palm_reading`)**
+  - **Reason**: `FaceReadingApp.tsx` supports both Face Reading ("面相") and Palm Reading ("手相"). When saving palm readings to user history, it assigned `type: "palm_reading"`. However, `"palm_reading"` was absent from the global `DivinationType` union and `JourneyDetails` interfaces, triggering a Vercel TypeScript compilation failure (`Type '"palm_reading"' is not assignable to type 'DivinationType'`).
+  - **Action**: Added `'palm_reading'` to `DivinationType` in `app/types/divination.ts`. Extended `JourneyDetails` to support `type: 'face_reading' | 'palm_reading'` alongside optional image analysis fields (`imageUrl`, `readingType`). Updated `JourneyApp.tsx` filter options to enable seamless category filtering for both Face and Palm readings within the user's permanent diary.
