@@ -28,6 +28,7 @@
     "react-dom": "19.2.6",
     "react-markdown": "^10.1.0",
     "serwist": "^9.5.11",
+    "sharp": "^0.34.5",
     "zustand": "^5.0.13"
   },
   "devDependencies": {
@@ -44,5 +45,15 @@
     "tailwindcss": "4.3.0",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "6.0.3"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "sharp",
+      "@google/genai",
+      "@firebase/util",
+      "protobufjs",
+      "re2",
+      "unrs-resolver"
+    ]
   }
 }
