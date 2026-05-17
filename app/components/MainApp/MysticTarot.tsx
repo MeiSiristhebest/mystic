@@ -191,20 +191,37 @@ export function MysticTarot({ initialHandoff, clearHandoff }: MysticTarotProps =
                   </div>
 
                   <div className="space-y-4">
-                    <label className="block text-xs font-serif text-amber-500/60 uppercase tracking-[0.3em]">3. 选择牌阵</label>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {SPREAD_MODES.slice(0, 4).map(spread => (
+                    <div className="flex items-center justify-between">
+                      <label className="block text-xs font-serif text-amber-500/60 uppercase tracking-[0.3em]">3. 选择牌阵</label>
+                      <button 
+                        onClick={() => setHandoff({ system: 'oracle', question })}
+                        className="text-[10px] text-amber-500 hover:text-amber-400 transition-colors flex items-center gap-1 font-serif tracking-widest"
+                      >
+                        <Sparkles className="w-3 h-3" /> 智能建议
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar pb-4">
+                      {SPREAD_MODES.map(spread => (
                         <button
                           key={spread.id}
                           onClick={() => setSelectedSpread(spread.id)}
-                          className={`p-6 rounded-2xl border text-left transition-all ${
+                          className={`p-6 rounded-[1.5rem] border text-left transition-all relative group/card ${
                             selectedSpread === spread.id
-                              ? "bg-amber-500/20 border-amber-500/50 shadow-[0_0_20px_rgba(245,158,11,0.1)]"
-                              : "bg-white/5 border-white/5 hover:bg-white/10"
+                              ? "bg-amber-500/20 border-amber-500/50 shadow-[0_10px_30px_rgba(245,158,11,0.15)] ring-1 ring-amber-500/20"
+                              : "bg-white/[0.02] border-white/5 hover:bg-white/[0.05] hover:border-white/10"
                           }`}
                         >
-                          <div className={`text-base font-serif mb-2 ${selectedSpread === spread.id ? 'text-amber-100' : 'text-amber-100/50'}`}>{spread.name}</div>
-                          <div className="text-[10px] text-white/20 line-clamp-2 leading-relaxed">{spread.description}</div>
+                          <div className="flex justify-between items-start mb-2">
+                            <div className={`text-base font-serif transition-colors ${selectedSpread === spread.id ? 'text-amber-100' : 'text-amber-100/50 group-hover/card:text-amber-100/80'}`}>{spread.name}</div>
+                            <span className="text-[10px] font-mono text-amber-500/40">{spread.cardCount} 抽</span>
+                          </div>
+                          <div className="text-[10px] text-white/20 line-clamp-2 leading-relaxed group-hover/card:text-white/30 transition-colors">{spread.description}</div>
+                          {selectedSpread === spread.id && (
+                            <motion.div 
+                              layoutId="active-spread"
+                              className="absolute inset-0 border-2 border-amber-500/30 rounded-[1.5rem] pointer-events-none"
+                            />
+                          )}
                         </button>
                       ))}
                     </div>

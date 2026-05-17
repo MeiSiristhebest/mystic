@@ -76,9 +76,15 @@ export function ExploreView() {
   const globalHandoff = useAppStore((state: any) => state.handoff);
   const setGlobalHandoff = useAppStore((state: any) => state.setHandoff);
 
-  // Sync with global handoff (e.g. from TodayView)
+  // Sync with global handoff (e.g. from TodayView or Tarot)
   useEffect(() => {
     if (globalHandoff) {
+      if (globalHandoff.system === 'oracle') {
+        setIsGuideOpen(true);
+        setGlobalHandoff(null);
+        return;
+      }
+      
       const timer = setTimeout(() => {
         setHandoffData(globalHandoff);
         setSubTab(globalHandoff.system);

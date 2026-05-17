@@ -74,6 +74,9 @@ export async function POST(req: NextRequest) {
         const stream = new ReadableStream({
           async start(controller) {
             try {
+              // Send a hidden space to keep the connection alive during initial model thinking
+              controller.enqueue(new TextEncoder().encode(" "));
+              
               for await (const chunk of responseStream) {
                 const text = chunk.text || "";
                 if (text) {
