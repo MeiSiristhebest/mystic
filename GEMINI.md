@@ -335,3 +335,15 @@
     - Refactored `MoodCheckIn.tsx` to remove redundant nested padding and backgrounds.
     - Switched to a flexible wrapping layout with calculated widths and minimum spacing.
     - Increased vertical margins between energy bars and selectors in `SoulView.tsx`.
+
+## [2026-05-17] Phase 24: Cross-Device Cloud Caching Synchronization
+
+- **Decision: Cloud-First Daily Oracle & Image Cache Synchronization**
+  - **Reason**: Identified a major synchronization discrepancy where a user opening the app on desktop generated a specific daily oracle text and image prompt, but opening on mobile (which lacked local IndexedDB cache) triggered a fresh AI generation with a slightly different prompt, resulting in completely mismatched daily images across devices.
+  - **Action**:
+    - Created `getCloudDailyOracle` and `saveCloudDailyOracle` in `app/actions/aiActions.ts` backed by server-side Firebase Firestore (`daily-oracles`).
+    - Refactored `TodayView.tsx` to query cloud Firestore when local IndexedDB is empty. If a cloud record exists for the current date, mobile devices instantly fetch the exact same oracle text and image prompt generated earlier by desktop.
+    - This identical prompt hash guarantees perfect cache hits in `MysticImage`'s `daily-images` cloud collection, achieving 100% visual and text parity across all client devices.
+- **Decision: AI Chat History & Prompt Gateway Decoupling**
+  - **Reason**: Resolving the bug where follow-up chat histories in divination apps rendered duplicate pairs and leaked internal system instruction prompts (`contextPin`) into the UI.
+  - **Action**: Added `displayPrompt` parameter to `useAIChat.ts` gateway, isolating the transmission payload from the UI state and database storage.

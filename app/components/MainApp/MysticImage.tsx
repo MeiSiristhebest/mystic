@@ -46,71 +46,8 @@ const getFallbackImageUrl = (prompt: string, aspectRatio: string) => {
   return `https://images.unsplash.com/${selectedId}?auto=format&fit=crop&q=80&w=${w}&h=${h}`;
 };
 
-// Compress image using an iterative strategy to maximize quality within Firestore's 1MB limit
-const compressImage = (base64Str: string, maxWidth = 1280, initialQuality = 0.85): Promise<string> => {
-  return new Promise((resolve) => {
-    if (typeof window === 'undefined') return resolve(base64Str);
-    
-    const img = new window.Image();
-    // Enable cross-origin for decoding any potential remote base64 sources safely
-    img.crossOrigin = "anonymous";
-    img.src = base64Str;
-    
-    const timeout = setTimeout(() => resolve(base64Str), 8000);
 
-    img.onload = () => {
-      clearTimeout(timeout);
-      // Create a canvas as a universal transcoder
-      const canvas = document.createElement('canvas');
-      let width = img.width;
-      let height = img.height;
 
-      if (width > maxWidth) {
-        height = Math.round((height * maxWidth) / width);
-        width = maxWidth;
-      }
-
-      canvas.width = width;
-      canvas.height = height;
-      
-      // Optimization: Disable alpha channel for smaller file size
-      const ctx = canvas.getContext('2d', { alpha: false });
-      if (!ctx) return resolve(base64Str);
-      
-      ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = 'high';
-      
-      // Fill dark background for non-alpha canvas
-      ctx.fillStyle = '#050308';
-      ctx.fillRect(0, 0, width, height);
-      ctx.drawImage(img, 0, 0, width, height);
-
-      // Iterative Strategy: Try WebP first, then JPEG. Adjust quality to fit 1MB.
-      let quality = initialQuality;
-      let format = 'image/webp';
-      let result = canvas.toDataURL(format, quality);
-      
-      // Fallback if WebP not supported
-      if (result && result.startsWith('data:image/png')) {
-        format = 'image/jpeg';
-        result = canvas.toDataURL(format, quality);
-      }
-
-      const MAX_CHARS = 1000000; // Safe threshold for Firestore string
-      
-      while (result && result.length > MAX_CHARS && quality > 0.2) {
-        quality -= 0.1;
-        result = canvas.toDataURL(format, quality);
-      }
-      
-      resolve(result);
-    };
-    img.onerror = () => {
-      clearTimeout(timeout);
-      resolve(base64Str);
-    };
-  });
-};
 
 export const MysticImage = ({ 
   prompt, 
@@ -169,31 +106,14 @@ export const MysticImage = ({
         return;
       }
 
-      // Generate securely using Server Action
+      // Generate securely using Server Action.
+      // Server already compresses and saves to Firebase on success.
       const base64Data = await generateMysticImage(prompt, aspectRatio, docId);
 
-      // Handle Compression & Sync-back if it was generated fresh
-      let dataToCache = base64Data;
-      const needsSync = base64Data.length > 800000; // Likely skipped by server cache
-
-      if (needsSync) {
-        try {
-          console.log(`[CLIENT] Image large (${base64Data.length} chars), compressing before sync...`);
-          dataToCache = await compressImage(base64Data, 1280, 0.6);
-          // Sync compressed version back to Firestore
-          const { syncImageToCloud } = await import("@/app/actions/aiActions");
-          await syncImageToCloud(docId, dataToCache, prompt);
-        } catch (syncErr) {
-          console.warn("[CLIENT] Sync-back failed:", syncErr);
-        }
-      }
-
-      // Save to local IndexedDB
+      // Save a local IndexedDB copy for instant subsequent loads on this device
       try {
-        await saveToIndexedDB(`mystic_img_${docId}`, dataToCache);
-      } catch (cacheErr) {
-        // Silently fail cache saving
-      }
+        await saveToIndexedDB(`mystic_img_${docId}`, base64Data);
+      } catch (_) { /* silently ignore local cache failures */ }
       
       clearTimeout(globalTimeout);
       setImageUrl(base64Data);

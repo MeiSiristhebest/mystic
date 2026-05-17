@@ -6,6 +6,25 @@ import { astro, util } from 'iztro';
 import ephemeris from 'ephemeris';
 import { adminDb } from "@/lib/firebase-admin";
 import * as admin from 'firebase-admin';
+import sharp from 'sharp';
+
+/**
+ * Server-side image compression using sharp.
+ * Reduces image to JPEG/WebP within Firestore's 1MB document limit.
+ */
+async function compressImageServerSide(base64DataUrl: string, maxWidthPx = 1280, quality = 60): Promise<string> {
+  // Strip the data URL prefix to get the raw base64
+  const matches = base64DataUrl.match(/^data:(image\/[^;]+);base64,(.+)$/);
+  if (!matches) return base64DataUrl;
+
+  const inputBuffer = Buffer.from(matches[2], 'base64');
+  const compressedBuffer = await sharp(inputBuffer)
+    .resize({ width: maxWidthPx, withoutEnlargement: true })
+    .jpeg({ quality, mozjpeg: true })
+    .toBuffer();
+
+  return `data:image/jpeg;base64,${compressedBuffer.toString('base64')}`;
+}
 
 /**
  * Server-side Star Chart calculation using ephemeris.
@@ -59,7 +78,7 @@ export async function getQiMenServerData(date: Date) {
 }
 
 export async function generateMysticImage(prompt: string, aspectRatio: any, docId: string) {
-  // 1. Check server-side cache first to avoid duplicate generations
+  // 1. Check server-side Firebase cache first — if found, all clients share this result
   try {
     const docRef = adminDb.collection("daily-images").doc(docId);
     const cachedDoc = await docRef.get();
@@ -74,7 +93,7 @@ export async function generateMysticImage(prompt: string, aspectRatio: any, docI
     console.warn("[FIREBASE] Cache read failed:", error);
   }
 
-  // 2. Generate with Gemini
+  // 2. Generate fresh image with Gemini
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error("GEMINI_API_KEY is not defined");
   
@@ -96,33 +115,38 @@ export async function generateMysticImage(prompt: string, aspectRatio: any, docI
   const part = response.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
   let base64Data = "";
   if (part?.inlineData?.data) {
-    // Respect the actual mimeType returned by the model (could be png, jpeg, etc.)
     const mimeType = part.inlineData.mimeType || "image/png";
     base64Data = `data:${mimeType};base64,${part.inlineData.data}`;
   } else {
     throw new Error("No image data received");
   }
 
-  // 3. Save to server-side cache with Size Guard
-  console.log(`[FIREBASE] Attempting save for ${docId}`);
+  // 3. Compress server-side if needed, then ALWAYS save to Firebase.
+  // This guarantees that every device that generates an image stores it in the global cloud cache,
+  // so subsequent users on any device fetch the exact same image.
   try {
+    let dataToStore = base64Data;
     const sizeInBytes = Buffer.byteLength(base64Data, 'utf8');
-    
-    // Firestore 1MB document limit safety margin
-    if (sizeInBytes > 1040000) {
-      console.warn(`[FIREBASE] Image too large (${sizeInBytes} bytes) for Firestore. Skipping cloud cache.`);
-    } else {
-      const docRef = adminDb.collection("daily-images").doc(docId);
-      await docRef.set({
-        imageUrl: base64Data,
-        prompt: prompt,
-        date: docId.split('_')[0],
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        expiresAt: admin.firestore.Timestamp.fromDate(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000))
-      });
-      console.log(`[FIREBASE] SUCCESS: Document ${docId} saved.`);
+    const FIRESTORE_LIMIT = 1040000;
+
+    if (sizeInBytes > FIRESTORE_LIMIT) {
+      console.log(`[FIREBASE] Image large (${sizeInBytes} bytes), compressing server-side...`);
+      dataToStore = await compressImageServerSide(base64Data);
+      const compressedSize = Buffer.byteLength(dataToStore, 'utf8');
+      console.log(`[FIREBASE] Compressed to ${compressedSize} bytes.`);
     }
+
+    const docRef = adminDb.collection("daily-images").doc(docId);
+    await docRef.set({
+      imageUrl: dataToStore,
+      prompt: prompt,
+      date: docId.split('_')[0],
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      expiresAt: admin.firestore.Timestamp.fromDate(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000))
+    });
+    console.log(`[FIREBASE] SUCCESS: Document ${docId} saved.`);
   } catch (error: any) {
+    // Log but don't throw — client still gets the raw image even if cloud save failed
     console.error(`[FIREBASE] FAILED to save ${docId}:`, error.message);
   }
 
@@ -154,5 +178,41 @@ export async function syncImageToCloud(docId: string, base64Data: string, prompt
   } catch (error: any) {
     console.error(`[SYNC] Failed to save ${docId}:`, error.message);
     return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Retrieves the global daily oracle from cloud Firestore cache.
+ */
+export async function getCloudDailyOracle(dateStr: string) {
+  try {
+    const docRef = adminDb.collection("daily-oracles").doc(dateStr);
+    const doc = await docRef.get();
+    if (doc.exists) {
+      console.log(`[FIREBASE] Daily Oracle Cache HIT for ${dateStr}`);
+      return doc.data();
+    }
+  } catch (err) {
+    console.warn("[FIREBASE] Daily Oracle read failed:", err);
+  }
+  return null;
+}
+
+/**
+ * Saves the global daily oracle to cloud Firestore cache.
+ */
+export async function saveCloudDailyOracle(dateStr: string, dailyData: any) {
+  try {
+    const docRef = adminDb.collection("daily-oracles").doc(dateStr);
+    await docRef.set({
+      ...dailyData,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      expiresAt: admin.firestore.Timestamp.fromDate(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000))
+    });
+    console.log(`[FIREBASE] Saved global daily oracle for ${dateStr}`);
+    return true;
+  } catch (err) {
+    console.warn("[FIREBASE] Daily Oracle save failed:", err);
+    return false;
   }
 }

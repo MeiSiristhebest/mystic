@@ -26,6 +26,7 @@ import { getFromIndexedDB, saveToIndexedDB } from "@/lib/storage";
 import { useAppStore } from "@/lib/store";
 import { usePosterGenerator } from "@/hooks/usePosterGenerator";
 import { cleanMysticContent } from "@/lib/utils";
+import { getCloudDailyOracle, saveCloudDailyOracle } from "@/app/actions/aiActions";
 
 export function TodayView() {
   const { profile, isLoaded: isProfileLoaded } = useUserProfile();
@@ -107,6 +108,7 @@ export function TodayView() {
     const initDaily = async () => {
       const cacheKey = `daily_oracle_v8_${todayStr}`; 
       
+      // 1. Try local IndexedDB
       try {
         const cached = await getFromIndexedDB(cacheKey);
         if (cached) {
@@ -115,7 +117,20 @@ export function TodayView() {
           return;
         }
       } catch (e) {
-        console.warn("Cache read failed", e);
+        console.warn("Local cache read failed", e);
+      }
+
+      // 2. Try global Cloud Firestore
+      try {
+        const cloudCached = await getCloudDailyOracle(cacheKey);
+        if (cloudCached) {
+          await saveToIndexedDB(cacheKey, cloudCached);
+          setDailyData(cloudCached as any);
+          setIsInitializing(false);
+          return;
+        }
+      } catch (e) {
+        console.warn("Cloud cache read failed", e);
       }
       
       const prompt = `
@@ -158,17 +173,20 @@ ${JSON.stringify(profile)}
         };
         
         await saveToIndexedDB(cacheKey, newDaily);
+        saveCloudDailyOracle(cacheKey, newDaily).catch(e => console.warn("Cloud save failed", e));
         setDailyData(newDaily);
       } catch (err) {
         console.error("Failed to generate daily reading:", err);
-        setDailyData({
+        const fallbackDaily = {
           date: todayStr,
           reading: "即使在烈日熔金的繁华中，你的心亦如寒潭之水，映照着世间的渴望与疲惫。别让过度给予灼伤了真实的自我，学会在静默中为灵魂筑起一道清凉的屏障。",
           subMotto: "守护那份隐秘的温柔",
           imagePrompt: "Mystical eye of akasha, cosmic nebula, sacred geometry, gold and deep purple",
           cosmicEnergy: "平衡",
           energySuggestion: "建议今日独处三十分钟，以冷色调冥想平复内心如火的热忱，重拾理性的边界感。"
-        });
+        };
+        await saveToIndexedDB(cacheKey, fallbackDaily);
+        setDailyData(fallbackDaily);
       } finally {
         setIsInitializing(false);
       }
