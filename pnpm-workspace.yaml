@@ -1,0 +1,7 @@
+allowBuilds:
+  '@firebase/util': true
+  '@google/genai': true
+  protobufjs: true
+  re2: true
+  sharp: true
+  unrs-resolver: true
