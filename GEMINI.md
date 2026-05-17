@@ -348,5 +348,5 @@
   - **Reason**: Resolving the bug where follow-up chat histories in divination apps rendered duplicate pairs and leaked internal system instruction prompts (`contextPin`) into the UI.
   - **Action**: Added `displayPrompt` parameter to `useAIChat.ts` gateway, isolating the transmission payload from the UI state and database storage.
 - **Decision: Vercel Deployment & pnpm v11 Hardening**
-  - **Reason**: Vercel CI aborted with `[ERR_PNPM_IGNORED_BUILDS]` because Vercel's global pnpm v11 runner strictly requires binary script approvals directly in `.npmrc`.
-  - **Action**: Created `.npmrc` with explicit `only-built-dependencies=sharp,@google/genai,@firebase/util,protobufjs,re2,unrs-resolver` to ensure smooth native binary installation during deployment.
+  - **Reason**: Vercel CI aborted with `[ERR_PNPM_IGNORED_BUILDS]` because Vercel's global pnpm v11 runner deprecated `onlyBuiltDependencies` in favor of `allowBuilds`.
+  - **Action**: Updated `package.json` to include both `onlyBuiltDependencies` and `allowBuilds` arrays, and configured `.npmrc` with `ignore-scripts=false` and `strict-dep-builds=false` for robust cross-version compatibility.
