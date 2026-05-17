@@ -497,3 +497,9 @@
 - **Decision: Subconscious Prompt Harness Arity Alignment (`getSubconsciousPrompt`)**
   - **Reason**: `SubconsciousApp.tsx` and `hooks/useSubconsciousAnalysis.ts` invoked `getSubconsciousPrompt` with a single object argument `{ mode, input, profileContext }`. However, the prompt registry previously defined the signature as two string parameters `(question, profileContext)`, triggering a Vercel TypeScript compilation error (`Expected 2 arguments, but got 1`).
   - **Action**: Refactored `getSubconsciousPrompt` in `lib/prompts/psychology.ts` to accept the `{ mode, input, profileContext }` object parameter. Updated internal XML template variables to dynamically map `mode` and `input`, restoring flawless TypeScript type safety and unblocking the production build pipeline.
+
+## [2026-05-17] Phase 36: Fate Echo Visual Clip Resolution
+
+- **Decision: Fate Echo Visual Clip Resolution (`overflow-visible`)**
+  - **Reason**: In `JourneyApp.tsx`, the floating header badge `命运回响 · Echo` was absolute-positioned `-top-4` outside its parent container. Because the parent `motion.div` enforced `overflow-hidden`, the top half of the badge was sliced off horizontally.
+  - **Action**: Changed the parent container's CSS property from `overflow-hidden` to `overflow-visible`. This unblocks absolute floating elements and restores full visual presentation for the Fate Echo ritual badge.

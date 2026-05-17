@@ -393,7 +393,7 @@ ${JSON.stringify(profile)}
                   <motion.div 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="mt-20 p-8 md:p-12 rounded-[32px] bg-[#0c0617]/40 border border-amber-500/20 space-y-6 relative overflow-hidden shadow-[0_15px_50px_rgba(0,0,0,0.5)]"
+                    className="mt-20 p-8 md:p-12 rounded-[32px] bg-[#0c0617]/40 border border-amber-500/20 space-y-6 relative overflow-visible shadow-[0_15px_50px_rgba(0,0,0,0.5)]"
                   >
                     <div className="absolute -top-4 left-10 px-6 py-1.5 bg-[#120c18] border border-amber-500/40 rounded-full text-[10px] font-serif text-amber-500 uppercase tracking-[0.4em] shadow-[0_0_15px_rgba(217,119,6,0.3)] z-20">
                       命运回响 · Echo
