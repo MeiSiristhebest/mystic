@@ -79,3 +79,43 @@ export const playCoinSound = () => {
   playChink(3200, 0.05);
   playChink(4100, 0.1);
 };
+
+// 神圣共鸣低频音效 (Sacred frequency gong/chime)
+export const playMysticChime = () => {
+  const ctx = getAudioContext();
+  if (!ctx) return;
+
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  const filter = ctx.createBiquadFilter();
+
+  osc.type = 'triangle';
+  osc.frequency.setValueAtTime(432, ctx.currentTime); // 432Hz sacred frequency
+  osc.frequency.exponentialRampToValueAtTime(216, ctx.currentTime + 1.8);
+
+  filter.type = 'lowpass';
+  filter.frequency.setValueAtTime(1200, ctx.currentTime);
+  filter.frequency.linearRampToValueAtTime(400, ctx.currentTime + 1.8);
+
+  gain.gain.setValueAtTime(0, ctx.currentTime);
+  gain.gain.linearRampToValueAtTime(0.4, ctx.currentTime + 0.05);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.8);
+
+  osc.connect(filter);
+  filter.connect(gain);
+  gain.connect(ctx.destination);
+
+  osc.start(ctx.currentTime);
+  osc.stop(ctx.currentTime + 1.8);
+};
+
+// 跨设备触觉振动指引 (Haptic vibration)
+export const triggerHapticVibration = (pattern: number | number[] = [15, 40, 15]) => {
+  if (typeof window !== 'undefined' && navigator.vibrate) {
+    try {
+      navigator.vibrate(pattern);
+    } catch(e) {
+      // Ignore vibration constraints
+    }
+  }
+};

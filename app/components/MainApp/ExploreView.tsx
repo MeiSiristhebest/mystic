@@ -44,25 +44,28 @@ function SystemCard({ system, isActive, onClick }: SystemCardProps) {
     <div
       role="button"
       onClick={onClick}
-      className={`luxury-card p-10 text-left transition-all duration-700 group relative overflow-hidden min-h-[320px] flex flex-col justify-end cursor-pointer ${
-        isActive ? "border-[#C9A84C]/60 bg-[#C9A84C]/10" : "hover:bg-white/5"
+      className={`obsidian-glass rounded-[3rem] p-10 text-left transition-all duration-700 group relative overflow-hidden min-h-[340px] flex flex-col justify-end cursor-pointer ${
+        isActive ? "border-[#C9A84C]/60 bg-[#C9A84C]/10 shadow-[0_0_80px_rgba(201,168,76,0.2)]" : "hover:border-[#C9A84C]/40 hover:shadow-[0_0_50px_rgba(201,168,76,0.1)]"
       }`}
     >
       <div className="absolute inset-0 z-0">
         <MysticImage 
           prompt={system.prompt} 
-          className={`w-full h-full transition-all duration-1000 ${isActive ? "opacity-60 scale-105" : "opacity-20 group-hover:opacity-40"}`}
+          className={`w-full h-full object-cover transition-all duration-1000 ${isActive ? "opacity-70 scale-110" : "opacity-30 group-hover:opacity-50 group-hover:scale-105"}`}
           aspectRatio="3:4"
         />
       </div>
-      <div className="relative z-10">
-        <Icon className={`w-10 h-10 mb-6 transition-all duration-700 ${
-          isActive ? "text-[#C9A84C] scale-110" : "text-[#E8DFB8]/20 group-hover:text-[#E8DFB8]/40"
-        }`} />
-        <h3 className={`text-2xl font-serif mb-3 transition-colors ${isActive ? "gold-gradient-text" : ""}`}>
+      <div className="absolute inset-0 bg-gradient-to-t from-[#080510] via-[#080510]/60 to-transparent z-10" />
+      <div className="relative z-20">
+        <div className="w-16 h-16 rounded-3xl border border-[#C9A84C]/20 flex items-center justify-center bg-[#C9A84C]/5 mb-6 group-hover:bg-[#C9A84C]/15 group-hover:scale-110 transition-all duration-700">
+          <Icon className={`w-8 h-8 transition-colors ${
+            isActive ? "text-[#C9A84C]" : "text-[#C9A84C]/50 group-hover:text-[#C9A84C]"
+          }`} />
+        </div>
+        <h3 className={`text-3xl font-serif mb-3 tracking-wide transition-colors ${isActive ? "gold-gradient-text" : "text-[#E8DFB8] group-hover:text-white"}`}>
           {system.name}
         </h3>
-        <p className="text-[#E8DFB8]/40 text-sm leading-relaxed">{system.desc}</p>
+        <p className="text-[#E8DFB8]/60 text-sm font-serif leading-relaxed line-clamp-3">{system.desc}</p>
       </div>
     </div>
   );
@@ -161,17 +164,19 @@ export function ExploreView() {
 
             {/* Guide Entry Point */}
             <motion.div
-              whileHover={{ scale: 1.01 }}
+              whileHover={{ scale: 1.015 }}
               onClick={() => setIsGuideOpen(true)}
-              className="w-full relative luxury-card p-8 sm:p-12 cursor-pointer group overflow-hidden flex flex-col items-center justify-center text-center border-[#C9A84C]/20 bg-[#C9A84C]/5"
+              className="w-full relative obsidian-glass aura-ring rounded-[3.5rem] p-10 sm:p-16 cursor-pointer group overflow-hidden flex flex-col items-center justify-center text-center border border-[#C9A84C]/40 shadow-[0_0_80px_rgba(201,168,76,0.15)]"
             >
-              <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10 mix-blend-screen" />
-              <Sparkles className="w-8 h-8 text-[#C9A84C] mb-4 opacity-50" />
-              <h2 className="text-2xl font-serif gold-gradient-text mb-2 tracking-widest">
+              <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20 mix-blend-screen pointer-events-none" />
+              <div className="w-20 h-20 rounded-full bg-[#C9A84C]/10 border border-[#C9A84C]/30 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-700 shadow-[0_0_40px_rgba(201,168,76,0.2)]">
+                <Sparkles className="w-10 h-10 text-[#C9A84C] animate-pulse" />
+              </div>
+              <h2 className="text-3xl md:text-5xl font-serif gold-gradient-text mb-4 tracking-widest uppercase">
                 唤醒全知向导
               </h2>
-              <p className="text-[#E8DFB8]/60 font-serif">
-                迷茫的旅人，不知从何问起？让我为你指引。
+              <p className="text-lg md:text-xl text-[#E8DFB8]/70 font-serif max-w-xl italic">
+                迷茫的旅人，不知从何问起？让我进入阿卡夏之眼为你指引。
               </p>
             </motion.div>
 

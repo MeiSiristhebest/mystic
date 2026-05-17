@@ -350,3 +350,33 @@
 - **Decision: Vercel Deployment & pnpm v11 Hardening**
   - **Reason**: Vercel CI aborted with `[ERR_PNPM_IGNORED_BUILDS]` because Vercel's global pnpm v11 runner deprecated `onlyBuiltDependencies` in favor of `allowBuilds`. Furthermore, stale lockfiles (`pnpm-lock.yaml`) retained old unapproved build flags.
   - **Action**: Updated `package.json` to include both `onlyBuiltDependencies` and `allowBuilds` arrays, configured `.npmrc` with `ignore-scripts=false` and `strict-dep-builds=false`, and enforced clean lockfile regeneration via `Remove-Item pnpm-lock.yaml; pnpm install` to embed correct native binary script permissions.
+
+## [2026-05-17] Phase 22: Full-Stack Performance, Rendering & UI/UX Optimization
+
+- **Decision: 60FPS Streaming Throttling & DOM Virtualization**
+  - **Reason**: High-frequency chunk returns in AI streaming (`useAIChat.ts`) triggered continuous React re-renders, causing input stutter and CPU spikes. Furthermore, inline component definitions in `MysticMarkdown` unmounted the entire DOM tree on every state update.
+  - **Action**: Implemented a 60ms time-window update queue in `useAIChat.ts` to batch streaming updates. Extracted all markdown renderers (`h1`, `h2`, `p`, `blockquote`, `ul`, `ol`, `li`) into atomic `React.memo` components, preventing re-render cascades across long mystical readings.
+- **Decision: Sacred Haptic & Audio Resonance Engine**
+  - **Reason**: Divination rituals lacked multi-sensory feedback during loading and tossing transitions.
+  - **Action**: Implemented Web Audio API 432Hz sacred frequency gong synthesis (`playMysticChime`) and cross-platform haptic vibration (`triggerHapticVibration`). Embedded them in `MysticTarot`, `IChingApp`, and `BaziApp` initialization phases.
+- **Decision: Mobile GPU Hardware Acceleration & Adaptive Blurring**
+  - **Reason**: Continuous CSS backdrop-filter `blur(60px)` and infinite rotation SVGs triggered heavy offscreen GPU calculations, causing device overheating on mobile WebKit.
+  - **Action**: Created `@utility gpu-accelerated` with `translateZ(0)` and `will-change: transform`. Configured media queries in `globals.css` to gracefully degrade blur intensity on mobile screens (<768px). Memoized random particle seed arrays in `StreamingParticles` to pass Turbopack purity checks.
+- **Decision: Cost Optimization & Memory LRU Cache Gateway**
+  - **Reason**: Repeated IndexedDB I/O calls for cross-view navigation caused micro-latencies, and dashboard daily oracles unnecessarily consumed expensive Pro model RPD tokens.
+  - **Action**: Down-tiered `TodayView` daily oracle generation from `MODELS.PRO` to `MODELS.FLASH`. Implemented an in-memory LRU cache map in `lib/storage.ts` to intercept IndexedDB requests, achieving zero-latency O(1) page transitions.
+
+## [2026-05-17] Phase 23: Liquid Akasha Master Aesthetic & Sensory Overhaul
+
+- **Decision: Starry Obsidian Glass & Liquid Aura Design System**
+  - **Reason**: To wow users with a highly premium, dark-mystical aesthetic that transcends standard UI card layouts.
+  - **Action**: Developed `@utility obsidian-glass` (grain noise + deep obsidian gradient), `@utility liquid-border` (fluid glowing border), and `@utility aura-ring` (15s cosmic aura breathing field) in `app/globals.css`.
+- **Decision: Cinematic TodayView & Guide Handoff**
+  - **Reason**: Standard dashboard grids lacked a sacred, immersive first impression.
+  - **Action**: Upgraded `TodayView.tsx` with full-screen Ken Burns zooming hero frames and gold-carved editorial typography. Enhanced guide cards in `ExploreView.tsx` to glow with breathing cosmic auras.
+- **Decision: 3D Tarot Shuffling & Astrolabe Loader Transformation**
+  - **Reason**: Flat SVG loading spinners failed to match the esoterica theme.
+  - **Action**: Re-engineered `TarotRitualManager.tsx` to showcase 3D perspective floating shuffle arcs paired with Web Audio chime and haptic pulses on card reveal. Transformed `CrystalBallLoader.tsx` into a dual-rotating golden celestial sphere.
+- **Decision: Scroll-Reveal Markdown Virtualization**
+  - **Reason**: Huge oracle text blocks appearing instantly felt overwhelming and lacked ceremony.
+  - **Action**: Wrapped memoized markdown renderers (`p`, `blockquote`, `li`) in `MysticMarkdown.tsx` with `motion.div whileInView` viewport triggers, revealing paragraphs progressively as users scroll.

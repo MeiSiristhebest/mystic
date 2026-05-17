@@ -32,10 +32,16 @@ async function getDB() {
   return dbPromise;
 }
 
+// In-memory cache layer for instant O(1) cross-view access
+const memoryCache = new Map<string, { value: any; timestamp: number }>();
+const CACHE_TTL = 30 * 60 * 1000; // 30 minutes in memory
+
 // Generic Store Operations
 export async function saveToStore(storeName: string, key: string, value: any) {
+  const fullKey = `${storeName}::${key}`;
+  memoryCache.set(fullKey, { value, timestamp: Date.now() });
+
   const db = await getDB();
-  // If the store has a keyPath, we don't need to provide the key separately in put()
   if (storeName === 'journey-entries') {
     return db.put(storeName, value);
   }
@@ -43,8 +49,18 @@ export async function saveToStore(storeName: string, key: string, value: any) {
 }
 
 export async function getFromStore(storeName: string, key: string) {
+  const fullKey = `${storeName}::${key}`;
+  const cached = memoryCache.get(fullKey);
+  if (cached && (Date.now() - cached.timestamp < CACHE_TTL)) {
+    return cached.value;
+  }
+
   const db = await getDB();
-  return db.get(storeName, key);
+  const val = await db.get(storeName, key);
+  if (val !== undefined && val !== null) {
+    memoryCache.set(fullKey, { value: val, timestamp: Date.now() });
+  }
+  return val;
 }
 
 export async function getAllFromStore(storeName: string) {
@@ -53,11 +69,19 @@ export async function getAllFromStore(storeName: string) {
 }
 
 export async function deleteFromStore(storeName: string, key: string) {
+  const fullKey = `${storeName}::${key}`;
+  memoryCache.delete(fullKey);
+
   const db = await getDB();
   return db.delete(storeName, key);
 }
 
 export async function clearStore(storeName: string) {
+  for (const k of memoryCache.keys()) {
+    if (k.startsWith(`${storeName}::`)) {
+      memoryCache.delete(k);
+    }
+  }
   const db = await getDB();
   return db.clear(storeName);
 }

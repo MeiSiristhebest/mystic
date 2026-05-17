@@ -67,10 +67,17 @@ export function useAIChat({
         streamInput = prompt;
       }
 
+      let lastUpdateTime = Date.now();
       for await (const chunk of stream(streamInput as any, si)) {
         fullResponse += chunk;
-        setMessages([...newMessages, { role: 'model', content: fullResponse } as Message]);
+        const now = Date.now();
+        if (now - lastUpdateTime > 60) {
+          setMessages([...newMessages, { role: 'model', content: fullResponse } as Message]);
+          lastUpdateTime = now;
+        }
       }
+      // 确保流束结束时最后一帧全量渲染
+      setMessages([...newMessages, { role: 'model', content: fullResponse } as Message]);
 
       const finalMessages = [...newMessages, { role: 'model', content: fullResponse } as Message];
 

@@ -17,6 +17,7 @@ import { useUserProfile } from '@/hooks/useUserProfile';
 import { usePosterGenerator } from '@/hooks/usePosterGenerator';
 import { getIChingPrompt } from '@/lib/prompts';
 import { getQiMenServerData } from '@/app/actions/aiActions';
+import { playMysticChime, triggerHapticVibration } from '@/lib/audio';
 
 interface IChingAppProps {
   mode?: string;
@@ -59,6 +60,9 @@ export default function IChingApp({
   }, [isLoading, onReadingChange]);
 
   const handleGenerate = useCallback(async (type: 'liuyao' | 'meihua' | 'qimen', customLines?: number[], overrideNum1?: string, overrideNum2?: string) => {
+    playMysticChime();
+    triggerHapticVibration();
+
     const profileContext = getProfileContext();
     let promptData: any = { method: type };
 

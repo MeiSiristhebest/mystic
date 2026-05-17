@@ -109,6 +109,10 @@
     inset 0 0 0 1px rgba(255, 255, 255, 0.02);
   position: relative;
   transition: all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+  @media (max-width: 768px) {
+    backdrop-filter: blur(24px) saturate(150%);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+  }
   &::after {
     content: '';
     position: absolute;
@@ -122,6 +126,16 @@
     mask-composite: exclude;
     pointer-events: none;
   }
+}
+
+@utility gpu-accelerated {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  perspective: 1000px;
+  -webkit-perspective: 1000px;
 }
 
 @utility luxury-card {
@@ -142,6 +156,63 @@
   -webkit-backdrop-filter: blur(40px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  @media (max-width: 768px) {
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+  }
+}
+
+@utility obsidian-glass {
+  background: linear-gradient(135deg, rgba(20, 14, 32, 0.65), rgba(8, 5, 16, 0.85));
+  backdrop-filter: blur(40px) saturate(190%);
+  -webkit-backdrop-filter: blur(40px) saturate(190%);
+  border: 1px solid rgba(201, 168, 76, 0.18);
+  box-shadow: 
+    0 30px 100px rgba(0, 0, 0, 0.85),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.5);
+  position: relative;
+  overflow: hidden;
+  @media (max-width: 768px) {
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+  }
+}
+
+@utility aura-ring {
+  position: relative;
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: inherit;
+    background: linear-gradient(120deg, #C9A84C, #2d1b4e, #E8DFB8, #C9A84C);
+    background-size: 300% 300%;
+    animation: aurora-flow 15s ease infinite alternate;
+    filter: blur(8px);
+    opacity: 0.65;
+    z-index: -1;
+  }
+}
+
+@utility liquid-border {
+  position: relative;
+  border-radius: inherit;
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(201, 168, 76, 0.4), transparent 40%, rgba(201, 168, 76, 0.1), transparent 70%, rgba(201, 168, 76, 0.4));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    background-size: 200% 200%;
+    animation: shine 8s linear infinite;
+  }
 }
 
 @utility micro-label {

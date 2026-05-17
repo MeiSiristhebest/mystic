@@ -17,6 +17,7 @@ import { useUserProfile } from '@/hooks/useUserProfile';
 import { usePosterGenerator } from '@/hooks/usePosterGenerator';
 import { getBaziPrompt } from '@/lib/prompts';
 import { useAppStore } from '@/lib/store';
+import { playMysticChime, triggerHapticVibration } from '@/lib/audio';
 
 interface BaziAppProps {
   mode?: 'bazi' | 'ziwei' | 'liunian';
@@ -68,6 +69,9 @@ export default function BaziApp({
 
   const handleGenerate = useCallback(async () => {
     if (!birthDate || !birthTime) return;
+
+    playMysticChime();
+    triggerHapticVibration();
 
     // Always update profile store to keep gender and birth info perfectly synced across modules
     updateProfile({ birthDate, birthTime, gender, name: fullName, birthPlace });

@@ -14,6 +14,7 @@ import { getDailyTarotCards } from "@/lib/tarot-data";
 import { useJourney } from "@/hooks/useJourney";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useAppStore } from "@/lib/store";
+import { playMysticChime, triggerHapticVibration } from "@/lib/audio";
 import BreathingLoading from "../BreathingLoading";
 
 import { RitualLayout } from "./Visuals";
@@ -70,6 +71,8 @@ export function MysticTarot({ initialHandoff, clearHandoff }: MysticTarotProps =
         if (targetSpread) {
           setCards(getDailyTarotCards(targetSpread.cardCount));
           setStep("ritual");
+          playMysticChime();
+          triggerHapticVibration();
         }
       }
       clearHandoff?.();
@@ -81,6 +84,9 @@ export function MysticTarot({ initialHandoff, clearHandoff }: MysticTarotProps =
     const spread = SPREAD_MODES.find(s => s.id === selectedSpread);
     if (!spread) return;
     
+    playMysticChime();
+    triggerHapticVibration();
+
     setCards(getDailyTarotCards(spread.cardCount));
     setStep("ritual");
   };

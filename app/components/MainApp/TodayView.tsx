@@ -32,7 +32,7 @@ export function TodayView() {
   const { profile, isLoaded: isProfileLoaded } = useUserProfile();
   const { entries, isLoaded: journeyLoaded } = useJourney();
   const aiOptions = useMemo(() => ({ 
-    model: MODELS.PRO,
+    model: MODELS.FLASH,
     config: { responseMimeType: "application/json" } 
   }), []);
 
@@ -223,57 +223,56 @@ ${JSON.stringify(profile)}
       </header>
 
       {/* 2. Main Oracle Card (Cinematic Overlay) */}
-      <section ref={posterRef} className="relative group">
-        <div className="relative aspect-[4/5] md:aspect-[1.4/1] rounded-[4rem] overflow-hidden shadow-[0_0_120px_rgba(0,0,0,0.9)] border border-white/10">
+      <section ref={posterRef} className="relative group aura-ring rounded-[4rem]">
+        <div className="relative aspect-[4/5] md:aspect-[1.4/1] rounded-[4rem] overflow-hidden obsidian-glass liquid-border shadow-[0_40px_150px_rgba(0,0,0,0.95)]">
           <div className="absolute inset-0 z-0">
             <MysticImage 
               prompt={dailyData?.imagePrompt || "Abstract mystical cosmic art"} 
               aspectRatio="3:4" 
-              className="w-full h-full object-cover scale-100 group-hover:scale-105 transition-transform duration-[25s] ease-out opacity-80"
+              className="w-full h-full object-cover scale-100 group-hover:scale-110 transition-transform duration-[30s] ease-out opacity-85"
             />
           </div>
           
-          <div className="absolute inset-0 bg-gradient-to-t from-[#050308] via-transparent to-[#050308]/40 z-10" />
-          <div className="absolute inset-0 bg-black/10 z-10" />
-          <div className="absolute inset-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#050308] via-[#050308]/50 to-[#050308]/20 z-10" />
+          <div className="absolute inset-0 opacity-30 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] pointer-events-none" />
 
           <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-8 md:p-24 text-center space-y-16">
             <div className="space-y-3">
-              <div className="h-px w-12 bg-gradient-to-r from-transparent via-amber-500/40 to-transparent mx-auto" />
-              <span className="text-[10px] font-serif tracking-[0.6em] text-amber-500/60 uppercase">今日神谕</span>
+              <div className="h-px w-16 bg-gradient-to-r from-transparent via-amber-500/50 to-transparent mx-auto" />
+              <span className="text-[11px] font-serif tracking-[0.8em] text-amber-500/80 uppercase font-medium">今日神谕</span>
             </div>
 
-            <p className="text-2xl md:text-5xl lg:text-6xl font-serif text-amber-50/95 leading-[1.7] italic max-w-5xl drop-shadow-[0_0_40px_rgba(0,0,0,0.8)] px-4">
+            <p className="text-3xl md:text-5xl lg:text-6xl font-serif text-[#E8DFB8] leading-[1.85] tracking-[0.03em] italic max-w-5xl drop-shadow-[0_0_50px_rgba(201,168,76,0.3)] px-6">
               「 {dailyData?.reading ? cleanMysticContent(dailyData.reading).replace(/「|」/g, '') : "正在感应阿卡夏场域..."} 」
             </p>
 
             <div className="flex flex-col items-center gap-10">
-              <span className="text-xs md:text-xl text-amber-200/40 font-serif tracking-[0.4em] uppercase">{dailyData?.subMotto}</span>
+              <span className="text-sm md:text-2xl text-[#C9A84C]/60 font-serif tracking-[0.5em] uppercase font-light drop-shadow-sm">{dailyData?.subMotto}</span>
               
               <div className="flex flex-wrap justify-center gap-6">
                 <button 
                   onClick={handleInscribe}
                   disabled={isInscribing}
-                  className="flex items-center gap-3 px-10 py-4 rounded-full bg-black/40 border border-white/10 text-amber-200/70 hover:text-amber-100 hover:border-amber-500/40 transition-all text-[10px] tracking-[0.3em] uppercase backdrop-blur-2xl group/btn"
+                  className="flex items-center gap-3 px-12 py-5 rounded-full bg-[#080510]/80 border border-[#C9A84C]/30 text-[#E8DFB8]/80 hover:text-white hover:border-[#C9A84C] hover:bg-[#080510] transition-all duration-700 text-[11px] tracking-[0.4em] uppercase backdrop-blur-3xl shadow-[0_0_30px_rgba(201,168,76,0.15)] group/btn"
                 >
-                  <Sparkles className={`w-3.5 h-3.5 transition-transform group-hover/btn:scale-110 ${isInscribing ? 'animate-spin text-amber-500' : ''}`} />
+                  <Sparkles className={`w-4 h-4 text-[#C9A84C] transition-transform group-hover/btn:scale-125 ${isInscribing ? 'animate-spin' : ''}`} />
                   {isInscribing ? "记录中" : "铭刻至日记"}
                 </button>
                 <button 
                   onClick={() => handleGeneratePoster(posterRef.current!, `oracle-${todayStr}.jpg`)}
                   disabled={isGeneratingPoster}
-                  className="flex items-center gap-3 px-10 py-4 rounded-full bg-black/40 border border-white/10 text-amber-200/70 hover:text-amber-100 hover:border-amber-500/40 transition-all text-[10px] tracking-[0.3em] uppercase backdrop-blur-2xl group/btn"
+                  className="flex items-center gap-3 px-12 py-5 rounded-full bg-[#080510]/80 border border-[#C9A84C]/30 text-[#E8DFB8]/80 hover:text-white hover:border-[#C9A84C] hover:bg-[#080510] transition-all duration-700 text-[11px] tracking-[0.4em] uppercase backdrop-blur-3xl shadow-[0_0_30px_rgba(201,168,76,0.15)] group/btn"
                 >
-                  <Download className="w-3.5 h-3.5 group-hover/btn:translate-y-0.5 transition-transform" />
+                  <Download className="w-4 h-4 text-[#C9A84C] group-hover/btn:translate-y-1 transition-transform" />
                   {isGeneratingPoster ? "导出中" : "收藏卡片"}
                 </button>
               </div>
             </div>
           </div>
           
-          <div className="absolute bottom-12 right-12 z-30 opacity-20 flex items-center gap-3">
-             <span className="text-[9px] font-serif tracking-[0.2em] text-amber-100/60 uppercase">长按保存卡片</span>
-             <Download className="w-3 h-3 text-amber-100/60" />
+          <div className="absolute bottom-10 right-10 z-30 opacity-30 flex items-center gap-3 font-mono">
+             <span className="text-[9px] font-serif tracking-[0.3em] text-[#E8DFB8]/70 uppercase">长按保存卡片</span>
+             <Download className="w-3.5 h-3.5 text-[#C9A84C]" />
           </div>
         </div>
       </section>
@@ -285,26 +284,26 @@ ${JSON.stringify(profile)}
           { icon: User, label: "性别", value: (profile.gender === '男' || profile.gender === 'male') ? '乾 (男)' : (profile.gender === '女' || profile.gender === 'female') ? '坤 (女)' : profile.gender || "未设定" },
           { icon: Activity, label: "MBTI", value: profile.mbti || "未觉醒" }
         ].map((stat, i) => (
-          <div key={i} className="luxury-card p-12 flex flex-col items-center text-center space-y-6 group hover:border-amber-500/20 transition-all duration-700">
-            <div className="w-16 h-16 rounded-3xl border border-amber-500/10 flex items-center justify-center bg-amber-500/5 group-hover:bg-amber-500/10 group-hover:scale-110 transition-all duration-700">
-              <stat.icon className="w-7 h-7 text-amber-200/30 group-hover:text-amber-200 transition-colors" />
+          <div key={i} className="obsidian-glass rounded-[3rem] p-12 flex flex-col items-center text-center space-y-6 group hover:border-[#C9A84C]/40 transition-all duration-700 hover:shadow-[0_0_50px_rgba(201,168,76,0.1)]">
+            <div className="w-16 h-16 rounded-3xl border border-[#C9A84C]/20 flex items-center justify-center bg-[#C9A84C]/5 group-hover:bg-[#C9A84C]/15 group-hover:scale-110 transition-all duration-700">
+              <stat.icon className="w-7 h-7 text-[#C9A84C]/50 group-hover:text-[#C9A84C] transition-colors" />
             </div>
             <div className="space-y-1">
-              <p className="text-[9px] font-serif tracking-[0.5em] text-amber-100/20 uppercase">{stat.label}</p>
-              <p className="text-3xl font-serif text-amber-100/80 tracking-wide">{stat.value}</p>
+              <p className="text-[10px] font-mono tracking-[0.6em] text-[#C9A84C]/50 uppercase">{stat.label}</p>
+              <p className="text-3xl font-serif text-[#E8DFB8] tracking-wide">{stat.value}</p>
             </div>
           </div>
         ))}
       </section>
 
       {/* 4. Energy Suggestion (Horizontal Bar) */}
-      <section className="luxury-card p-8 md:p-10 rounded-[3rem] flex flex-col md:flex-row items-center gap-8 md:gap-12 bg-[#C9A84C]/5 border-[#C9A84C]/20 group">
-        <div className="w-20 h-20 rounded-full bg-amber-500/10 flex items-center justify-center shrink-0 border border-amber-500/20 shadow-[0_0_40px_rgba(201,168,76,0.15)] group-hover:scale-105 transition-transform duration-700">
-          <Zap className="w-8 h-8 text-amber-400 fill-amber-400/20" />
+      <section className="obsidian-glass aura-ring p-8 md:p-12 rounded-[3.5rem] flex flex-col md:flex-row items-center gap-8 md:gap-12 border border-[#C9A84C]/30 group">
+        <div className="w-24 h-24 rounded-full bg-[#C9A84C]/10 flex items-center justify-center shrink-0 border border-[#C9A84C]/40 shadow-[0_0_50px_rgba(201,168,76,0.25)] group-hover:scale-110 transition-transform duration-700">
+          <Zap className="w-10 h-10 text-[#C9A84C] fill-[#C9A84C]/20 animate-pulse" />
         </div>
         <div className="space-y-3 text-center md:text-left flex-1">
-          <p className="text-[10px] font-serif tracking-[0.6em] text-amber-500/40 uppercase">今日能量建议</p>
-          <p className="text-xl md:text-2xl font-serif text-amber-50/90 leading-relaxed italic pr-4">
+          <p className="text-[11px] font-mono tracking-[0.7em] text-[#C9A84C]/60 uppercase">今日能量建议</p>
+          <p className="text-xl md:text-3xl font-serif text-[#E8DFB8] leading-[1.8] tracking-[0.02em] italic pr-4">
             {cleanMysticContent(dailyData?.energySuggestion || "")}
           </p>
         </div>
