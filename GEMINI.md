@@ -467,3 +467,9 @@
     2. **Days 1 - 7**: `⏳ 沉淀 X 天 · 命运齿轮转动中` (Turning Gears of Fate)
     3. **Days 8 - 30**: `🔮 已过 X 天 · 适宜深度回响` (Prime Echo Window)
     4. **Days > 30**: `🌌 往昔印记 · 沉淀 X 天` (Akashic Anchor)
+
+## [2026-05-17] Phase 31: Collective Mirror Type Resolution & Dual-Arity Prompt Harness
+
+- **Decision: Dual-Arity Prompt Harness for Collective Mirror (`getCollectiveMirrorPrompt`)**
+  - **Reason**: `CollectiveMirrorApp.tsx` invoked `getCollectiveMirrorPrompt` with two arguments (`sanitizedQuestion`, `profileContext`), whereas `hooks/useCollectiveMirror.ts` invoked it with one argument (`profileContext`). The prompt registry previously only defined a single `profileContext` parameter, causing a Vercel build failure during TypeScript compilation (`Expected 1 arguments, but got 2`).
+  - **Action**: Refactored `getCollectiveMirrorPrompt` in `lib/prompts/psychology.ts` to accept `(questionOrProfile: string, optionalProfileContext?: string)`. Implemented robust internal parameter resolution to correctly map `question` and `profileContext` regardless of arity, restoring strict TypeScript type compatibility and unblocking production deployment on Vercel.

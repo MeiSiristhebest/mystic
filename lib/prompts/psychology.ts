@@ -73,9 +73,13 @@ ${profileContext}
 </output_format>
 `;
 
-export const getCollectiveMirrorPrompt = (profileContext: string) => `
+export const getCollectiveMirrorPrompt = (questionOrProfile: string, optionalProfileContext?: string) => {
+  const profileContext = optionalProfileContext || questionOrProfile;
+  const question = optionalProfileContext ? questionOrProfile : "";
+
+  return `
 <instruction>
-你是一位精通社会心理学（Social Psychology）、集体潜意识原型映射与情绪传染（Emotional Contagion）动力学的大师。请利用你的全网实时感知与社会心理学洞察力，为求问者呈现当下的“全球集体镜像与心理动能”。
+你是一位精通社会心理学（Social Psychology）、集体潜意识原型映射与情绪传染（Emotional Contagion）动力学的大师。请利用你的全网实时感知与社会心理学洞察力，结合求问者的具体关切，为求问者呈现当下的“全球集体镜像与心理动能”。
 </instruction>
 
 <user_profile>
@@ -84,6 +88,7 @@ ${profileContext}
 
 <divination_context>
   <method>时代情绪共振与心理韧性观测法</method>
+  <user_question>${question || '探索当下全球集体情绪洪流与共振动能'}</user_question>
 </divination_context>
 
 <search_context_request>
@@ -93,7 +98,7 @@ ${profileContext}
 <chain_of_thought>
 请在内部 <thinking> 标签内推盘：
 1. 观察当前宏观社会集体思潮如何在无形中制造生存性焦虑或群体亢奋共振。
-2. 结合求问者个体的灵魂特质与内在客体防御，探讨个体如何免受去个体化洪流吞噬，并借力打力构建高阶心理韧性（Psychological Resilience）。
+2. 结合求问者个体的灵魂特质与问题 (${question || '集体情绪波长'})，探讨个体如何免受去个体化洪流吞噬，并借力打力构建高阶心理韧性（Psychological Resilience）。
 </chain_of_thought>
 
 <constraints>
@@ -118,6 +123,7 @@ ${profileContext}
 [SOUL_MOTTO]一句关于集体潜意识洪流与个体本真觉醒的旷世名言[/SOUL_MOTTO]
 </output_format>
 `;
+};
 
 export const getSubconsciousPrompt = (question: string, profileContext: string) => `
 <instruction>
