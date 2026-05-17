@@ -112,38 +112,39 @@ const AssociationBubble = React.memo(({ association }: { association: any }) => 
 });
 AssociationBubble.displayName = "AssociationBubble";
 
-// --- Extracted Memoized Markdown Renderers ---
 const MemoH1 = React.memo(({ children }: { children?: React.ReactNode }) => (
-  <div className="relative w-full flex flex-col items-center justify-center mb-16 mt-20">
-    <div className="absolute top-0 w-32 h-[1px] bg-gradient-to-r from-transparent via-amber-500/50 to-transparent"></div>
-    <h1 className="text-3xl md:text-4xl font-serif text-transparent bg-clip-text bg-gradient-to-b from-amber-100 to-amber-400 text-center tracking-[0.2em] drop-shadow-[0_0_15px_rgba(252,211,77,0.5)] py-8">
+  <div className="relative w-full flex flex-col items-center justify-center mb-16 mt-20 group">
+    <div className="absolute top-0 w-48 h-px bg-gradient-to-r from-transparent via-[#C9A84C]/80 to-transparent shadow-[0_0_15px_#C9A84C]"></div>
+    <h1 className="text-4xl md:text-5xl font-serif text-transparent bg-clip-text bg-gradient-to-b from-[#E8DFB8] to-[#C9A84C] text-center tracking-[0.25em] drop-shadow-[0_0_25px_rgba(201,168,76,0.4)] py-8 font-medium">
       {children}
     </h1>
-    <div className="absolute bottom-0 w-32 h-[1px] bg-gradient-to-r from-transparent via-amber-500/50 to-transparent"></div>
-    <span className="absolute -top-3 text-amber-500/40 text-lg">✦</span>
-    <span className="absolute -bottom-3 text-amber-500/40 text-lg">✦</span>
+    <div className="absolute bottom-0 w-48 h-px bg-gradient-to-r from-transparent via-[#C9A84C]/80 to-transparent shadow-[0_0_15px_#C9A84C]"></div>
+    <span className="absolute -top-4 text-[#C9A84C]/60 text-2xl animate-pulse">✧</span>
+    <span className="absolute -bottom-4 text-[#C9A84C]/60 text-2xl animate-pulse">✧</span>
   </div>
 ));
 MemoH1.displayName = "MemoH1";
 
 const MemoH2 = React.memo(({ children }: { children?: React.ReactNode }) => (
-  <div className="w-full flex flex-col items-center mb-10 mt-16">
-    <h2 className="text-2xl md:text-3xl font-serif text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-500 pb-4 flex items-center gap-4 drop-shadow-[0_0_10px_rgba(252,211,77,0.3)] relative text-center">
-      <span className="text-amber-500/60 text-xl drop-shadow-none">◈</span>
+  <div className="w-full flex flex-col items-center mb-12 mt-20">
+    <h2 className="text-2xl md:text-3xl font-serif text-transparent bg-clip-text bg-gradient-to-r from-[#E8DFB8] via-[#C9A84C] to-[#E8DFB8] pb-5 flex items-center gap-6 drop-shadow-[0_0_15px_rgba(201,168,76,0.3)] relative text-center tracking-widest bg-[length:200%_auto] animate-[gradient_8s_ease_infinite]">
+      <span className="text-[#C9A84C]/50 text-xl drop-shadow-none">⟡</span>
       {children}
-      <span className="text-amber-500/60 text-xl drop-shadow-none">◈</span>
+      <span className="text-[#C9A84C]/50 text-xl drop-shadow-none">⟡</span>
     </h2>
-    <div className="w-48 h-[1px] bg-gradient-to-r from-transparent via-amber-500/40 to-transparent mt-1"></div>
+    <div className="w-64 h-px bg-gradient-to-r from-transparent via-[#C9A84C]/40 to-transparent mt-2 relative">
+      <div className="absolute inset-0 bg-[#C9A84C]/20 blur-sm"></div>
+    </div>
   </div>
 ));
 MemoH2.displayName = "MemoH2";
 
 const MemoH3 = React.memo(({ children }: { children?: React.ReactNode }) => (
-  <div className="w-full flex justify-center mb-8 mt-12">
-    <h3 className="text-xl md:text-2xl font-serif text-amber-300/90 flex items-center gap-3 tracking-wide text-center">
-      <span className="text-amber-600/70 text-base">◇</span>
+  <div className="w-full flex justify-center mb-8 mt-14">
+    <h3 className="text-xl md:text-2xl font-serif text-[#E8DFB8]/90 flex items-center gap-4 tracking-wider text-center drop-shadow-md">
+      <span className="text-[#C9A84C]/70 text-lg">✦</span>
       {children}
-      <span className="text-amber-600/70 text-base">◇</span>
+      <span className="text-[#C9A84C]/70 text-lg">✦</span>
     </h3>
   </div>
 ));
@@ -151,39 +152,48 @@ MemoH3.displayName = "MemoH3";
 
 const MemoP = React.memo(({ children, className }: { children?: React.ReactNode, className?: string }) => (
   <motion.div 
-    initial={{ opacity: 0, y: 12 }}
+    initial={{ opacity: 0, y: 15 }}
     whileInView={{ opacity: 1, y: 0 }}
     viewport={{ once: true, margin: "-10px" }}
-    transition={{ duration: 0.8, ease: [0.2, 0.8, 0.2, 1] }}
+    transition={{ duration: 0.9, ease: [0.2, 0.8, 0.2, 1] }}
     className={className}
   >
-    <p className="leading-[2.2] tracking-[0.03em] text-[#E8DFB8]/90 font-light font-serif">{children}</p>
+    <p className="leading-[2.4] tracking-[0.04em] text-[#E8DFB8]/90 font-light font-serif text-[17px] md:text-lg break-words text-justify selection:bg-[#C9A84C]/30 selection:text-white">
+      {children}
+    </p>
   </motion.div>
 ));
 MemoP.displayName = "MemoP";
 
 const MemoStrong = React.memo(({ children }: { children?: React.ReactNode }) => (
-  <strong className="font-semibold text-[#C9A84C] bg-[#C9A84C]/10 px-2 py-0.5 rounded-lg shadow-[0_0_15px_rgba(201,168,76,0.3)] border border-[#C9A84C]/30 mx-0.5 tracking-wider">
+  <strong className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#E8DFB8] via-[#C9A84C] to-[#E8DFB8] drop-shadow-[0_0_15px_rgba(201,168,76,0.6)] mx-0.5 tracking-wider bg-[length:200%_auto] selection:text-white">
     {children}
   </strong>
 ));
 MemoStrong.displayName = "MemoStrong";
 
 const MemoEm = React.memo(({ children }: { children?: React.ReactNode }) => (
-  <em className="italic text-[#E8DFB8] font-serif tracking-widest drop-shadow-[0_0_10px_rgba(232,223,184,0.4)]">{children}</em>
+  <em className="italic text-[#E8DFB8] font-serif tracking-widest drop-shadow-[0_0_12px_rgba(232,223,184,0.5)] border-b border-[#C9A84C]/30 pb-0.5 mx-0.5 selection:bg-[#C9A84C]/30 selection:text-white">{children}</em>
 ));
 MemoEm.displayName = "MemoEm";
 
 const MemoBlockquote = React.memo(({ children }: { children?: React.ReactNode }) => (
   <motion.blockquote 
-    initial={{ opacity: 0, x: -15 }}
-    whileInView={{ opacity: 1, x: 0 }}
+    initial={{ opacity: 0, scale: 0.95 }}
+    whileInView={{ opacity: 1, scale: 1 }}
     viewport={{ once: true }}
     transition={{ duration: 0.8 }}
-    className="relative border-l-4 border-[#C9A84C] pl-10 py-8 my-12 bg-gradient-to-r from-[#C9A84C]/15 via-[#C9A84C]/5 to-transparent italic text-[#E8DFB8] rounded-r-2xl shadow-[inset_0_0_40px_rgba(201,168,76,0.08)] text-left backdrop-blur-sm border-r border-white/5"
+    className="relative my-14 p-10 md:p-12 text-left rounded-[2.5rem] obsidian-glass border border-[#C9A84C]/30 shadow-[0_30px_60px_rgba(0,0,0,0.6)] overflow-hidden group selection:bg-[#C9A84C]/30 selection:text-white"
   >
-    <span className="absolute left-3 top-2 text-[#C9A84C]/30 text-6xl leading-none font-serif select-none pointer-events-none">&quot;</span>
-    <div className="relative z-10 leading-[2.2] text-lg font-serif">{children}</div>
+    <div className="absolute inset-0 bg-gradient-to-br from-[#C9A84C]/10 via-transparent to-[#C9A84C]/5 z-0" />
+    <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] pointer-events-none z-0" />
+    <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-[#C9A84C] via-[#E8DFB8] to-[#C9A84C] shadow-[0_0_20px_#C9A84C] z-10" />
+    
+    <span className="absolute right-6 -top-6 text-[#C9A84C]/10 text-[120px] font-serif select-none pointer-events-none z-0 rotate-12 transition-transform duration-1000 group-hover:rotate-0">”</span>
+    
+    <div className="relative z-10 leading-[2.4] text-lg md:text-xl font-serif text-[#E8DFB8]/90 italic font-light tracking-wide">
+      {children}
+    </div>
   </motion.blockquote>
 ));
 MemoBlockquote.displayName = "MemoBlockquote";
@@ -194,7 +204,7 @@ const MemoUl = React.memo(({ children, className }: { children?: React.ReactNode
     whileInView={{ opacity: 1 }}
     viewport={{ once: true }}
     transition={{ duration: 0.8 }}
-    className={className}
+    className={`${className} space-y-4 my-6 selection:bg-[#C9A84C]/30 selection:text-white`}
   >
     {children}
   </motion.ul>
@@ -207,7 +217,7 @@ const MemoOl = React.memo(({ children, className }: { children?: React.ReactNode
     whileInView={{ opacity: 1 }}
     viewport={{ once: true }}
     transition={{ duration: 0.8 }}
-    className={className}
+    className={`${className} space-y-4 my-6 list-decimal list-inside text-[#C9A84C]/80 font-serif selection:bg-[#C9A84C]/30 selection:text-white`}
   >
     {children}
   </motion.ol>
@@ -220,17 +230,18 @@ const MemoLi = React.memo(({ children, className }: { children?: React.ReactNode
     whileInView={{ opacity: 1, x: 0 }}
     viewport={{ once: true }}
     transition={{ duration: 0.5 }}
-    className={className}
+    className={`${className} pl-7 relative leading-[2.3] tracking-wide text-[#E8DFB8]/85 font-light selection:bg-[#C9A84C]/30 selection:text-white`}
   >
+    <span className="absolute left-1 top-3 w-1.5 h-1.5 rounded-full bg-[#C9A84C] shadow-[0_0_10px_#C9A84C]" />
     {children}
   </motion.li>
 ));
 MemoLi.displayName = "MemoLi";
 
 const MemoHr = React.memo(() => (
-  <div className="w-full flex items-center justify-center my-14 relative">
-    <div className="absolute w-full h-[1px] bg-gradient-to-r from-transparent via-amber-500/20 to-transparent"></div>
-    <div className="px-6 bg-[#0a0502] text-amber-500/50 text-sm tracking-[0.5em] relative z-10 font-serif">✦ ✦ ✦</div>
+  <div className="w-full flex flex-col items-center justify-center my-20 relative gap-3">
+    <Sparkles className="w-5 h-5 text-[#C9A84C]/40 animate-pulse" />
+    <div className="w-full h-px bg-gradient-to-r from-transparent via-[#C9A84C]/30 to-transparent" />
   </div>
 ));
 MemoHr.displayName = "MemoHr";
@@ -244,17 +255,51 @@ MemoA.displayName = "MemoA";
 
 const MemoCode = React.memo(({ inline, children }: { inline?: boolean, children?: React.ReactNode }) => 
   inline ? (
-    <code className="bg-amber-900/30 text-amber-200 px-1.5 py-0.5 rounded text-sm font-mono border border-amber-500/20">{children}</code>
+    <code className="bg-[#C9A84C]/15 text-[#E8DFB8] px-2 py-0.5 rounded-md text-sm font-mono border border-[#C9A84C]/30 shadow-[0_0_10px_rgba(201,168,76,0.2)]">{children}</code>
   ) : (
-    <code className="block bg-[#0a0502] text-amber-100/90 p-4 rounded-xl text-sm font-mono border border-amber-500/20 overflow-x-auto shadow-[inset_0_0_15px_rgba(0,0,0,0.5)] text-left">{children}</code>
+    <div className="my-10 relative rounded-[2.5rem] obsidian-glass border border-[#C9A84C]/30 shadow-[inset_0_0_40px_rgba(201,168,76,0.1),0_20px_50px_rgba(0,0,0,0.8)] overflow-hidden group">
+      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20 pointer-events-none" />
+      <div className="flex items-center justify-between px-8 py-4 bg-gradient-to-r from-[#C9A84C]/20 via-[#C9A84C]/5 to-transparent border-b border-[#C9A84C]/30">
+        <div className="flex items-center gap-2.5">
+          <Sparkles className="w-4 h-4 text-[#C9A84C] animate-pulse" />
+          <span className="text-[10px] font-mono tracking-[0.5em] text-[#C9A84C] uppercase font-bold">阿卡夏排盘矩阵 / DIVINATION MATRIX</span>
+        </div>
+        <div className="flex gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-[#C9A84C]/40 animate-ping" />
+          <span className="w-2 h-2 rounded-full bg-[#C9A84C]/60" />
+        </div>
+      </div>
+      <code className="block p-8 text-[#E8DFB8]/90 text-sm md:text-base font-mono leading-[2.2] overflow-x-auto text-left relative z-10 selection:bg-[#C9A84C]/30">{children}</code>
+    </div>
   )
 );
 MemoCode.displayName = "MemoCode";
 
 const MemoPre = React.memo(({ children }: { children?: React.ReactNode }) => (
-  <pre className="my-6">{children}</pre>
+  <pre className="my-2">{children}</pre>
 ));
 MemoPre.displayName = "MemoPre";
+
+const MemoTable = React.memo(({ children }: { children?: React.ReactNode }) => (
+  <div className="w-full overflow-x-auto my-12 rounded-[2.5rem] obsidian-glass border border-[#C9A84C]/30 shadow-[0_30px_70px_rgba(0,0,0,0.8)]">
+    <table className="w-full text-left border-collapse">{children}</table>
+  </div>
+));
+MemoTable.displayName = "MemoTable";
+
+const MemoTh = React.memo(({ children }: { children?: React.ReactNode }) => (
+  <th className="p-6 md:p-8 bg-gradient-to-r from-[#C9A84C]/25 via-[#C9A84C]/10 to-transparent border-b border-[#C9A84C]/40 text-[#E8DFB8] font-serif text-sm md:text-base tracking-widest font-medium uppercase drop-shadow-sm">
+    {children}
+  </th>
+));
+MemoTh.displayName = "MemoTh";
+
+const MemoTd = React.memo(({ children }: { children?: React.ReactNode }) => (
+  <td className="p-6 md:p-8 border-b border-white/5 text-[#E8DFB8]/80 font-serif leading-[2.2] text-sm md:text-base hover:bg-white/5 transition-colors">
+    {children}
+  </td>
+));
+MemoTd.displayName = "MemoTd";
 
 
 interface MysticMarkdownProps {
@@ -318,6 +363,11 @@ const MysticMarkdown = React.memo(({ content, cards, hideCards, isLoading, cente
     return match.replace(' ', '');
   });
 
+  // Automated Kerning: Elegant half-space between CJK characters and alphanumerics
+  processedContent = processedContent
+    .replace(/([\u4e00-\u9fa5])([a-zA-Z0-9@#%&=\$\(\)\[\]\{\}])/g, '$1 $2')
+    .replace(/([a-zA-Z0-9@#%&=\$\(\)\[\]\{\}])([\u4e00-\u9fa5])/g, '$1 $2');
+
   processedContent = processedContent.replace(/ {2,}/g, ' ');
 
   // Memoized components map based on 'centered' prop
@@ -326,7 +376,7 @@ const MysticMarkdown = React.memo(({ content, cards, hideCards, isLoading, cente
     h2: ({ children }: any) => <MemoH2>{children}</MemoH2>,
     h3: ({ children }: any) => <MemoH3>{children}</MemoH3>,
     p: ({ children }: any) => (
-      <MemoP className={`text-amber-50/90 leading-[2.2] mb-8 last:mb-0 text-[16px] md:text-[17px] tracking-[0.02em] font-light ${centered ? 'text-center' : 'text-left'}`}>
+      <MemoP className={`mb-8 md:mb-10 last:mb-0 first-of-type:text-lg first-of-type:md:text-xl first-of-type:text-white first-of-type:border-l-2 first-of-type:border-[#C9A84C] first-of-type:pl-6 first-of-type:py-1 first-of-type:my-8 first-of-type:font-normal first-of-type:drop-shadow-sm ${centered ? 'text-center' : 'text-left'}`}>
         {children}
       </MemoP>
     ),
@@ -334,17 +384,17 @@ const MysticMarkdown = React.memo(({ content, cards, hideCards, isLoading, cente
     em: ({ children }: any) => <MemoEm>{children}</MemoEm>,
     blockquote: ({ children }: any) => <MemoBlockquote>{children}</MemoBlockquote>,
     ul: ({ children }: any) => (
-      <MemoUl className={`space-y-4 mb-10 ml-2 ${centered ? 'flex flex-col items-center' : 'text-left'}`}>
+      <MemoUl className={`mb-10 ${centered ? 'flex flex-col items-center' : 'text-left'}`}>
         {children}
       </MemoUl>
     ),
     ol: ({ children }: any) => (
-      <MemoOl className={`space-y-4 mb-10 ml-6 list-decimal text-amber-200/80 marker:text-amber-500/70 font-serif text-[16px] md:text-[17px] ${centered ? 'flex flex-col items-center' : 'text-left'}`}>
+      <MemoOl className={`mb-10 ml-6 ${centered ? 'flex flex-col items-center' : 'text-left'}`}>
         {children}
       </MemoOl>
     ),
     li: ({ children }: any) => (
-      <MemoLi className={`text-amber-50/90 leading-[2.2] mb-4 last:mb-0 pl-6 relative before:content-['✦'] before:absolute before:left-0 before:top-[8px] before:text-amber-500/60 before:text-xs tracking-[0.02em] font-light ${centered ? 'text-center' : 'text-left'}`}>
+      <MemoLi className={`mb-4.5 last:mb-0 ${centered ? 'text-center' : 'text-left'}`}>
         {children}
       </MemoLi>
     ),
@@ -352,6 +402,9 @@ const MysticMarkdown = React.memo(({ content, cards, hideCards, isLoading, cente
     a: ({ href, children }: any) => <MemoA href={href}>{children}</MemoA>,
     code: ({ inline, children }: any) => <MemoCode inline={inline}>{children}</MemoCode>,
     pre: ({ children }: any) => <MemoPre>{children}</MemoPre>,
+    table: ({ children }: any) => <MemoTable>{children}</MemoTable>,
+    th: ({ children }: any) => <MemoTh>{children}</MemoTh>,
+    td: ({ children }: any) => <MemoTd>{children}</MemoTd>,
   }), [centered]);
 
   return (
@@ -362,17 +415,17 @@ const MysticMarkdown = React.memo(({ content, cards, hideCards, isLoading, cente
           {cards.map((card, idx) => {
             const imageUrl = card.image || `https://www.trustedtarot.com/img/cards/${card.englishName.toLowerCase().replace(/ /g, "-")}.png`;
             return (
-              <div key={idx} className="relative w-24 h-40 md:w-32 md:h-52 rounded-xl overflow-hidden border-2 border-[#C9A84C]/40 shadow-[0_10px_30px_rgba(0,0,0,0.8)] hover:scale-105 transition-transform duration-500 group">
+              <div key={idx} className="relative w-24 h-40 md:w-32 md:h-52 rounded-2xl overflow-hidden border border-[#C9A84C]/40 shadow-[0_15px_40px_rgba(0,0,0,0.9)] hover:scale-105 transition-transform duration-500 group">
                 <img
                   src={imageUrl}
                   alt={card.name}
                   className={`w-full h-full object-cover ${card.isReversed ? 'rotate-180' : ''}`}
                   crossOrigin="anonymous"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#080510]/90 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity"></div>
-                <div className="absolute bottom-2 left-0 right-0 text-center px-1 pointer-events-none">
-                  <span className="text-[10px] md:text-xs text-[#E8DFB8] font-serif tracking-widest drop-shadow-md">{card.name}</span>
-                  <div className="text-[8px] text-[#C9A84C]/80 font-serif mt-0.5">{card.isReversed ? '逆位' : '正位'}</div>
+                <div className="absolute inset-0 bg-gradient-to-t from-[#080510]/95 via-transparent to-transparent opacity-70 group-hover:opacity-40 transition-opacity"></div>
+                <div className="absolute bottom-3 left-0 right-0 text-center px-2 pointer-events-none">
+                  <span className="text-[11px] md:text-sm text-[#E8DFB8] font-serif tracking-widest drop-shadow-md">{card.name}</span>
+                  <div className="text-[9px] text-[#C9A84C]/80 font-serif mt-1 tracking-widest">{card.isReversed ? '逆位' : '正位'}</div>
                 </div>
               </div>
             );
@@ -384,18 +437,33 @@ const MysticMarkdown = React.memo(({ content, cards, hideCards, isLoading, cente
       </ReactMarkdown>
       {soulMotto && (
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="mt-16 py-10 border-t border-b border-amber-500/20 text-center relative"
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="mt-20 p-12 rounded-[3rem] obsidian-glass border border-[#C9A84C]/40 text-center relative shadow-[0_30px_80px_rgba(0,0,0,0.9)] overflow-hidden group"
         >
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 px-4 bg-[#0a0502] text-amber-500/40 text-[10px] tracking-[0.5em] uppercase">
-            今日格言
+          <div className="absolute inset-0 bg-gradient-to-r from-[#C9A84C]/10 via-transparent to-[#C9A84C]/10 opacity-60" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 px-8 py-1.5 bg-[#C9A84C]/15 border-b border-x border-[#C9A84C]/40 rounded-b-2xl text-[#C9A84C] text-[10px] tracking-[0.6em] uppercase font-mono shadow-[0_5px_15px_rgba(201,168,76,0.2)]">
+            灵魂铭刻 / SOUL MOTTO
           </div>
-          <p className="text-2xl md:text-3xl font-serif gold-gradient-text tracking-[0.1em] italic leading-relaxed">
+          <p className="text-2xl md:text-4xl font-serif text-transparent bg-clip-text bg-gradient-to-r from-[#E8DFB8] via-[#C9A84C] to-[#E8DFB8] tracking-[0.15em] italic leading-[2.1] pt-6 pb-2 drop-shadow-[0_0_25px_rgba(201,168,76,0.5)]">
             「 {soulMotto} 」
           </p>
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2 opacity-50">
+            <span className="w-1 h-1 rounded-full bg-[#C9A84C]" />
+            <span className="w-1.5 h-1.5 rounded-full bg-[#C9A84C]" />
+            <span className="w-1 h-1 rounded-full bg-[#C9A84C]" />
+          </div>
         </motion.div>
       )}
+      
+      {/* Akashic Seal & Epilogue Flourish */}
+      <div className="w-full flex items-center justify-center pt-16 pb-8 opacity-45 font-mono select-none pointer-events-none">
+        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-[#C9A84C]/50 to-transparent max-w-[120px]" />
+        <span className="px-4 text-[10px] text-[#C9A84C] tracking-[0.6em] uppercase font-serif">✦ 铭刻于阿卡夏矩阵 · 洞悉天命之流 ✦</span>
+        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-[#C9A84C]/50 to-transparent max-w-[120px]" />
+      </div>
+
       {association && <AssociationBubble association={association} />}
     </div>
   );

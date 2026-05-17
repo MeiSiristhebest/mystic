@@ -380,3 +380,25 @@
 - **Decision: Scroll-Reveal Markdown Virtualization**
   - **Reason**: Huge oracle text blocks appearing instantly felt overwhelming and lacked ceremony.
   - **Action**: Wrapped memoized markdown renderers (`p`, `blockquote`, `li`) in `MysticMarkdown.tsx` with `motion.div whileInView` viewport triggers, revealing paragraphs progressively as users scroll.
+
+## [2026-05-17] Phase 24: Sleek Compact Immersion & Illuminated Manuscript Markdown
+
+- **Decision: Single-Page Viewport Compactness (`TodayView`)**
+  - **Reason**: Oversized aspect ratios (`aspect-[4/5]`) and massive padding (`p-24`) in hero cards caused vertical overflow, hiding crucial action buttons and forcing excessive scrolling.
+  - **Action**: Removed fixed aspect ratio constraints in favor of responsive `min-h-[400px] md:min-h-[480px]`. Compacted padding (`p-8`), gap spacing (`space-y-10`), and font sizes (`text-2xl md:text-3xl`) across the entire dashboard (Stats Grid, Energy Suggestion, Quick Start), guaranteeing full visual immersion within a single viewport.
+- **Decision: Illuminated Manuscript Texture Architecture (`MysticMarkdown`)**
+  - **Reason**: Standard black background with gold text lacked the premium, ancient texture of a sacred esoterica text.
+  - **Action**: Transformed markdown elements into exquisite ritual artifacts:
+    1. **Metallic Sheen**: Applied `bg-[length:200%_auto] animate-[gradient_8s_ease_infinite]` to `h1`, `h2`, and `strong` for flowing liquid gold typography.
+    2. **Holographic Monoliths**: Re-engineered `blockquote` into 3D obsidian glass with glowing aurora borders and watermark quotation marks (`”`).
+    3. **Akashic Matrix Containers**: Upgraded `code` blocks into sacred monolith frames featuring top title bars (`✦ DIVINATION MATRIX ✦`) and stardust grain textures.
+    4. **Premium Tables & Star Orbs**: Created custom table renderers (`th`, `td`) with purple-gold headers and replaced default list markers with glowing golden orbs (`shadow-[0_0_8px_#C9A84C]`).
+
+## [2026-05-17] Phase 25: Lead Portal & Akashic Seal (The Portal of Awakening & The Seal of Akasha)
+
+- **Decision: First-Paragraph Portal Highlighting (`first-of-type`)**
+  - **Reason**: The opening paragraph of a deep esoteric reading must act as an inviting portal, immediately capturing focus and establishing a premium editorial hierarchy.
+  - **Action**: Applied `first-of-type` styling in `MysticMarkdown` to the lead paragraph (`p`), enlarging the font (`text-lg md:text-xl`), brightening the color (`text-white`), and anchoring it with a delicate champagne gold vertical foil rule (`border-l-2 border-[#C9A84C] pl-6`).
+- **Decision: Akashic Epilogue Flourish (`Akashic Seal`)**
+  - **Reason**: Unbounded text blocks ending abruptly left users feeling unmoored. Deep divination readings demand a formal closing seal to conclude the ceremony.
+  - **Action**: Incorporated a persistent Akashic closing matrix (`✦ 铭刻于阿卡夏矩阵 · 洞悉天命之流 ✦`) flanked by fading horizontal light beams at the absolute bottom of `MysticMarkdown`, providing a perfectly grounded and sacred epilogue to every long-form reading.
