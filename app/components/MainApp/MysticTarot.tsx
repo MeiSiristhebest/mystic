@@ -289,7 +289,7 @@ export function MysticTarot({ initialHandoff, clearHandoff }: MysticTarotProps =
           <TarotReadingResult 
             question={question}
             cards={cards}
-            reading={reading}
+            reading={reading || (messages.length > 0 ? messages[0].content : "")}
             messages={messages}
             isLoading={isChatLoading}
             onSendMessage={handleSendMessage}

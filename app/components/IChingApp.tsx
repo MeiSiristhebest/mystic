@@ -9,6 +9,7 @@ import RitualLayout from './MainApp/RitualLayout';
 import MysticChatInterface from './MainApp/MysticChatInterface';
 import BreathingLoading from './BreathingLoading';
 import { HexagramDisplay } from './MainApp/IChing/HexagramDisplay';
+import IChingRitualManager from './MainApp/IChingRitualManager';
 
 // Hooks & Lib
 import { useIChingEngine } from '@/hooks/useIChingEngine';
@@ -46,7 +47,7 @@ export default function IChingApp({
   }, [initialMode]);
 
   const { 
-    lines, setLines, isTossing, handleToss, calculateMeihua, 
+    lines, setLines, isTossing, handleToss, currentCoins, calculateMeihua, 
     num1, setNum1, num2, setNum2, resetEngine 
   } = useIChingEngine();
 
@@ -134,40 +135,13 @@ export default function IChingApp({
   const renderRitualInput = () => {
     if (mode === 'liuyao') {
       return (
-        <div className="flex flex-col items-center w-full">
-          <div className="flex flex-col-reverse items-center mb-8 min-h-[200px] w-full bg-black/30 rounded-xl p-6 border border-amber-500/20">
-            {lines.length === 0 ? (
-              <p className="text-amber-500/50 font-serif italic my-auto">点击下方按钮开始摇卦，共需摇卦六次</p>
-            ) : (
-              lines.map((l, i) => (
-                <motion.div key={i} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-4 my-1.5 w-full max-w-[240px]">
-                   <span className="text-amber-500/60 font-serif text-sm w-12 text-right">第{i + 1}爻</span>
-                   <div className="flex-1 flex items-center justify-center gap-2 h-4 bg-amber-500/10 rounded-sm relative overflow-hidden">
-                      {l === 7 || l === 9 ? (
-                        <div className="w-full h-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
-                      ) : (
-                        <>
-                          <div className="w-[45%] h-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
-                          <div className="w-[10%]" />
-                          <div className="w-[45%] h-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
-                        </>
-                      )}
-                      {(l === 6 || l === 9) && <div className="absolute inset-0 bg-red-500/20 animate-pulse" />}
-                   </div>
-                </motion.div>
-              ))
-            )}
-          </div>
-          <button
-            onClick={lines.length < 6 ? handleToss : () => handleGenerate('liuyao')}
-            disabled={isTossing}
-            className={`group relative px-10 py-4 w-full md:w-1/2 rounded-full font-serif text-lg transition-all duration-300 ${
-              lines.length < 6 ? 'bg-amber-700 hover:bg-amber-600' : 'bg-emerald-700 hover:bg-emerald-600'
-            }`}
-          >
-            {lines.length < 6 ? (isTossing ? '摇卦中...' : `第 ${lines.length + 1} 次摇卦`) : '解卦'}
-          </button>
-        </div>
+        <IChingRitualManager
+          lines={lines}
+          isTossing={isTossing}
+          currentCoins={currentCoins}
+          onToss={handleToss}
+          onComplete={() => handleGenerate('liuyao')}
+        />
       );
     }
     if (mode === 'meihua') {

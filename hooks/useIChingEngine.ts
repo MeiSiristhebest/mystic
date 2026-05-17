@@ -7,6 +7,7 @@ import { getCryptoRandom } from '@/lib/random';
 export function useIChingEngine() {
   const [lines, setLines] = useState<number[]>([]);
   const [isTossing, setIsTossing] = useState(false);
+  const [currentCoins, setCurrentCoins] = useState<("yang" | "yin")[]>(["yang", "yang", "yin"]);
   const [num1, setNum1] = useState('');
   const [num2, setNum2] = useState('');
 
@@ -20,18 +21,21 @@ export function useIChingEngine() {
   const handleToss = useCallback(() => {
     if (lines.length >= 6 || isTossing) return;
     setIsTossing(true);
-    playCoinSound();
     
+    // Generate coin states immediately for 3D physics
+    const coins = [
+      getCryptoRandom() > 0.5 ? 2 : 3,
+      getCryptoRandom() > 0.5 ? 2 : 3,
+      getCryptoRandom() > 0.5 ? 2 : 3,
+    ];
+    setCurrentCoins(coins.map(c => c === 3 ? "yang" : "yin"));
+    
+    // Line forms after 3D coins land
     setTimeout(() => {
-      const coins = [
-        getCryptoRandom() > 0.5 ? 2 : 3,
-        getCryptoRandom() > 0.5 ? 2 : 3,
-        getCryptoRandom() > 0.5 ? 2 : 3,
-      ];
       const sum = coins[0] + coins[1] + coins[2];
       setLines(prev => [...prev, sum]);
       setIsTossing(false);
-    }, 800);
+    }, 1800);
   }, [lines.length, isTossing]);
 
   const calculateMeihua = useCallback((n1Str: string, n2Str: string) => {
@@ -57,6 +61,7 @@ export function useIChingEngine() {
     lines,
     setLines,
     isTossing,
+    currentCoins,
     handleToss,
     calculateMeihua,
     num1,

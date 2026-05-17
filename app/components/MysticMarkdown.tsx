@@ -282,7 +282,10 @@ const MysticMarkdown = React.memo(({ content, cards, hideCards, isLoading, cente
     .replace(/^-(?=\*\*|\*)/gm, '- ')
     .replace(/\*\*\*\*([^\n]*?)\*\*\*\*/g, '**$1**')
     .replace(/\*\*\*\s+\*\*/g, '**')
-    .replace(/\*\*\s+\*\*\*/g, '***');
+    .replace(/\*\*\s+\*\*\*/g, '***')
+    .replace(/^(#+)\s+#+\s+/gm, '$1 ')
+    .replace(/^(#+)\s+([#*]+)\s+/gm, '$1 ')
+    .replace(/\*\*\s+([^\n*]+?)\s+\*\*/g, '**$1**');
 
   const tripleStars: string[] = [];
   processedContent = processedContent.replace(/\*\*\*([\s\S]*?)\*\*\*/g, (match, p1) => {
@@ -326,6 +329,9 @@ const MysticMarkdown = React.memo(({ content, cards, hideCards, isLoading, cente
     h1: ({ children }: any) => <MemoH1>{children}</MemoH1>,
     h2: ({ children }: any) => <MemoH2>{children}</MemoH2>,
     h3: ({ children }: any) => <MemoH3>{children}</MemoH3>,
+    h4: ({ children }: any) => <MemoH3>{children}</MemoH3>,
+    h5: ({ children }: any) => <MemoH3>{children}</MemoH3>,
+    h6: ({ children }: any) => <MemoH3>{children}</MemoH3>,
     p: ({ children }: any) => (
       <MemoP className={`mb-8 md:mb-10 last:mb-0 first-of-type:text-lg first-of-type:md:text-xl first-of-type:text-white first-of-type:border-l-2 first-of-type:border-[#C9A84C] first-of-type:pl-6 first-of-type:py-1 first-of-type:my-8 first-of-type:font-normal first-of-type:drop-shadow-sm ${centered ? 'text-center' : 'text-left'}`}>
         {children}

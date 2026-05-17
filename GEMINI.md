@@ -1,5 +1,23 @@
 ## [2026-05-17] Feature: Fate Echo UI Modernization, History Purification & 100% Clean Build Stabilization
 
+- **Decision: Premium 3D Liuyao Coin Toss Ritual & Cross-Module Audio Integration**
+  - **Reason**: The IChing hexagram casting interface lacked sensory depth, relying on inline broken bar placeholders and missing tactile sound feedback. Furthermore, Tarot card dealing required ASMR paper friction sound cues to enhance ritual realism.
+  - **Action**: Created `IChingCoinToss.tsx` using 3D CSS gradients and `preserve-3d` to simulate ancient Chinese bronze coins (乾隆通宝/开元通宝). Integrated `framer-motion` spring trajectories for tossing and metallic clink audio (`playCoinSound`). Overhauled `IChingRitualManager` to coordinate the 6-step bottom-up stacking of Yin/Yang lines and changing line pulsing. Added periodic ASMR paper drawing sounds (`playCardSound`) to `TarotRitualManager` dealing phase.
+- **Decision: Premium 3D Tarot Card Flip Animation (Framer Motion Physics)**
+  - **Reason**: The card drawing experience lacked the physical inertia and mystical ritualistic feel expected of a premium esoteric application. The previous shuffle and reveal animations were simple 2D opacity crossfades.
+  - **Action**: Completely re-engineered the `TarotRitualManager` using CSS `perspective` (up to 2000px), `transform-style: preserve-3d`, and `backface-visibility: hidden`. Orchestrated a highly realistic `framer-motion` physical sequence: 3D spatial shuffling (`rotateY`/`rotateZ`), dealt cards dropping with spring physics, and an interactive click-to-flip 180-degree revelation. Implemented dynamic 3D tilt effects on hover (`rotateX`/`rotateY`) post-reveal to enhance interactivity.
+- **Decision: Markdown Parsing Purification (Heading & Bold Syntax Sanitization)**
+  - **Reason**: AI models occasionally output duplicate heading markers (e.g. `### ## `) or internal whitespace inside bold tags (`** text **`), causing unparsed markdown syntax artifacts (`##`, `**`) to appear directly in UI banners and paragraphs.
+  - **Action**: Injected robust pre-parsing regex filters into `MysticMarkdown` to automatically strip redundant repeated heading hashes and trim internal whitespace in bold blocks before Markdown compilation. Extended component mapping to ensure headings h4-h6 also render with high-fidelity gold banners. Verified 100% clean build.
+
+- **Decision: TarotReadingResult Layout Centering & Viewport Expansion**
+  - **Reason**: The follow-up `BreathingLoading` indicator was left-aligned (`justify-start`), and the overall reading container was constrained to `max-w-4xl`, feeling slightly narrow on desktop viewports.
+  - **Action**: Widen container to `max-w-5xl` for enhanced typographic breathing room and refactored loading layout to `justify-center` with matching glassmorphism container styling.
+
+- **Decision: Real-Time Streaming Initial Reading & Follow-Up Loading Isolation**
+  - **Reason**: During the initial AI Tarot interpretation generation (~15s), `MysticTarot` kept `reading` state empty until stream completion, while `TarotReadingResult` simultaneously triggered a follow-up `BreathingLoading` box at the bottom, creating an awkward visual void.
+  - **Action**: Refactored `MysticTarot` to pass `messages[0].content` in real time as the primary reading fallback. Isolated the bottom `BreathingLoading` indicator in `TarotReadingResult` to strictly appear only during follow-up dialogues (`messages.length > 1`), ensuring seamless real-time text streaming directly beneath the spread layout. Verified 100% clean build.
+
 - **Decision: Project-Wide Pseudo-Randomness (PRNG) Eradication & Global Type Unification**
   - **Reason**: Legacy `Math.random()` calls remained in audio noise synthesis, journey ID generation, and background visual particle loops, creating minor impurity and unpredictability risks. Furthermore, duplicate `TarotCard` type definitions between `tarot-data` and `divination` caused strict TS compile mismatches.
   - **Action**: Completely eradicated `Math.random()` across `audio.ts`, `useJourney.ts` (replaced with `crypto.randomUUID()`), `Visuals.tsx`, `TimeWisdomRitual.tsx`, `SubconsciousConstellation.tsx`, `ShadowWorkMirror.tsx`, and `CrystalBallLoader.tsx`. Re-exported unified `TarotCard` schema from `app/types/divination.ts` with holistic pillar extensions. Verified 100% clean build.

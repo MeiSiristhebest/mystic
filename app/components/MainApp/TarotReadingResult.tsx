@@ -45,7 +45,7 @@ export default function TarotReadingResult({
   }, [messages]);
 
   return (
-    <div className="space-y-12 pb-20 max-w-4xl mx-auto">
+    <div className="space-y-12 pb-20 max-w-5xl mx-auto md:px-4">
       <div 
         ref={posterRef}
         className="glass-panel p-8 md:p-16 rounded-[40px] relative overflow-hidden shadow-[0_0_50px_rgba(180,110,20,0.1)]"
@@ -61,7 +61,7 @@ export default function TarotReadingResult({
 
         <div className="relative z-10 space-y-12">
           {/* Initial Reading */}
-          <MysticMarkdown content={reading} cards={cards} centered />
+          <MysticMarkdown content={reading} cards={cards} centered isLoading={isLoading && messages.length <= 1} />
 
           {/* Follow-up Messages */}
           {messages.slice(1).map((msg, idx) => (
@@ -96,9 +96,9 @@ export default function TarotReadingResult({
             </motion.div>
           ))}
           
-          {isLoading && (
-            <div className="flex justify-start">
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+          {isLoading && messages.length > 1 && (
+            <div className="flex justify-center w-full py-6">
+              <div className="glass-panel border border-amber-500/20 rounded-3xl p-8 max-w-md w-full shadow-[0_0_30px_rgba(201,168,76,0.15)]">
                 <BreathingLoading text="阿卡夏正在传达深层启示..." />
               </div>
             </div>
