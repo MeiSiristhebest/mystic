@@ -217,14 +217,11 @@ export function CardMeaningModal({ isOpen, onClose, card, cache, setCache }: Car
        <motion.div 
          initial={{ opacity: 0, scale: 0.95, y: 20 }}
          animate={{ opacity: 1, scale: 1, y: 0 }}
-         className="max-w-4xl w-full p-6 md:p-12 rounded-[36px] space-y-8 relative overflow-hidden my-auto border border-amber-500/40 shadow-[0_0_100px_rgba(201,168,76,0.25)] bg-gradient-to-b from-[#1c0f26]/95 via-[#12081c]/95 to-[#0a0410]/95 backdrop-blur-2xl"
+         className="max-w-4xl w-full p-8 md:p-14 rounded-[40px] space-y-8 relative overflow-hidden my-auto border border-amber-500/40 shadow-[0_0_100px_rgba(201,168,76,0.25)] bg-gradient-to-b from-[#1c0f26]/95 via-[#12081c]/95 to-[#0a0410]/95 backdrop-blur-2xl"
          onClick={(e) => e.stopPropagation()}
        >
-          {/* Elegant Corner Flourishes */}
-          <div className="absolute top-0 left-0 w-16 h-16 border-t-2 border-l-2 border-amber-500/60 rounded-tl-[36px] pointer-events-none" />
-          <div className="absolute top-0 right-0 w-16 h-16 border-t-2 border-r-2 border-amber-500/60 rounded-tr-[36px] pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-16 h-16 border-b-2 border-l-2 border-amber-500/60 rounded-bl-[36px] pointer-events-none" />
-          <div className="absolute bottom-0 right-0 w-16 h-16 border-b-2 border-r-2 border-amber-500/60 rounded-br-[36px] pointer-events-none" />
+          {/* Flawless Inner Golden Inset Ring */}
+          <div className="absolute inset-3 border border-amber-500/20 rounded-[32px] pointer-events-none shadow-[inset_0_0_40px_rgba(201,168,76,0.08)]" />
           
           {/* Ambient glowing gold line across top */}
           <div className="absolute top-0 left-1/4 right-1/4 h-[2px] bg-gradient-to-r from-transparent via-amber-400 to-transparent opacity-80 shadow-[0_0_15px_#C9A84C]" />
@@ -233,12 +230,12 @@ export function CardMeaningModal({ isOpen, onClose, card, cache, setCache }: Car
             <Compass className="w-80 h-80 text-amber-500/20 animate-spin-slow" />
           </div>
 
-          <button onClick={onClose} className="absolute top-6 right-6 p-2 text-amber-200/40 hover:text-amber-200 hover:bg-white/10 rounded-full transition-all z-20 cursor-pointer">
+          <button onClick={onClose} className="absolute top-7 right-7 p-2 text-amber-200/40 hover:text-amber-200 hover:bg-white/10 rounded-full transition-all z-20 cursor-pointer">
              <X className="w-6 h-6" />
           </button>
 
-          <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 relative z-10 items-start">
-             <div className="flex flex-col items-center gap-4 mx-auto lg:mx-0 shrink-0 lg:sticky lg:top-0 pt-4">
+          <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 relative z-10 items-stretch">
+             <div className="flex flex-col items-center gap-4 mx-auto lg:mx-0 shrink-0 lg:sticky lg:top-0 py-2">
                 <div className="w-48 h-76 md:w-56 md:h-88 shadow-[0_25px_60px_rgba(0,0,0,0.9)] rounded-2xl overflow-hidden border-2 border-amber-500/40 hover:border-amber-400 transition-all group">
                    <img 
                      src={imageUrl} 
@@ -262,7 +259,7 @@ export function CardMeaningModal({ isOpen, onClose, card, cache, setCache }: Car
                 </div>
              </div>
 
-             <div className="flex-1 w-full space-y-6 pt-4 lg:pl-6 border-t lg:border-t-0 lg:border-l border-amber-500/20 min-h-[400px] flex flex-col justify-center">
+             <div className="flex-1 w-full space-y-6 py-2 lg:pl-10 border-t lg:border-t-0 lg:border-l border-amber-500/20 min-h-[450px] flex flex-col justify-center">
                 {isLoading ? (
                   <div className="flex flex-col items-center justify-center space-y-6 py-20 my-auto text-center">
                     <div className="relative flex items-center justify-center w-28 h-28">
