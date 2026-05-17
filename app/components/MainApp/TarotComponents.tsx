@@ -166,9 +166,9 @@ interface CardMeaningModalProps {
 const modalMarkdownComponents = {
   h3: ({ children }: any) => <h3 className="text-lg md:text-xl font-serif text-amber-300 mt-6 mb-3 flex items-center gap-2 border-b border-amber-500/30 pb-2">{children}</h3>,
   h4: ({ children }: any) => <h4 className="text-md font-serif text-amber-400 mt-4 mb-2">{children}</h4>,
-  p: ({ children }: any) => <p className="text-xs md:text-sm text-amber-100/90 font-serif leading-relaxed mb-4 tracking-wide">{children}</p>,
+  p: ({ children }: any) => <p className="text-xs md:text-sm text-amber-100/90 font-serif leading-[1.8] mb-4 tracking-wide text-justify">{children}</p>,
   strong: ({ children }: any) => <strong className="font-serif text-amber-300 font-semibold bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">{children}</strong>,
-  li: ({ children }: any) => <li className="text-xs md:text-sm text-amber-100/90 font-serif leading-relaxed mb-2.5 flex items-start gap-2"><span className="text-amber-500 mt-0.5">✦</span> <span>{children}</span></li>,
+  li: ({ children }: any) => <li className="text-xs md:text-sm text-amber-100/90 font-serif leading-[1.8] mb-2.5 flex items-start gap-2 text-justify"><span className="text-amber-500 mt-0.5">✦</span> <span>{children}</span></li>,
   ul: ({ children }: any) => <ul className="space-y-2 my-4 pl-2">{children}</ul>,
 };
 
@@ -277,17 +277,19 @@ export function CardMeaningModal({ isOpen, onClose, card, cache, setCache }: Car
   const imageUrl = card.image || `https://www.trustedtarot.com/img/cards/${card.englishName?.toLowerCase().replace(/ /g, "-") || card.id?.toLowerCase()}.png`;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 bg-[#08040c]/90 backdrop-blur-xl overflow-y-auto" onClick={onClose}>
+    <div className={`fixed inset-0 z-[100] flex items-center justify-center ${isFullscreen ? 'p-0' : 'p-4 md:p-6'} bg-[#08040c]/90 backdrop-blur-xl overflow-y-auto`} onClick={onClose}>
        <motion.div 
          ref={modalRef}
          data-poster-container
          initial={{ opacity: 0, scale: 0.95, y: 20 }}
          animate={{ opacity: 1, scale: 1, y: 0 }}
-         className={`${isFullscreen ? 'w-[96vw] h-[96vh] max-w-none p-8 md:p-16 flex flex-col justify-between overflow-y-auto' : 'max-w-4xl w-full p-8 md:p-14'} rounded-[40px] space-y-8 relative overflow-hidden my-auto border border-amber-500/40 shadow-[0_0_100px_rgba(201,168,76,0.25)] bg-gradient-to-b from-[#1c0f26]/95 via-[#12081c]/95 to-[#0a0410]/95 backdrop-blur-2xl transition-all duration-500`}
+         className={`${isFullscreen ? 'fixed inset-0 w-full h-full max-w-none rounded-none p-8 md:p-16 lg:px-24 flex flex-col justify-between overflow-y-auto z-[110]' : 'max-w-4xl w-full p-8 md:p-14 rounded-[40px] max-h-[90vh] overflow-y-auto'} space-y-8 relative my-auto border border-amber-500/40 shadow-[0_0_100px_rgba(201,168,76,0.25)] bg-gradient-to-b from-[#1c0f26]/95 via-[#12081c]/95 to-[#0a0410]/95 backdrop-blur-2xl transition-all duration-500`}
          onClick={(e) => e.stopPropagation()}
        >
           {/* Flawless Inner Golden Inset Ring */}
-          <div className="absolute inset-3 border border-amber-500/20 rounded-[32px] pointer-events-none shadow-[inset_0_0_40px_rgba(201,168,76,0.08)]" />
+          {!isFullscreen && (
+            <div className="absolute inset-3 border border-amber-500/20 rounded-[32px] pointer-events-none shadow-[inset_0_0_40px_rgba(201,168,76,0.08)]" />
+          )}
           
           {/* Ambient glowing gold line across top */}
           <div className="absolute top-0 left-1/4 right-1/4 h-[2px] bg-gradient-to-r from-transparent via-amber-400 to-transparent opacity-80 shadow-[0_0_15px_#C9A84C]" />
@@ -369,7 +371,7 @@ export function CardMeaningModal({ isOpen, onClose, card, cache, setCache }: Car
                     const { processedContent, association } = processMysticMarkdownContent(deepMeaning);
 
                     return (
-                      <div className={`space-y-4 ${isFullscreen ? 'max-h-[80vh]' : 'max-h-[60vh]'} overflow-y-auto custom-scrollbar pr-4 text-left transition-all duration-500`}>
+                      <div className={`space-y-4 ${isFullscreen ? 'max-h-none overflow-visible' : 'max-h-[60vh] overflow-y-auto'} custom-scrollbar pr-4 text-left transition-all duration-500`}>
                         <div className="p-4 bg-amber-500/5 rounded-2xl border border-amber-500/20 italic text-amber-200 text-xs md:text-sm font-serif leading-relaxed mb-6">
                           「 {card.coreTheme || "此牌象征着宇宙中一段未被言说的真理，等待着你去领悟。"} 」
                         </div>

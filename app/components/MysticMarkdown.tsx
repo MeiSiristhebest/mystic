@@ -273,7 +273,7 @@ const MysticMarkdown = React.memo(({ content, cards, hideCards, isLoading, cente
     h5: ({ children }: any) => <MemoH3>{children}</MemoH3>,
     h6: ({ children }: any) => <MemoH3>{children}</MemoH3>,
     p: ({ children }: any) => (
-      <MemoP className={`mb-8 md:mb-10 last:mb-0 first-of-type:text-lg first-of-type:md:text-xl first-of-type:text-white first-of-type:border-l-2 first-of-type:border-[#C9A84C] first-of-type:pl-6 first-of-type:py-1 first-of-type:my-8 first-of-type:font-normal first-of-type:drop-shadow-sm ${centered ? 'text-center' : 'text-left'}`}>
+      <MemoP className={`mb-8 md:mb-10 last:mb-0 first-of-type:text-lg first-of-type:md:text-xl first-of-type:text-white first-of-type:border-l-2 first-of-type:border-[#C9A84C] first-of-type:pl-6 first-of-type:py-1 first-of-type:my-8 first-of-type:font-normal first-of-type:drop-shadow-sm text-left text-justify leading-relaxed tracking-wide`}>
         {children}
       </MemoP>
     ),
@@ -281,17 +281,17 @@ const MysticMarkdown = React.memo(({ content, cards, hideCards, isLoading, cente
     em: ({ children }: any) => <MemoEm>{children}</MemoEm>,
     blockquote: ({ children }: any) => <MemoBlockquote>{children}</MemoBlockquote>,
     ul: ({ children }: any) => (
-      <MemoUl className={`mb-10 ${centered ? 'flex flex-col items-center' : 'text-left'}`}>
+      <MemoUl className="space-y-3 mb-10 pl-6 text-left list-disc list-outside text-amber-100/90 leading-relaxed tracking-wide">
         {children}
       </MemoUl>
     ),
     ol: ({ children }: any) => (
-      <MemoOl className={`mb-10 ml-6 ${centered ? 'flex flex-col items-center' : 'text-left'}`}>
+      <MemoOl className="space-y-3 mb-10 pl-6 text-left list-decimal list-outside text-amber-100/90 leading-relaxed tracking-wide">
         {children}
       </MemoOl>
     ),
     li: ({ children }: any) => (
-      <MemoLi className={`mb-4.5 last:mb-0 ${centered ? 'text-center' : 'text-left'}`}>
+      <MemoLi className="text-left leading-relaxed tracking-wide">
         {children}
       </MemoLi>
     ),

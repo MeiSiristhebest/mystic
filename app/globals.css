@@ -340,3 +340,10 @@ body.is-exporting .show-in-poster {
   display: block !important;
 }
 
+body.is-exporting [data-poster-container],
+body.is-exporting [data-poster-container] * {
+  max-height: none !important;
+  height: auto !important;
+  overflow: visible !important;
+}
+
