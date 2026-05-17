@@ -9,7 +9,8 @@ import { useJourney } from "@/hooks/useJourney";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { usePosterGenerator } from "@/hooks/usePosterGenerator";
 import { useAIStream } from "@/hooks/useAIStream";
-import { AKASHA_PERSONA } from "@/lib/ai";
+import { FACE_READING_PERSONA } from "@/lib/ai";
+import { getFaceReadingPrompt } from "@/lib/prompts";
 import Image from "next/image";
 
 export default function FaceReadingApp({
@@ -23,85 +24,55 @@ export default function FaceReadingApp({
   const [question, setQuestion] = useState("");
   const [inputMessage, setInputMessage] = useState("");
   const [currentEntryId, setCurrentEntryId] = useState<string | null>(null);
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const posterRef = useRef<HTMLDivElement>(null);
-
-  const { addEntry, updateEntry } = useJourney();
-  const { getProfileContext } = useUserProfile();
-  const { isGeneratingPoster, handleGeneratePoster } = usePosterGenerator();
-  const { stream, isLoading: isStreaming, error: streamError, abort } = useAIStream();
-  
   const [messages, setMessages] = useState<{ role: 'user' | 'model'; content: string }[]>([]);
   const [isAskingFollowUp, setIsAskingFollowUp] = useState(false);
 
-  useEffect(() => {
-    if (onReadingChange) {
-      onReadingChange(isStreaming || isAskingFollowUp);
-    }
-  }, [isStreaming, isAskingFollowUp, onReadingChange]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const posterRef = useRef<HTMLDivElement>(null);
+
+  const { addEntry, updateEntry } = useJourney();
+  const { profile, getProfileContext } = useUserProfile();
+  const { stream, isLoading: isStreaming, error: streamError, abort } = useAIStream();
+  const { isGeneratingPoster, handleGeneratePoster } = usePosterGenerator();
 
   useEffect(() => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
-    }
-  }, [messages]);
+    onReadingChange?.(isStreaming || isAskingFollowUp);
+  }, [isStreaming, isAskingFollowUp, onReadingChange]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64String = reader.result as string;
-      setImage(base64String);
+    if (file) {
+      if (file.size > 4 * 1024 * 1024) {
+        alert("图片大小不能超过 4MB");
+        return;
+      }
       setMimeType(file.type);
-    };
-    reader.readAsDataURL(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
-  const handleGenerate = async () => {
+  const handleAnalyze = async () => {
     if (!image) return;
 
     const base64Data = image.split(",")[1];
     const profileContext = getProfileContext();
-    
-    // Sanitize question to prevent prompt injection
     const sanitizedQuestion = question.replace(/["'{}[\]]/g, "").substring(0, 200);
 
-    const prompt = `
-<instruction>
-这是一次传统的东方${type === "face" ? "面相" : "手相"}分析。请作为一位精通中国传统相术的大师，仔细观察照片中的特征，并用中文提供一份专业、深刻、严谨的相学解读报告。请注意：这仅作为娱乐和文化探讨，请保持积极、客观、建设性的语气，避免绝对化或令人恐慌的断言。</instruction>
-
-<divination_context>
-  <method>${type === "face" ? "面相骨相分析" : "手相掌纹分析"}</method>
-</divination_context>
-
-<user_profile>
-  ${profileContext}
-</user_profile>
-
-<user_question>
-  ${sanitizedQuestion || "无具体问题，请全面分析"}
-</user_question>
-
-<output_format>
-请使用Markdown排版，必须且只能包含以下三个二级标题（##）：
-## ☯️ 整体相理特征
-（描述你观察到的主要${type === "face" ? "面部轮廓、五官特点（如三停五眼、十二宫等）" : "手型、主要掌纹（如生命线、智慧线、感情线等）及掌丘"}特征）
-## 🔍 运势深度解析
-（结合观察到的特征，分析其在性格、事业财运、感情婚姻、健康等方面的传统相学寓意）
-
-## 🌟 破局与开运建议（针对用户的关注点和相理特征，给出改善运势、扬长避短的具体生活建议和心态调整指南）
-</output_format>
-    `;
+    const prompt = getFaceReadingPrompt({
+      type,
+      sanitizedQuestion,
+      profileContext,
+    });
 
     try {
       let fullResponse = "";
       setMessages([{ role: 'model', content: "" }]);
       
-      const systemInstruction = `${AKASHA_PERSONA}\n你是一位精通中国传统相术的大师。你正在为用户进行一次${type === "face" ? "面相" : "手相"}分析。`;
+      const systemInstruction = FACE_READING_PERSONA;
       
       const parts = [
         {
@@ -118,33 +89,28 @@ export default function FaceReadingApp({
         setMessages([{ role: 'model', content: fullResponse }]);
       }
 
-      // Save to Journey
+      const title = `${type === "face" ? "面相" : "手相"}感应：${sanitizedQuestion || "全局气色端详"}`;
       const id = await addEntry({
-        type: "face_reading",
-        title: `${type === "face" ? "面相" : "手相"}分析${
-          sanitizedQuestion ? "：" + sanitizedQuestion : ""
-        }`,
+        type: type === "face" ? "face_reading" : "palm_reading",
+        title: title,
         summary: fullResponse.substring(0, 100) + "...",
-        details: { 
-          type: 'face_reading',
-          text: fullResponse, 
-          imageType: type, 
-          question: sanitizedQuestion, 
-          messages: [{ role: 'model', content: fullResponse }] 
+        details: {
+          type: type === "face" ? "face_reading" : "palm_reading",
+          readingType: type,
+          imageUrl: image,
+          question: sanitizedQuestion,
+          text: fullResponse,
+          messages: [{ role: 'model', content: fullResponse }],
         },
       });
       setCurrentEntryId(id || null);
-    } catch (err: unknown) {
-      if (err instanceof Error && err.name !== 'AbortError') {
-        console.error(err);
-      } else if (!(err instanceof Error)) {
-        console.error(err);
-      }
+    } catch (err) {
+      console.error(err);
     }
   };
 
-  const handleSendMessage = async (e?: React.FormEvent) => {
-    e?.preventDefault();
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!inputMessage.trim() || isStreaming || !currentEntryId) return;
 
     const userMsg = inputMessage.trim();
@@ -156,7 +122,7 @@ export default function FaceReadingApp({
 
     try {
       let fullResponse = "";
-      const systemInstruction = `${AKASHA_PERSONA}\n你是一位精通中国传统相术的大师。你正在为用户进行一次${type === "face" ? "面相" : "手相"}分析追问。请基于先前的分析结果和图像特征进行解答，保持逻辑一致性。`;
+      const systemInstruction = FACE_READING_PERSONA;
       
       const history = newMessages.map(m => ({
         role: m.role,
@@ -314,7 +280,7 @@ export default function FaceReadingApp({
                 <p className="text-red-400 text-sm mb-4 font-serif">{streamError}</p>
               )}
               <button
-                onClick={handleGenerate}
+                onClick={handleAnalyze}
                 className="group relative px-10 py-4 w-full md:w-1/2 bg-gradient-to-r from-amber-700 to-amber-900 hover:from-amber-600 hover:to-amber-800 text-amber-100 rounded-full font-serif text-lg tracking-wider shadow-[0_0_20px_rgba(180,110,20,0.4)] hover:shadow-[0_0_30px_rgba(200,130,30,0.6)] transition-all duration-300 overflow-hidden"
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">

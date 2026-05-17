@@ -9,7 +9,8 @@ import { useJourney } from "@/hooks/useJourney";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useAIStream } from "@/hooks/useAIStream";
 import { usePosterGenerator } from "@/hooks/usePosterGenerator";
-import { AKASHA_PERSONA } from "@/lib/ai";
+import { COLLECTIVE_MIRROR_PERSONA } from "@/lib/ai";
+import { getCollectiveMirrorPrompt } from "@/lib/prompts";
 
 export default function CollectiveMirrorApp({ onReadingChange }: { onReadingChange?: (reading: boolean) => void }) {
   const [question, setQuestion] = useState("");
@@ -29,9 +30,7 @@ export default function CollectiveMirrorApp({ onReadingChange }: { onReadingChan
   const [isAskingFollowUp, setIsAskingFollowUp] = useState(false);
 
   useEffect(() => {
-    if (onReadingChange) {
-      onReadingChange(isStreaming || isAskingFollowUp);
-    }
+    onReadingChange?.(isStreaming || isAskingFollowUp);
   }, [isStreaming, isAskingFollowUp, onReadingChange]);
 
   const startRitual = () => {
@@ -52,42 +51,13 @@ export default function CollectiveMirrorApp({ onReadingChange }: { onReadingChan
     const profileContext = getProfileContext();
     const sanitizedQuestion = question.replace(/["'{}[\]]/g, "").substring(0, 200);
 
-    const prompt = `
-<instruction>
-你现在正连接着“集体无意识之镜（Collective Mirror）”。请根据用户的问题，从人类共有的原型、当下的全球集体意识能量以及深层社会心理学的角度，进行一次宏大、深刻、具有启示性的解读。
-请不要局限于个人层面的琐事，而要将其与更广阔的生命律动、时代精神和集体共鸣联系起来。</instruction>
-
-<divination_context>
-  <method>集体镜像感应（Collective Resonance）</method>
-  <timestamp>${new Date().toISOString()}</timestamp>
-</divination_context>
-
-<user_profile>
-  ${profileContext}
-</user_profile>
-
-<user_question>
-  ${sanitizedQuestion}
-</user_question>
-
-<output_format>
-请使用Markdown排版，必须且只能包含以下三个章节：
-## 🌐 集体共鸣场域
-（描述当下的集体潜意识能量状态，以及它是如何与用户的问题产生宏观共振的）
-
-## 🔍 原型之镜解析
-（从荣格的原型理论或人类共同的神话逻辑出发，深度剖析该问题在人类集体灵魂中的深层映像）
-
-## 🌟 觉醒与同步指引
-（给出如何超越个体局限，与更高层次的集体智慧同步的具体指引和心态调整）
-</output_format>
-    `;
+    const prompt = getCollectiveMirrorPrompt(sanitizedQuestion, profileContext);
 
     try {
       let fullResponse = "";
       setMessages([{ role: 'model', content: "" }]);
       
-      const systemInstruction = `${AKASHA_PERSONA}\n你现在是“集体无意识之镜”的引路人。你的语言应当宏大、深邃、充满慈悲与洞见。`;
+      const systemInstruction = COLLECTIVE_MIRROR_PERSONA;
       
       for await (const chunk of stream(prompt, systemInstruction)) {
         fullResponse += chunk;
@@ -124,7 +94,7 @@ export default function CollectiveMirrorApp({ onReadingChange }: { onReadingChan
 
     try {
       let fullResponse = "";
-      const systemInstruction = `${AKASHA_PERSONA}\n你现在是“集体无意识之镜”的引路人。你正在基于先前的感应结果进行追问解答。请保持宏大、深邃、充满慈悲与洞见的语言风格。`;
+      const systemInstruction = COLLECTIVE_MIRROR_PERSONA;
       
       const history = newMessages.map(m => ({
         role: m.role,

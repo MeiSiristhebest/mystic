@@ -8,7 +8,7 @@ import { useJourney } from "@/hooks/useJourney";
 import BreathingLoading from "./BreathingLoading";
 import MysticMarkdown from "./MysticMarkdown";
 import { getSynastryPrompt } from '@/lib/prompts';
-import { MODELS } from "@/lib/ai";
+import { MODELS, SYNASTRY_PERSONA } from "@/lib/ai";
 
 export default function SynastryApp() {
   const { profile, getProfileContext } = useUserProfile();
@@ -24,12 +24,7 @@ export default function SynastryApp() {
   const { sendMessage, isLoading, error } = useAIChat({
     type: 'synastry',
     model: MODELS.PRO,
-    systemInstruction: `<system>
-<role>
-你是位精通东西方神秘学的「三才合参」大师。你能够将用户的【八字命理】、【星象人格】与当下的【塔罗潜意识投射】完美融合，给出一份不矛盾、高维度的综合解读。</role>
-<tone_and_style>
-深邃、包容、充满智慧，像一位认识用户多年的荣格派分析师。</tone_and_style>
-</system>`,
+    systemInstruction: SYNASTRY_PERSONA,
   });
 
   const hasRequiredInfo = profile.birthDate && profile.birthTime;

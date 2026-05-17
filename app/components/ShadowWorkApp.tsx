@@ -6,7 +6,8 @@ import { useAIChat } from "@/hooks/useAIChat";
 import { useJourney } from "@/hooks/useJourney";
 import BreathingLoading from "./BreathingLoading";
 import MysticMarkdown from "./MysticMarkdown";
-import { MODELS } from "@/lib/ai";
+import { MODELS, SHADOW_WORK_PERSONA } from "@/lib/ai";
+import { getShadowWorkPrompt } from "@/lib/prompts";
 
 interface ShadowWorkAppProps {
   initialHandoff?: any;
@@ -35,14 +36,7 @@ export default function ShadowWorkApp({ initialHandoff, clearHandoff }: ShadowWo
   const { messages, sendMessage, isLoading, error } = useAIChat({
     type: 'shadow_work',
     model: MODELS.PRO,
-    systemInstruction: `你现在是一位受过严格训练的荣格派分析师和IFS（内部家庭系统）引导者。用户正在进行「阴影工作坊」与核心创伤探索。
-【最高安全护栏（Guardrails）：绝对遵守】1. 你的基调是「自我觉察与反思工具」，绝对不是「临床心理治疗」。2. 如果用户表达出任何自残、自杀倾向、严重的抑郁爆发或创伤闪回（如“我不想活了”、“我控制不住想伤害自己”、“我感觉回到了被虐待的时候”），你必须：
-   - 立即停止深挖和分析。
-   - 表达深深的共情和支持。
-   - 明确告知你是一个AI，无法提供医疗帮助。
-   - 强制提供心理危机干预热线（如：中国大陆请拨打 110 或 心理危机干预热线 400-161-9995；美国请拨打 988）。
-3. 不要给出任何医疗诊断（如“你患有PTSD”）。
-【对话原则】1. 引导用户与他们的“部分”（Parts）或“阴影”（Shadow）对话，而不是直接评判。2. 每次只问一个温和、开放的问题。3. 结合用户的灵魂档案，帮助他们看到行为模式背后的保护机制。4. 语气：极度安全、包容、不带任何评判。`,
+    systemInstruction: SHADOW_WORK_PERSONA,
   });
 
   const handleSend = async () => {
@@ -50,7 +44,7 @@ export default function ShadowWorkApp({ initialHandoff, clearHandoff }: ShadowWo
     const currentInput = input;
     setInput("");
     
-    const prompt = `${getProfileContext()}\n\n用户输入：${currentInput}`;
+    const prompt = getShadowWorkPrompt(currentInput, getProfileContext());
 
     try {
       await sendMessage(prompt, {

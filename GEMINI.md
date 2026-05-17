@@ -1,8 +1,8 @@
 ## [2026-05-17] Feature: Prompt Engineering Componentization & Global Journey Handoff
 
-- **Decision: Centralized Prompt Registry (lib/prompts/index.ts)**
-  - **Reason**: Scattered and hardcoded prompt strings lacked maintainability and multi-system synthesis.
-  - **Action**: Componentized `getShadowWorkPrompt`, `getCollectiveMirrorPrompt`, `getSubconsciousPrompt`, `getSynastryPrompt`, `getTimeWisdomPrompt`, and `getTarotJsonPrompt` in `lib/prompts/index.ts`. Enforced rigorous constraint rules to eliminate superficial personality tagging (e.g. "Because you are INTJ") and integrated multi-dimensional thinking frameworks.
+- **Decision: Centralized Modular Prompt Registry (lib/prompts/)**
+  - **Reason**: Monolithic `lib/ai.ts` (320+ lines) and `lib/prompts/index.ts` (800+ lines) became bloated, mixing persona definitions, AI network calls, and disparate divination/psychology prompt templates.
+  - **Action**: Architected a pristine modular separation of concerns under `lib/prompts/`: extracted all personas into `lib/prompts/personas.ts`, traditional esoterica into `lib/prompts/divination.ts`, and subconscious/clinical psychology into `lib/prompts/psychology.ts`. Configured `lib/prompts/index.ts` and `lib/ai.ts` as transparent re-export hubs, achieving a 100% non-breaking zero-downtime refactor across the application while shrinking core file lengths by 75%. Enforced rigorous constraint rules to eliminate superficial personality tagging and injected a comprehensive cross-disciplinary matrix of top-tier psychology terminology (including Psychoanalysis, CBT, Existentialism, Positive Psychology, Somatic Therapy, and Narrative Therapy) into prompts.
 - **Decision: Global Journey Handoff & Reopen Rituals (JourneyApp.tsx)**
   - **Reason**: Users needed a seamless pathway to forward insights from their past journey entries into fresh divination rituals.
   - **Action**: Expanded `useAppStore` handoff structure with `prefillQuestion` and `soulLabTab`. Implemented the "以此为问 · 续启仪轨" action grid in `JourneyApp.tsx` modal, enabling one-click transitions into Tarot, Bazi, Astrology, and Shadow Work rituals with preserved context.

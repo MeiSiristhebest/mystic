@@ -22,31 +22,33 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 import { calculateBazi, getZodiac, getSunSign } from "@/lib/metaphysics";
 import BreathingLoading from "./BreathingLoading";
 import MysticMarkdown from "./MysticMarkdown";
+import { DISCOVERY_PERSONA } from "@/lib/ai";
+import { getDiscoveryPrompt } from "@/lib/prompts";
 
 const ENNEAGRAM_TEST = [
   { id: "1", text: "我倾向于追求完美，对自己和他人要求都很高。", type: "1号 改革者" },
   { id: "2", text: "我对他人的需求非常敏感，喜欢帮助和照顾别人。", type: "2号 助人者" },
   { id: "3", text: "我很看重成就和形象，希望在别人眼中是成功的。", type: "3号 成就者" },
   { id: "4", text: "我觉得自己是独特的，经常沉浸在深层的情感中。", type: "4号 个人主义者" },
-  { id: "5", text: "我喜欢观察和思考，渴望掌握知识以获得安全感。", type: "5号 理智者" },
-  { id: "6", text: "我容易感到焦虑，总是预见潜在的危险并寻找保障。", type: "6号 忠诚者" },
-  { id: "7", text: "我追求快乐和多样性，讨厌被束缚或感到痛苦。", type: "7号 活跃者" },
-  { id: "8", text: "我追求力量和控制权，不喜欢表现出软弱的一面。", type: "8号 挑战者" },
-  { id: "9", text: "我渴望和平与和谐，害怕冲突和失去联系。", type: "9号 调停者" }
+  { id: "5", text: "我喜欢深入研究事物，倾向于保持距离来观察世界。", type: "5号 探索者" },
+  { id: "6", text: "我注重安全感和稳定性，经常思考潜在的风险。", type: "6号 忠诚者" },
+  { id: "7", text: "我喜欢新鲜事物和快乐体验，尽量避免痛苦和限制。", type: "7号 热情者" },
+  { id: "8", text: "我感觉自己强大且独立，喜欢掌控局势并保护弱小。", type: "8号 挑战者" },
+  { id: "9", text: "我向往和谐与宁静，通常会顺应他人以避免冲突。", type: "9号 和平者" },
 ];
 
 const ARCHETYPES = [
-  "天真者 (The Innocent)", "孤儿 (The Orphan)", "战士 (The Warrior)", "照顾者 (The Caregiver)",
-  "寻求者 (The Seeker)", "破坏者 (The Destroyer)", "爱人 (The Lover)", "创造者 (The Creator)",
-  "愚者 (The Fool)", "智者 (The Sage)", "魔术师 (The Magician)", "统治者 (The Ruler)"
+  "天真者 (The Innocent)", "探险家 (The Explorer)", "智者 (The Sage)", "英雄 (The Hero)",
+  "亡命之徒 (The Outlaw)", "魔法师 (The Magician)", "凡人 (The Regular Guy)", "情人 (The Lover)",
+  "弄臣 (The Jester)", "照顾者 (The Caregiver)", "创造者 (The Creator)", "统治者 (The Ruler)"
 ];
 
 const getStepColor = (step: number) => {
   switch (step) {
-    case 1: return "from-amber-900/40 via-orange-900/20 to-transparent";
-    case 2: return "from-amber-600/30 via-yellow-900/10 to-transparent";
-    case 3: return "from-teal-900/40 via-blue-900/20 to-transparent";
-    case 4: return "from-indigo-900/40 via-purple-900/20 to-transparent";
+    case 1: return "from-amber-900/20 via-black/40 to-transparent";
+    case 2: return "from-emerald-900/30 via-amber-950/20 to-transparent";
+    case 3: return "from-blue-900/30 via-purple-950/20 to-transparent";
+    case 4: return "from-rose-900/30 via-amber-900/10 to-transparent";
     case 5: return "from-amber-500/30 via-white/5 to-transparent";
     case 6: return "from-purple-900/40 via-amber-900/20 to-transparent";
     default: return "from-amber-900/20 to-transparent";
@@ -126,21 +128,13 @@ export default function DiscoveryView({ onComplete }: { onComplete?: () => void 
       const bazi = calculateBazi(formData.birthDate, formData.birthTime);
       const sunSign = getSunSign(new Date(formData.birthDate));
       
-      const promptText = `
-        作为一名深层心理学专家、荣格分析师及神秘学导师，请根据以下用户信息，帮助他探索其“核心人格原型（Jungian Archetype）”：
-        用户信息：
-        - 姓名: ${formData.name}
-        - 性别: ${formData.gender}
-        - MBTI: ${mbti}${identity}
-        - 九型人格: ${enneagramAnswer}
-        - 八字: ${bazi}
-        - 太阳星座: ${sunSign}
-        
-        请提供一段约250字的深度分析，探讨其性格中的阴影与光明，灵魂的渴望与恐惧，并从以下12个原型中推荐一个最契合的：
-        ${ARCHETYPES.join(", ")}
-        
-        最后请以 JSON 格式返回推荐的原型名称，格式为：{"recommendation": "原型名称", "analysis": "分析内容"}
-      `;
+      const promptText = getDiscoveryPrompt({
+        mbtiAnswer: `${mbti}${identity}`,
+        enneagramAnswer,
+        bazi,
+        sunSign,
+        archetypesList: ARCHETYPES.join(", "),
+      });
 
       const resObj = await fetch('/api/ai', {
         method: 'POST',

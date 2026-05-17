@@ -9,7 +9,7 @@ import { useJourney } from "@/hooks/useJourney";
 import BreathingLoading from "./BreathingLoading";
 import MysticMarkdown from "./MysticMarkdown";
 import { getTimeWisdomPrompt } from '@/lib/prompts';
-import { MODELS } from "@/lib/ai";
+import { MODELS, TIME_WISDOM_PERSONA } from "@/lib/ai";
 
 // Dynamic Global Context instruction
 const GLOBAL_CONTEXT_INSTRUCTION = `
@@ -60,7 +60,7 @@ export default function TimeWisdomApp() {
   const { messages, setMessages, sendMessage, isLoading, error } = useAIChat({
     type: 'time',
     model: MODELS.FLASH,
-    systemInstruction: `你是一位精通宇宙时空节律的「时间智者」。你的使命是将宏观的全球局势（时事）、剧烈的天体相位与个体的灵魂档案进行深度对齐。你拒绝给出平庸的运势描述，必须指出当下这一刻在整个人类进化史和用户个体生命史中的独特性。`,
+    systemInstruction: TIME_WISDOM_PERSONA,
   });
 
   const generateReading = useCallback(async () => {
