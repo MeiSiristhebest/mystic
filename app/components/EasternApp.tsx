@@ -42,9 +42,12 @@ export default function EasternApp({ initialHandoff, clearHandoff }: EasternAppP
   });
 
   useEffect(() => {
-    if (initialHandoff?.modeId && SUB_SYSTEMS.some(s => s.id === initialHandoff.modeId)) {
-      setActiveTab(initialHandoff.modeId as SubSystem);
-    }
+    const timer = setTimeout(() => {
+      if (initialHandoff?.modeId && SUB_SYSTEMS.some(s => s.id === initialHandoff.modeId)) {
+        setActiveTab(initialHandoff.modeId as SubSystem);
+      }
+    }, 0);
+    return () => clearTimeout(timer);
   }, [initialHandoff]);
 
   const isBaziGroup = activeTab === "bazi" || activeTab === "ziwei" || activeTab === "liunian";

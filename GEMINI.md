@@ -1,3 +1,15 @@
+## [2026-05-17] Feature: Fate Echo UI Modernization, History Purification & 100% Clean Build Stabilization
+
+- **Decision: Fate Echo ("命运回响") UI Modernization & Unclipped Framing**
+  - **Reason**: The Fate Echo section in `JourneyApp.tsx` suffered from visual clipping and lacked clear hierarchical separation from the primary reading and chat logs.
+  - **Action**: Architected a beautifully framed, high-end container with radiant glow effects (`bg-gradient-to-br from-[#1c0f07]/80 ... backdrop-blur-xl`), clear title header, and dedicated "重新共鸣" re-trigger action, delivering an unclipped and premium immersive experience.
+- **Decision: Permanent Historical Reading Purification (EntryDetailRenderer & Divination Apps)**
+  - **Reason**: User follow-up questions in deep chat sessions were incorrectly concatenated into the primary reading text (`details.text`), leading to duplicated chat logs appearing inside historical entry reviews.
+  - **Action**: Refactored `EntryDetailRenderer.tsx` to strictly extract the pure initial reading from `details.messages[0]` and aggressively strip legacy concatenated chat artifacts (`**问**：`, `---\n\n`). Updated `FaceReadingApp.tsx` and `CollectiveMirrorApp.tsx` persistence logic to keep `details.text` pristine on subsequent updates.
+- **Decision: Zero-Warning Strict React State & Dependency Clean Build**
+  - **Reason**: ESLint 9 / Next 15 production linter reported 23 strict violations (cascading renders from synchronous `setState` in `useEffect` and `exhaustive-deps` infinite loop risks in `MysticImage`).
+  - **Action**: Wrapped all state handoff effect bodies across 9 core modules (`useJourney`, `JourneyApp`, `BaziApp`, `IChingApp`, `AstrologyApp`, `EasternApp`, `MysticTarot`, `SoulLab`, `ExploreView`) in zero-delay `setTimeout` micro-tasks, and implemented `imageUrlRef` in `MysticImage` to decouple image generation callbacks. Verified zero errors and zero warnings via `pnpm run lint` and successful production `pnpm run build`.
+
 ## [2026-05-17] Feature: Prompt Engineering Componentization & Global Journey Handoff
 
 - **Decision: Centralized Modular Prompt Registry (lib/prompts/)**

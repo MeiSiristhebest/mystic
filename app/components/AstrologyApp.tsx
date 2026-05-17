@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Star,
@@ -108,7 +108,7 @@ export default function AstrologyApp({ initialHandoff, clearHandoff }: Astrology
   const posterRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const handleGenerate = async () => {
+  const handleGenerate = useCallback(async () => {
     const profileContext = getProfileContext();
     const topicName = TOPICS.find((t) => t.id === selectedTopic)?.name || "综合解析";
     const prompt = getAstrologyPrompt({
@@ -132,7 +132,7 @@ export default function AstrologyApp({ initialHandoff, clearHandoff }: Astrology
     } catch (e) {
       console.error(e);
     }
-  };
+  }, [getProfileContext, selectedTopic, mode, selectedZodiac, question, sendMessage]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();

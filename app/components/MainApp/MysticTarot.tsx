@@ -55,28 +55,30 @@ export function MysticTarot({ initialHandoff, clearHandoff }: MysticTarotProps =
   const { getProfileContext } = useUserProfile();
   const setHandoff = useAppStore((state: any) => state.setHandoff);
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     if (initialHandoff) {
-      const q = initialHandoff.prefillQuestion || initialHandoff.question || initialHandoff.context;
-      const m = initialHandoff.modeId;
-      
-      if (q) setQuestion(q);
-      if (m && SPREAD_MODES.some(s => s.id === m)) {
-        setSelectedSpread(m);
-      }
-      
-      // Auto-trigger ritual if requested
-      if (initialHandoff.autoTrigger && q && q.length > 2) {
-        const targetSpread = SPREAD_MODES.find(s => s.id === (m || selectedSpread));
-        if (targetSpread) {
-          setCards(getDailyTarotCards(targetSpread.cardCount));
-          setStep("ritual");
-          playMysticChime();
-          triggerHapticVibration();
+      const timer = setTimeout(() => {
+        const q = initialHandoff.prefillQuestion || initialHandoff.question || initialHandoff.context;
+        const m = initialHandoff.modeId;
+        
+        if (q) setQuestion(q);
+        if (m && SPREAD_MODES.some(s => s.id === m)) {
+          setSelectedSpread(m);
         }
-      }
-      clearHandoff?.();
+        
+        // Auto-trigger ritual if requested
+        if (initialHandoff.autoTrigger && q && q.length > 2) {
+          const targetSpread = SPREAD_MODES.find(s => s.id === (m || selectedSpread));
+          if (targetSpread) {
+            setCards(getDailyTarotCards(targetSpread.cardCount));
+            setStep("ritual");
+            playMysticChime();
+            triggerHapticVibration();
+          }
+        }
+        clearHandoff?.();
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [initialHandoff, clearHandoff, selectedSpread]);
 

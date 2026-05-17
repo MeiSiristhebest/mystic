@@ -38,7 +38,10 @@ export default function BaziApp({
   const posterRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (initialMode) setMode(initialMode);
+    const timer = setTimeout(() => {
+      if (initialMode) setMode(initialMode);
+    }, 0);
+    return () => clearTimeout(timer);
   }, [initialMode]);
 
   const { 
@@ -55,12 +58,15 @@ export default function BaziApp({
 
   // Sync profile data on init
   useEffect(() => {
-    if (profile.birthDate) setBirthDate(profile.birthDate);
-    if (profile.birthTime) setBirthTime(profile.birthTime);
-    if (profile.gender) setGender(profile.gender);
-    if (profile.name) setFullName(profile.name);
-    if (profile.birthPlace) setBirthPlace(profile.birthPlace);
-  }, [profile]);
+    const timer = setTimeout(() => {
+      if (profile.birthDate) setBirthDate(profile.birthDate);
+      if (profile.birthTime) setBirthTime(profile.birthTime);
+      if (profile.gender) setGender(profile.gender);
+      if (profile.name) setFullName(profile.name);
+      if (profile.birthPlace) setBirthPlace(profile.birthPlace);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [profile, setBirthDate, setBirthTime, setGender, setFullName, setBirthPlace]);
 
   // Sync reading state
   useEffect(() => {
@@ -105,21 +111,24 @@ export default function BaziApp({
         birthPlace
       }
     }, undefined, question || `开启${mode === 'bazi' ? '八字' : mode === 'ziwei' ? '紫微' : '流年'}推演`);
-  }, [birthDate, birthTime, profile, updateProfile, gender, fullName, birthPlace, calculateBazi, mode, question, getProfileContext, sendMessage]);
+  }, [birthDate, birthTime, updateProfile, gender, fullName, birthPlace, calculateBazi, mode, question, getProfileContext, sendMessage]);
 
   // Handoff Logic
   useEffect(() => {
     if (initialHandoff) {
-      const q = initialHandoff.prefillQuestion || initialHandoff.question || initialHandoff.context;
-      const m = initialHandoff.modeId as any;
-      if (q) setQuestion(q);
-      if (m && ['bazi', 'ziwei', 'liunian'].includes(m)) setMode(m);
-      
-      // Auto-trigger if requested and profile is ready
-      if (initialHandoff.autoTrigger && q && profile.birthDate) {
-        handleGenerate();
-      }
-      clearHandoff?.();
+      const timer = setTimeout(() => {
+        const q = initialHandoff.prefillQuestion || initialHandoff.question || initialHandoff.context;
+        const m = initialHandoff.modeId as any;
+        if (q) setQuestion(q);
+        if (m && ['bazi', 'ziwei', 'liunian'].includes(m)) setMode(m);
+        
+        // Auto-trigger if requested and profile is ready
+        if (initialHandoff.autoTrigger && q && profile.birthDate) {
+          handleGenerate();
+        }
+        clearHandoff?.();
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [initialHandoff, clearHandoff, profile.birthDate, handleGenerate]);
 

@@ -53,9 +53,11 @@ export function useJourney() {
     }
   }, []);
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
-    loadJourney();
+    const timer = setTimeout(() => {
+      loadJourney();
+    }, 0);
+    return () => clearTimeout(timer);
   }, [loadJourney]);
 
   const addEntry = async (entry: Omit<JourneyEntry, 'id' | 'date'>) => {

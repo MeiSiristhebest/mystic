@@ -82,25 +82,25 @@ export function ExploreView() {
   const setGlobalHandoff = useAppStore((state: any) => state.setHandoff);
 
   // Sync with global activeSubTab
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
-    if (activeSubTab) {
-      setSubTab(activeSubTab);
-      setActiveSubTab(null);
-    }
+    const timer = setTimeout(() => {
+      if (activeSubTab) {
+        setSubTab(activeSubTab);
+        setActiveSubTab(null);
+      }
+    }, 0);
+    return () => clearTimeout(timer);
   }, [activeSubTab, setActiveSubTab]);
 
   // Sync with global handoff (e.g. from TodayView or Tarot)
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     if (globalHandoff) {
-      if (globalHandoff.system === 'oracle') {
-        setIsGuideOpen(true);
-        setGlobalHandoff(null);
-        return;
-      }
-      
       const timer = setTimeout(() => {
+        if (globalHandoff.system === 'oracle') {
+          setIsGuideOpen(true);
+          setGlobalHandoff(null);
+          return;
+        }
         setHandoffData(globalHandoff);
         setSubTab(globalHandoff.system);
         setGlobalHandoff(null); 

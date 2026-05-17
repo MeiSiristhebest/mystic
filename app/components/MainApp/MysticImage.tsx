@@ -66,11 +66,11 @@ export const MysticImage = ({
   const [isFallback, setIsFallback] = useState(false);
   const loadingRef = useRef(false);
   const currentRequestRef = useRef<string | null>(null);
+  const imageUrlRef = useRef<string | null>(null);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const generateImage = useCallback(async (force = false) => {
     const requestKey = `${prompt}_${aspectRatio}_${seed}`;
-    if (!force && (loadingRef.current || (imageUrl && currentRequestRef.current === requestKey))) return;
+    if (!force && (loadingRef.current || (imageUrlRef.current && currentRequestRef.current === requestKey))) return;
     
     loadingRef.current = true;
     currentRequestRef.current = requestKey;
@@ -80,7 +80,9 @@ export const MysticImage = ({
     
     const globalTimeout = setTimeout(() => {
       if (loadingRef.current && currentRequestRef.current === requestKey) {
-        setImageUrl(getFallbackImageUrl(prompt, aspectRatio));
+        const fb = getFallbackImageUrl(prompt, aspectRatio);
+        imageUrlRef.current = fb;
+        setImageUrl(fb);
         setIsFallback(true);
         setIsLoading(false);
         loadingRef.current = false;
@@ -101,6 +103,7 @@ export const MysticImage = ({
       const localCache = await getFromIndexedDB(`mystic_img_${docId}`);
       if (localCache) {
         clearTimeout(globalTimeout);
+        imageUrlRef.current = localCache as string;
         setImageUrl(localCache as string);
         setIsLoading(false);
         loadingRef.current = false;
@@ -108,7 +111,6 @@ export const MysticImage = ({
       }
 
       // Generate securely using Server Action.
-      // Server already compresses and saves to Firebase on success.
       const base64Data = await generateMysticImage(prompt, aspectRatio, docId);
 
       // Save a local IndexedDB copy for instant subsequent loads on this device
@@ -117,10 +119,13 @@ export const MysticImage = ({
       } catch (_) { /* silently ignore local cache failures */ }
       
       clearTimeout(globalTimeout);
+      imageUrlRef.current = base64Data;
       setImageUrl(base64Data);
     } catch (err: any) {
       clearTimeout(globalTimeout);
-      setImageUrl(getFallbackImageUrl(prompt, aspectRatio));
+      const fb = getFallbackImageUrl(prompt, aspectRatio);
+      imageUrlRef.current = fb;
+      setImageUrl(fb);
       setIsFallback(true);
     } finally {
       setIsLoading(false);
@@ -129,8 +134,10 @@ export const MysticImage = ({
   }, [prompt, aspectRatio, seed]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    generateImage();
+    const timer = setTimeout(() => {
+      generateImage();
+    }, 0);
+    return () => clearTimeout(timer);
   }, [generateImage]);
 
   return (

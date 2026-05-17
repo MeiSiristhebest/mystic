@@ -142,12 +142,11 @@ export default function FaceReadingApp({
       }
       
       const finalMsgs = [...newMessages, { role: 'model', content: fullResponse } as const];
-      const fullText = finalMsgs.map(m => m.role === 'user' ? `**问**：${m.content}` : `**阿卡夏**：${m.content}`).join('\n\n---\n\n');
       
       updateEntry(currentEntryId, { 
         details: { 
           type: type === "face" ? "face_reading" : "palm_reading",
-          text: fullText, 
+          text: messages[0]?.content || fullResponse, 
           imageType: type, 
           question, 
           messages: finalMsgs 

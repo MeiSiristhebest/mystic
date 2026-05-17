@@ -14,12 +14,26 @@ export default function EntryDetailRenderer({ entry }: EntryDetailRendererProps)
   const details = entry.details;
   if (!details) return <MysticMarkdown content={entry.summary} />;
 
+  // To guarantee we never render follow-up messages in the initial reading area,
+  // we extract the pure initial reading from messages[0] if available.
+  let initialText = (details.messages && details.messages.length > 0 && details.messages[0]?.content) 
+    ? details.messages[0].content 
+    : (details.text || entry.summary || "");
+
+  // If initialText contains legacy concatenated follow-ups, strip everything after the first question mark / separator
+  if (initialText.includes('**问**：')) {
+    initialText = initialText.split('**问**：')[0].trim();
+  }
+  if (initialText.includes('\n\n---\n\n')) {
+    initialText = initialText.split('\n\n---\n\n')[0].trim();
+  }
+
   switch (details.type) {
     case 'tarot': {
       const tarot = details as TarotDetails;
       return (
         <div className="space-y-8">
-          <MysticMarkdown content={tarot.text} cards={tarot.cards} />
+          <MysticMarkdown content={initialText} cards={tarot.cards} />
         </div>
       );
     }
@@ -30,22 +44,18 @@ export default function EntryDetailRenderer({ entry }: EntryDetailRendererProps)
           {iching.data?.hexagrams && iching.data.hexagrams.length === 6 && (
             <HexagramDisplay lines={iching.data.hexagrams} />
           )}
-          <MysticMarkdown content={iching.text} />
+          <MysticMarkdown content={initialText} />
         </div>
       );
     }
     case 'bazi': {
-      const bazi = details as BaziDetails;
-      // In historical records, we might not have the full bazi string in the details object 
-      // but in some older records it might be missing. 
-      // This refactor assumes the standardized schema.
       return (
         <div className="space-y-8">
-          <MysticMarkdown content={bazi.text} />
+          <MysticMarkdown content={initialText} />
         </div>
       );
     }
     default:
-      return <MysticMarkdown content={details.text || entry.summary} />;
+      return <MysticMarkdown content={initialText} />;
   }
 }

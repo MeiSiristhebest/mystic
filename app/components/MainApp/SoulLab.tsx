@@ -23,13 +23,15 @@ export default function SoulLab({ initialHandoff, clearHandoff }: SoulLabProps) 
     initialHandoff?.soulLabTab === "subconscious" || initialHandoff?.system === "subconscious" ? "subconscious" : "shadow"
   );
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
-    if (initialHandoff?.soulLabTab === "subconscious" || initialHandoff?.system === "subconscious") {
-      setActiveTab("subconscious");
-    } else if (initialHandoff?.soulLabTab === "shadow") {
-      setActiveTab("shadow");
-    }
+    const timer = setTimeout(() => {
+      if (initialHandoff?.soulLabTab === "subconscious" || initialHandoff?.system === "subconscious") {
+        setActiveTab("subconscious");
+      } else if (initialHandoff?.soulLabTab === "shadow") {
+        setActiveTab("shadow");
+      }
+    }, 0);
+    return () => clearTimeout(timer);
   }, [initialHandoff]);
 
   return (

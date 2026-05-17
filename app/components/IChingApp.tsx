@@ -39,7 +39,10 @@ export default function IChingApp({
   const posterRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (initialMode) setMode(initialMode);
+    const timer = setTimeout(() => {
+      if (initialMode) setMode(initialMode);
+    }, 0);
+    return () => clearTimeout(timer);
   }, [initialMode]);
 
   const { 
@@ -98,26 +101,28 @@ export default function IChingApp({
   // Handoff Logic
   useEffect(() => {
     if (initialHandoff) {
-      const q = initialHandoff.prefillQuestion || initialHandoff.question || initialHandoff.context;
-      const m = initialHandoff.modeId;
-      if (q) setQuestion(q);
-      if (m && ['liuyao', 'meihua', 'qimen'].includes(m)) setMode(m);
-      
-      // Auto-trigger for simple modes (Meihua, Qimen) if requested
-      if (initialHandoff.autoTrigger && q && q.length > 2) {
-        if (m === 'meihua') {
-          // Meihua needs numbers, provide defaults or skip auto if missing
-          const n1 = initialHandoff.num1 || '8';
-          const n2 = initialHandoff.num2 || '8';
-          setNum1(n1); setNum2(n2);
-          handleGenerate('meihua', undefined, n1, n2);
-        } else if (m === 'qimen') {
-          handleGenerate('qimen');
+      const timer = setTimeout(() => {
+        const q = initialHandoff.prefillQuestion || initialHandoff.question || initialHandoff.context;
+        const m = initialHandoff.modeId;
+        if (q) setQuestion(q);
+        if (m && ['liuyao', 'meihua', 'qimen'].includes(m)) setMode(m);
+        
+        // Auto-trigger for simple modes (Meihua, Qimen) if requested
+        if (initialHandoff.autoTrigger && q && q.length > 2) {
+          if (m === 'meihua') {
+            const n1 = initialHandoff.num1 || '8';
+            const n2 = initialHandoff.num2 || '8';
+            setNum1(n1); setNum2(n2);
+            handleGenerate('meihua', undefined, n1, n2);
+          } else if (m === 'qimen') {
+            handleGenerate('qimen');
+          }
         }
-      }
-      clearHandoff?.();
+        clearHandoff?.();
+      }, 0);
+      return () => clearTimeout(timer);
     }
-  }, [initialHandoff, clearHandoff, handleGenerate]);
+  }, [initialHandoff, clearHandoff, handleGenerate, setNum1, setNum2]);
 
   const handleReset = () => {
     resetEngine();

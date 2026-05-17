@@ -110,7 +110,7 @@ export default function CollectiveMirrorApp({ onReadingChange }: { onReadingChan
       updateEntry(currentEntryId, { 
         details: { 
           type: 'collective_mirror',
-          text: finalMsgs.map(m => m.role === 'user' ? `**问**：${m.content}` : `**阿卡夏**：${m.content}`).join('\n\n---\n\n'), 
+          text: messages[0]?.content || fullResponse, 
           question, 
           messages: finalMsgs 
         }

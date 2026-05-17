@@ -72,18 +72,20 @@ export default function JourneyApp() {
   } = useAIChat({ type: selectedEntry?.type || 'tarot' });
 
   // Sync messages and echo when entry is selected
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
-    if (selectedEntry) {
-      setMessages(selectedEntry.details?.messages || [{ role: 'model', content: selectedEntry.details?.text || selectedEntry.summary }]);
-      setCurrentEntryId(selectedEntry.id);
-      setEchoText(selectedEntry.details?.echo || "");
-    } else {
-      setMessages([]);
-      setCurrentEntryId(null);
-      setEchoText("");
-      setIsFullScreen(false);
-    }
+    const timer = setTimeout(() => {
+      if (selectedEntry) {
+        setMessages(selectedEntry.details?.messages || [{ role: 'model', content: selectedEntry.details?.text || selectedEntry.summary }]);
+        setCurrentEntryId(selectedEntry.id);
+        setEchoText(selectedEntry.details?.echo || "");
+      } else {
+        setMessages([]);
+        setCurrentEntryId(null);
+        setEchoText("");
+        setIsFullScreen(false);
+      }
+    }, 0);
+    return () => clearTimeout(timer);
   }, [selectedEntry, setMessages, setCurrentEntryId]);
 
   const handleBack = () => {
@@ -389,34 +391,55 @@ ${JSON.stringify(profile)}
                 <EntryDetailRenderer entry={selectedEntry} />
 
                 {/* Fate Echo Section */}
-                {(echoText || isEchoing) ? (
-                  <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mt-20 p-8 md:p-12 rounded-[32px] bg-[#0c0617]/40 border border-amber-500/20 space-y-6 relative overflow-visible shadow-[0_15px_50px_rgba(0,0,0,0.5)]"
-                  >
-                    <div className="absolute -top-4 left-10 px-6 py-1.5 bg-[#120c18] border border-amber-500/40 rounded-full text-[10px] font-serif text-amber-500 uppercase tracking-[0.4em] shadow-[0_0_15px_rgba(217,119,6,0.3)] z-20">
-                      命运回响 · Echo
+                <div className="mt-20 pt-16 border-t border-amber-500/10">
+                  <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400">
+                        <Zap size={18} />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-serif text-amber-200 tracking-wider">命运回响 · Fate Echo</h3>
+                        <p className="text-xs text-amber-200/50 font-serif italic">跨越时空的共振与生命蓝图复盘</p>
+                      </div>
                     </div>
-                    <div className="w-full pt-6">
-                      {echoText ? (
-                        <MysticMarkdown content={echoText} isLoading={isEchoing} />
-                      ) : (
-                        <BreathingLoading text="正在倾听过往时空的共鸣..." />
-                      )}
-                    </div>
-                  </motion.div>
-                ) : (
-                  <div className="mt-16 flex justify-center">
-                    <button 
-                      onClick={handleGenerateEcho}
-                      className="group flex items-center gap-4 px-8 py-4 rounded-full bg-amber-500/5 border border-amber-500/20 text-amber-200/60 hover:text-amber-200 hover:bg-amber-500/10 transition-all font-serif tracking-widest"
-                    >
-                      <Zap size={16} className="text-amber-500" />
-                      <span>唤醒命运回响</span>
-                    </button>
+                    {echoText && !isEchoing && (
+                      <button
+                        onClick={handleGenerateEcho}
+                        className="text-xs font-serif text-amber-400/60 hover:text-amber-400 border border-amber-500/30 hover:bg-amber-500/10 px-4 py-2 rounded-full transition-all"
+                      >
+                        重新共鸣
+                      </button>
+                    )}
                   </div>
-                )}
+
+                  {(echoText || isEchoing) ? (
+                    <div className="p-8 md:p-12 rounded-[2rem] bg-gradient-to-br from-[#1c0f07]/80 via-[#120804]/80 to-[#0c0502]/80 border border-amber-500/30 shadow-[0_10px_40px_rgba(217,119,6,0.15)] backdrop-blur-xl relative overflow-hidden">
+                      <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
+                      <div className="relative z-10 w-full font-serif text-[#E8DFB8]">
+                        {echoText ? (
+                          <MysticMarkdown content={echoText} isLoading={isEchoing} />
+                        ) : (
+                          <div className="py-12">
+                            <BreathingLoading text="正在感知岁月长河中的宿命回响..." />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-8 md:p-10 rounded-[2rem] bg-amber-500/5 border border-amber-500/20 text-center space-y-6">
+                      <p className="text-amber-200/70 font-serif text-sm max-w-lg mx-auto leading-relaxed">
+                        每一段占卜都不是孤立的碎片。点击下方按钮，阿卡夏记录将结合你当下的时空坐标，为你揭示这段往事在此时此地所泛起的命运回响。
+                      </p>
+                      <button 
+                        onClick={handleGenerateEcho}
+                        className="group inline-flex items-center gap-3 px-8 py-4 rounded-full bg-gradient-to-r from-amber-600 to-amber-800 hover:from-amber-500 hover:to-amber-700 text-amber-100 transition-all font-serif tracking-widest shadow-lg shadow-amber-900/40 hover:scale-105 active:scale-95"
+                      >
+                        <Zap size={18} className="text-amber-300 group-hover:rotate-12 transition-transform" />
+                        <span className="text-base font-medium">开启命运回响</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
                 
                 <div className="hidden show-in-poster mt-24 pt-12 border-t border-amber-500/10 text-center opacity-30">
                   <p className="font-serif text-amber-200/60 tracking-[0.2em] text-center">Akashic Chronicle · Mystic Journey</p>
