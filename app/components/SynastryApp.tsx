@@ -80,21 +80,8 @@ export default function SynastryApp() {
     setIsAskingFollowUp(true);
 
     try {
-      const response = await sendMessage(userMsg);
-      const updatedMessages = [
-        ...messages, 
-        { role: 'user' as const, content: userMsg }, 
-        { role: 'model' as const, content: response }
-      ];
-      
-      updateEntry(currentEntryId, { 
-        details: { 
-          type: 'synastry',
-          text: updatedMessages.map(m => m.role === 'user' ? `**问**：${m.content}` : `**阿卡夏**：${m.content}`).join('\n\n---\n\n'), 
-          question, 
-          messages: updatedMessages 
-        }
-      });
+      const contextPin = `[系统提醒：当前正在进行命运三才合参的追问。请结合用户的八字、星象与所抽取的塔罗牌回答。]`;
+      await sendMessage(`${contextPin}\n\n${userMsg}`, undefined, undefined, userMsg);
     } catch (error) {
       console.error("Chat error:", error);
     } finally {

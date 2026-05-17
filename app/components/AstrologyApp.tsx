@@ -144,24 +144,11 @@ export default function AstrologyApp({ initialHandoff, clearHandoff }: Astrology
 
     try {
       const contextPin = `[系统提醒：当前正在进行关于“${selectedZodiac}”星座的“${TOPICS.find(t => t.id === selectedTopic)?.name}”专题分析。请基于此背景回答。]`;
-      const response = await sendMessage(`${contextPin}\n\n${userMsg}`);
-      
-      const updatedMessages = [
-        ...messages, 
-        { role: 'user' as const, content: userMsg }, 
-        { role: 'model' as const, content: response }
-      ];
-      
-      updateEntry(currentEntryId, { 
-        details: { 
-          type: 'astrology',
-          text: response,
-          mode,
-          messages: updatedMessages 
-        }
-      });
+      await sendMessage(`${contextPin}\n\n${userMsg}`, undefined, undefined, userMsg);
     } catch (error) {
       console.error(error);
+    } finally {
+      setIsAskingFollowUp(false);
     }
   };
 

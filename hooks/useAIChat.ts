@@ -33,19 +33,18 @@ export function useAIChat({
   const sendMessage = useCallback(async (
     prompt: string | any[],
     entryMetadata?: { title: string; summaryPrefix?: string; details: any },
-    customSystemInstruction?: string
+    customSystemInstruction?: string,
+    displayPrompt?: string
   ) => {
     const isFollowUp = messages.length > 0;
-    const userMessageContent = typeof prompt === 'string' ? prompt : (Array.isArray(prompt) ? prompt[prompt.length - 1].content : '');
+    const rawContent = typeof prompt === 'string' ? prompt : (Array.isArray(prompt) ? prompt[prompt.length - 1].content : '');
+    const userMessageContent = displayPrompt !== undefined ? displayPrompt : rawContent;
 
     // 1. Prepare new message state
     let newMessages: Message[];
     if (isFollowUp) {
       newMessages = [...messages, { role: 'user', content: userMessageContent } as Message];
     } else {
-      // First message is usually the prompt which might be a large XML, 
-      // but in UI we might want to show a cleaner version if it's a string.
-      // However, usually first message from user isn't shown if it's a generated prompt.
       newMessages = messages; 
     }
 
@@ -55,10 +54,18 @@ export function useAIChat({
       let fullResponse = "";
       const si = customSystemInstruction || systemInstruction;
       
-      // If it's a follow-up, we pass the history
-      const streamInput = isFollowUp 
-        ? newMessages.map(m => ({ role: m.role, parts: [{ text: m.content }] }))
-        : prompt;
+      // If it's a follow-up, we pass the history to the model, but for the LAST user message, we pass the raw content (with context pins)
+      let streamInput: any;
+      if (isFollowUp) {
+        streamInput = newMessages.map((m, idx) => {
+          if (idx === newMessages.length - 1) {
+            return { role: m.role, parts: [{ text: rawContent }] };
+          }
+          return { role: m.role, parts: [{ text: m.content }] };
+        });
+      } else {
+        streamInput = prompt;
+      }
 
       for await (const chunk of stream(streamInput as any, si)) {
         fullResponse += chunk;
@@ -84,14 +91,9 @@ export function useAIChat({
         });
         setCurrentEntryId(id || null);
       } else if (currentEntryId) {
-        // For follow-ups, we update the existing entry
-        // Combine all messages for the 'text' field if needed, or just update the messages array
+        // For follow-ups, update the existing entry with clean messages
         updateEntry(currentEntryId, {
           details: {
-            // We need to spread existing details if we had access to them, 
-            // but updateEntry in current useJourney implementation handles merging if we pass partial.
-            // Actually, current updateEntry replaces the whole details object.
-            // This is a known limitation that we'll address in the JourneyApp refactor.
             type,
             messages: finalMessages
           } as any

@@ -59,7 +59,7 @@ export default function ShadowWorkApp({ initialHandoff, clearHandoff }: ShadowWo
           type: 'shadow_work',
           issue: currentInput
         }
-      });
+      }, undefined, currentInput);
     } catch (e) {
       console.error(e);
     }

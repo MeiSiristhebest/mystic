@@ -63,7 +63,7 @@ export default function SubconsciousApp({ initialHandoff, clearHandoff }: Subcon
           mode,
           content: currentInput
         }
-      });
+      }, undefined, currentInput);
     } catch (e) {
       console.error(e);
     }

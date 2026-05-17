@@ -88,7 +88,7 @@ export default function IChingApp({
     await sendMessage(prompt, {
       title: question ? `易经占卜：${question}` : '易经占卜',
       details: { data: { method: type, question, hexagrams: lines } }
-    });
+    }, undefined, question || `开启${type === 'meihua' ? '梅花易数' : type === 'qimen' ? '奇门遁甲' : '六爻占卜'}推演`);
   }, [getProfileContext, question, calculateMeihua, num1, num2, setLines, sendMessage, lines]);
 
   // Handoff Logic

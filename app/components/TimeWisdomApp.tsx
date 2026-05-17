@@ -97,20 +97,8 @@ export default function TimeWisdomApp() {
     setIsAskingFollowUp(true);
 
     try {
-      const response = await sendMessage(userMsg);
-      const updatedMessages = [
-        ...messages, 
-        { role: 'user' as const, content: userMsg }, 
-        { role: 'model' as const, content: response }
-      ];
-      
-      updateEntry(currentEntryId, { 
-        details: { 
-          type: 'time',
-          text: updatedMessages.map(m => m.role === 'user' ? `**问**：${m.content}` : `**阿卡夏**：${m.content}`).join('\n\n---\n\n'), 
-          messages: updatedMessages as any
-        }
-      });
+      const contextPin = `[系统提醒：当前正在进行关于时间智慧与天象分析的追问。请基于今日星象脉动和用户档案回答。]`;
+      await sendMessage(`${contextPin}\n\n${userMsg}`, undefined, undefined, userMsg);
     } catch (error) {
       console.error("Chat error:", error);
     } finally {

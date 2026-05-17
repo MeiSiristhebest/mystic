@@ -100,7 +100,7 @@ export default function BaziApp({
         fullName,
         birthPlace
       }
-    });
+    }, undefined, question || `开启${mode === 'bazi' ? '八字' : mode === 'ziwei' ? '紫微' : '流年'}推演`);
   }, [birthDate, birthTime, profile, updateProfile, gender, fullName, birthPlace, calculateBazi, mode, question, getProfileContext, sendMessage]);
 
   // Handoff Logic

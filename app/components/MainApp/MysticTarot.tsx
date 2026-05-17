@@ -109,7 +109,7 @@ export function MysticTarot({ initialHandoff, clearHandoff }: MysticTarotProps =
           spread: spread?.name,
           question
         }
-      });
+      }, undefined, question || "开启塔罗牌阵解读");
       if (res) setReading(res);
     } catch (error) {
       console.error(error);
@@ -120,26 +120,8 @@ export function MysticTarot({ initialHandoff, clearHandoff }: MysticTarotProps =
     if (!currentEntryId || isChatLoading) return;
 
     try {
-      // Pin the original context in the AI's "mind" by reinforcing the cards and question
       const contextPin = `[系统提醒：请始终基于本次占卜的问题“${question}”和牌面“${cards.map(c => c.name).join('、')}”进行回答。]`;
-      const response = await sendMessage(`${contextPin}\n\n${userMsg}`);
-      
-      const updatedMessages = [
-        ...messages, 
-        { role: 'user' as const, content: userMsg }, 
-        { role: 'model' as const, content: response }
-      ];
-      
-      updateEntry(currentEntryId, { 
-        details: { 
-          type: 'tarot',
-          text: response,
-          cards,
-          spread: SPREAD_MODES.find(s => s.id === selectedSpread)?.name,
-          question, 
-          messages: updatedMessages 
-        }
-      });
+      await sendMessage(`${contextPin}\n\n${userMsg}`, undefined, undefined, userMsg);
     } catch (error) {
       console.error(error);
     }
