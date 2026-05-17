@@ -37,6 +37,10 @@ export default function IChingApp({
   const [chatInput, setChatInput] = useState('');
   const posterRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    if (initialMode) setMode(initialMode);
+  }, [initialMode]);
+
   const { 
     lines, setLines, isTossing, handleToss, calculateMeihua, 
     num1, setNum1, num2, setNum2, resetEngine 

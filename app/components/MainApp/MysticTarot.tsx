@@ -201,17 +201,7 @@ export function MysticTarot({ initialHandoff, clearHandoff }: MysticTarotProps =
               {/* 下半部分：贯穿屏幕的横向牌阵走廊 */}
               <div className="space-y-6 pt-4">
                 <div className="flex items-center justify-between flex-wrap gap-4">
-                  <div className="flex items-center gap-4">
-                    <label className="block text-xs font-serif text-amber-500/60 uppercase tracking-[0.3em]">3. 选择牌阵</label>
-                    <div className="hidden sm:flex gap-1.5">
-                      <button onClick={() => scrollBy(-300)} className="w-8 h-8 rounded-full border border-amber-500/20 flex items-center justify-center bg-black/40 hover:border-amber-500/60 transition-all text-amber-500/60 hover:text-amber-500 shadow-md">
-                        <ChevronLeft className="w-4 h-4" />
-                      </button>
-                      <button onClick={() => scrollBy(300)} className="w-8 h-8 rounded-full border border-amber-500/20 flex items-center justify-center bg-black/40 hover:border-amber-500/60 transition-all text-amber-500/60 hover:text-amber-500 shadow-md">
-                        <ChevronRight className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
+                  <label className="block text-xs font-serif text-amber-500/60 uppercase tracking-[0.3em]">3. 选择牌阵</label>
                   <button 
                     onClick={() => setHandoff({ system: 'oracle', question })}
                     className="text-xs text-amber-400 hover:text-amber-300 transition-colors flex items-center gap-2 font-serif tracking-widest px-5 py-2.5 bg-amber-500/10 border border-amber-500/30 rounded-full hover:bg-amber-500/20 shadow-lg"
@@ -220,49 +210,67 @@ export function MysticTarot({ initialHandoff, clearHandoff }: MysticTarotProps =
                   </button>
                 </div>
 
-                <div ref={carouselRef} className="flex overflow-x-auto gap-6 pb-6 pt-2 custom-scrollbar snap-x scroll-smooth">
-                  {SPREAD_MODES.map(spread => (
-                    <button
-                      key={spread.id}
-                      onClick={() => setSelectedSpread(spread.id)}
-                      className={`w-[280px] min-h-[310px] shrink-0 snap-center rounded-[2.5rem] p-7 flex flex-col justify-between text-left transition-all duration-500 group relative border backdrop-blur-md cursor-pointer ${
-                        selectedSpread === spread.id
-                          ? "bg-gradient-to-b from-amber-500/20 via-amber-500/10 to-black/60 border-amber-500/80 shadow-[0_0_40px_rgba(245,158,11,0.25)] ring-1 ring-amber-500/40 -translate-y-2"
-                          : "bg-black/50 border-white/10 hover:border-amber-500/40 hover:bg-black/70 hover:-translate-y-1"
-                      }`}
-                    >
-                      {/* 卡片头部：图标与药丸 */}
-                      <div className="flex justify-between items-center mb-6">
-                        <div className={`p-3 rounded-2xl border transition-colors ${selectedSpread === spread.id ? 'bg-amber-500/30 border-amber-500/60 text-amber-300' : 'bg-white/5 border-white/10 text-white/40 group-hover:text-amber-500/60'}`}>
-                          <Layers className="w-5 h-5" />
+                <div className="relative group/carousel py-2">
+                  {/* 悬浮在卡牌走廊左侧中央的控制键 */}
+                  <button 
+                    onClick={() => scrollBy(-320)} 
+                    className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 md:-translate-x-6 z-20 w-12 h-12 rounded-full bg-[#0A070C] border-2 border-amber-500/40 hover:border-amber-500 text-amber-400 flex items-center justify-center shadow-[0_0_30px_rgba(0,0,0,0.95)] hover:scale-110 hover:bg-black transition-all cursor-pointer"
+                  >
+                    <ChevronLeft className="w-6 h-6" />
+                  </button>
+
+                  <div ref={carouselRef} className="flex overflow-x-auto gap-6 pb-6 pt-2 px-4 custom-scrollbar snap-x scroll-smooth">
+                    {SPREAD_MODES.map(spread => (
+                      <button
+                        key={spread.id}
+                        onClick={() => setSelectedSpread(spread.id)}
+                        className={`w-[280px] min-h-[310px] shrink-0 snap-center rounded-[2.5rem] p-7 flex flex-col justify-between text-left transition-all duration-500 group relative border backdrop-blur-md cursor-pointer ${
+                          selectedSpread === spread.id
+                            ? "bg-gradient-to-b from-amber-500/20 via-amber-500/10 to-black/60 border-amber-500/80 shadow-[0_0_40px_rgba(245,158,11,0.25)] ring-1 ring-amber-500/40 -translate-y-2"
+                            : "bg-black/50 border-white/10 hover:border-amber-500/40 hover:bg-black/70 hover:-translate-y-1"
+                        }`}
+                      >
+                        {/* 卡片头部：图标与药丸 */}
+                        <div className="flex justify-between items-center mb-6">
+                          <div className={`p-3 rounded-2xl border transition-colors ${selectedSpread === spread.id ? 'bg-amber-500/30 border-amber-500/60 text-amber-300' : 'bg-white/5 border-white/10 text-white/40 group-hover:text-amber-500/60'}`}>
+                            <Layers className="w-5 h-5" />
+                          </div>
+                          <span className={`px-3 py-1 rounded-full text-xs font-serif tracking-wider transition-colors ${selectedSpread === spread.id ? 'bg-amber-500 text-black font-bold shadow-[0_0_15px_rgba(245,158,11,0.6)]' : 'border border-amber-500/30 text-amber-200/50 group-hover:border-amber-500/60 group-hover:text-amber-200'}`}>
+                            {spread.cardCount} 张牌
+                          </span>
                         </div>
-                        <span className={`px-3 py-1 rounded-full text-xs font-serif tracking-wider transition-colors ${selectedSpread === spread.id ? 'bg-amber-500 text-black font-bold shadow-[0_0_15px_rgba(245,158,11,0.6)]' : 'border border-amber-500/30 text-amber-200/50 group-hover:border-amber-500/60 group-hover:text-amber-200'}`}>
-                          {spread.cardCount} 张牌
-                        </span>
-                      </div>
 
-                      {/* 卡片中段：标题与描述 */}
-                      <div className="space-y-3 my-auto py-4">
-                        <h4 className={`text-xl font-serif tracking-wide transition-colors ${selectedSpread === spread.id ? 'text-amber-100 font-bold' : 'text-amber-100/70 group-hover:text-amber-100'}`}>{spread.name}</h4>
-                        <p className="text-xs text-white/40 line-clamp-3 leading-relaxed font-serif group-hover:text-white/60 transition-colors">{spread.description}</p>
-                      </div>
+                        {/* 卡片中段：标题与描述 */}
+                        <div className="space-y-3 my-auto py-4">
+                          <h4 className={`text-xl font-serif tracking-wide transition-colors ${selectedSpread === spread.id ? 'text-amber-100 font-bold' : 'text-amber-100/70 group-hover:text-amber-100'}`}>{spread.name}</h4>
+                          <p className="text-xs text-white/40 line-clamp-3 leading-relaxed font-serif group-hover:text-white/60 transition-colors">{spread.description}</p>
+                        </div>
 
-                      {/* 卡片底部：牌面框示意图 */}
-                      <div className="pt-4 border-t border-white/10 mt-6 flex gap-1.5 items-center justify-start opacity-50 group-hover:opacity-90 transition-opacity">
-                        {Array.from({ length: Math.min(5, spread.cardCount) }).map((_, i) => (
-                          <div key={i} className={`w-3.5 h-5 rounded border ${selectedSpread === spread.id ? 'border-amber-400 bg-amber-400/20 shadow-[0_0_8px_rgba(245,158,11,0.5)]' : 'border-amber-500/30 bg-white/5'}`} />
-                        ))}
-                        {spread.cardCount > 5 && <span className="text-[10px] text-amber-500/60 ml-1 font-mono font-bold">+{spread.cardCount - 5}</span>}
-                      </div>
+                        {/* 卡片底部：牌面框示意图 */}
+                        <div className="pt-4 border-t border-white/10 mt-6 flex gap-1.5 items-center justify-start opacity-50 group-hover:opacity-90 transition-opacity">
+                          {Array.from({ length: Math.min(5, spread.cardCount) }).map((_, i) => (
+                            <div key={i} className={`w-3.5 h-5 rounded border ${selectedSpread === spread.id ? 'border-amber-400 bg-amber-400/20 shadow-[0_0_8px_rgba(245,158,11,0.5)]' : 'border-amber-500/30 bg-white/5'}`} />
+                          ))}
+                          {spread.cardCount > 5 && <span className="text-[10px] text-amber-500/60 ml-1 font-mono font-bold">+{spread.cardCount - 5}</span>}
+                        </div>
 
-                      {selectedSpread === spread.id && (
-                        <motion.div 
-                          layoutId="active-spread"
-                          className="absolute inset-0 border-2 border-amber-500/40 rounded-[2.5rem] pointer-events-none"
-                        />
-                      )}
-                    </button>
-                  ))}
+                        {selectedSpread === spread.id && (
+                          <motion.div 
+                            layoutId="active-spread"
+                            className="absolute inset-0 border-2 border-amber-500/40 rounded-[2.5rem] pointer-events-none"
+                          />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* 悬浮在卡牌走廊右侧中央的控制键 */}
+                  <button 
+                    onClick={() => scrollBy(320)} 
+                    className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 md:translate-x-6 z-20 w-12 h-12 rounded-full bg-[#0A070C] border-2 border-amber-500/40 hover:border-amber-500 text-amber-400 flex items-center justify-center shadow-[0_0_30px_rgba(0,0,0,0.95)] hover:scale-110 hover:bg-black transition-all cursor-pointer"
+                  >
+                    <ChevronRight className="w-6 h-6" />
+                  </button>
                 </div>
               </div>
 

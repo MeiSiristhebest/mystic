@@ -50,12 +50,15 @@ const AssociationBubble = ({ association }: { association: any }) => {
       setActiveSubTab('astrology');
     } else {
       setActiveTab('explore');
+      if (association.system) setActiveSubTab(association.system);
     }
 
     if (association.system && association.modeId) {
       setHandoff({
+        system: association.system,
         modeId: association.modeId,
         question: association.reason,
+        context: association.reason,
         autoTrigger: true
       });
     }

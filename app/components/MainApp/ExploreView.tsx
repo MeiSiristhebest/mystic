@@ -73,8 +73,18 @@ export function ExploreView() {
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [handoffData, setHandoffData] = useState<DivinationHandoff | null>(null);
   const setActiveTab = useAppStore((state) => state.setActiveTab);
+  const activeSubTab = useAppStore((state) => state.activeSubTab);
+  const setActiveSubTab = useAppStore((state) => state.setActiveSubTab);
   const globalHandoff = useAppStore((state: any) => state.handoff);
   const setGlobalHandoff = useAppStore((state: any) => state.setHandoff);
+
+  // Sync with global activeSubTab
+  useEffect(() => {
+    if (activeSubTab) {
+      setSubTab(activeSubTab);
+      setActiveSubTab(null);
+    }
+  }, [activeSubTab, setActiveSubTab]);
 
   // Sync with global handoff (e.g. from TodayView or Tarot)
   useEffect(() => {

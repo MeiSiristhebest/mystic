@@ -36,6 +36,10 @@ export default function BaziApp({
   const [chatInput, setChatInput] = useState('');
   const posterRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    if (initialMode) setMode(initialMode);
+  }, [initialMode]);
+
   const { 
     birthDate, setBirthDate, birthTime, setBirthTime, gender, setGender,
     fullName, setFullName, birthPlace, setBirthPlace, baziData, calculateBazi, resetEngine 
