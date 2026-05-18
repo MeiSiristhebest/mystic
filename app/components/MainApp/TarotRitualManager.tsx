@@ -22,9 +22,17 @@ export default function TarotRitualManager({ cards, spread, onComplete }: TarotR
   const [phase, setPhase] = useState<"shuffling" | "drawing" | "revealing">("shuffling");
   const [selectedDeckIndices, setSelectedDeckIndices] = useState<number[]>([]);
   const [revealedCount, setRevealedCount] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
 
   // 78 dummy cards for the full tarot deck
   const fullDeck = useRef(Array.from({ length: 78 }, (_, i) => i)).current;
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     if (phase === "shuffling") {
@@ -167,45 +175,44 @@ export default function TarotRitualManager({ cards, spread, onComplete }: TarotR
               </div>
             </div>
 
-            {/* 78-Card Arc Fan Layout (Middle) */}
-            <div className="w-full max-w-[95vw] mt-16 mb-24 relative">
-              <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#C9A84C]/20 text-xs text-[#C9A84C]/70 font-serif tracking-widest px-4 md:px-12">
+            {/* True 78-Card Arc Fan Layout (Middle) */}
+            <div className="w-full mt-12 mb-16 relative flex flex-col items-center">
+              <div className="flex items-center justify-between pb-4 mb-10 w-full max-w-4xl border-b border-[#C9A84C]/20 text-xs text-[#C9A84C]/70 font-serif tracking-widest px-4 md:px-12">
                 <span>✦ 阿卡夏全副塔罗密卷 (78张)</span>
                 <span>请凭直觉点选卡牌</span>
               </div>
               
-              {/* Horizontal scroll container for the fan with generous vertical padding to prevent clipping */}
-              <div className="w-full overflow-x-auto overflow-y-visible pt-16 pb-32 px-4 custom-scrollbar">
-                <div className="flex justify-start min-w-max px-[15vw] pt-12 pb-16">
+              {/* True Arc Fan without overflow constraints */}
+              <div className="relative w-full h-[260px] md:h-[320px] flex justify-center items-end">
                   {fullDeck.map((deckIdx) => {
                     const isPicked = selectedDeckIndices.includes(deckIdx);
                     const totalCards = 78;
                     const centerIndex = (totalCards - 1) / 2;
                     const offsetFromCenter = deckIdx - centerIndex;
                     
-                    const rotation = offsetFromCenter * 1.5; // degrees
-                    const translateY = Math.abs(offsetFromCenter) * 2.8; // px drop
+                    // Responsive hand-fan math: tighter arc on mobile to ensure all cards fit in viewport
+                    const rotation = offsetFromCenter * (isMobile ? 1.4 : 1.8);
+                    const origin = isMobile ? 'center 180px' : 'center 250px';
                     
                     return (
                       <motion.div
                         key={deckIdx}
-                        initial={{ opacity: 0, y: 100, rotate: rotation }}
-                        animate={{ opacity: 1, y: translateY, rotate: rotation }}
+                        initial={{ opacity: 0, y: 150, rotate: rotation }}
+                        animate={{ opacity: 1, y: 0, rotate: rotation }}
                         transition={{ delay: deckIdx * 0.008 }}
-                        whileHover={!isPicked && selectedDeckIndices.length < cards.length ? { scale: 1.15, y: translateY - 35, zIndex: 100 } : {}}
+                        whileHover={!isPicked && selectedDeckIndices.length < cards.length ? { scale: 1.15, y: -40, zIndex: 100 } : {}}
                         whileTap={!isPicked && selectedDeckIndices.length < cards.length ? { scale: 0.95 } : {}}
                         onClick={() => handleDrawCard(deckIdx)}
-                        className={`relative w-[4.5rem] h-[6.5rem] md:w-[5.5rem] md:h-[8rem] -ml-12 md:-ml-14 shrink-0 transition-all duration-500 ${isPicked ? "opacity-0 pointer-events-none translate-y-[-100px] scale-50" : "cursor-pointer hover:z-50"}`}
+                        className={`absolute bottom-0 w-[4.5rem] h-[6.75rem] md:w-[6rem] md:h-[9rem] shrink-0 transition-all duration-500 ${isPicked ? "opacity-0 pointer-events-none translate-y-[-100px] scale-50" : "cursor-pointer hover:z-50"}`}
                         style={{ 
-                          transformOrigin: 'bottom center',
-                          zIndex: deckIdx // default stacking order
+                          transformOrigin: origin, // Anchor rotation far below the card to create a wide arc
+                          zIndex: deckIdx 
                         }}
                       >
                         <TarotCardBack className="shadow-[0_5px_15px_rgba(0,0,0,0.5)] hover:border-[#C9A84C]" />
                       </motion.div>
                     );
                   })}
-                </div>
               </div>
             </div>
 
@@ -226,7 +233,15 @@ export default function TarotRitualManager({ cards, spread, onComplete }: TarotR
             animate={{ opacity: 1 }}
             className="flex flex-col items-center gap-16 w-full max-w-5xl mx-auto px-4"
           >
-            <div className="flex flex-wrap justify-center gap-10 md:gap-14 w-full" style={{ perspective: "2000px" }}>
+            <div className={`grid gap-x-10 gap-y-16 md:gap-x-14 ${
+                cards.length === 1 ? "grid-cols-1" :
+                cards.length === 2 ? "grid-cols-2" :
+                cards.length === 3 ? "grid-cols-3" :
+                cards.length === 4 ? "grid-cols-2" :
+                cards.length === 5 ? "grid-cols-3 md:grid-cols-5" :
+                cards.length === 7 ? "grid-cols-4 md:grid-cols-7" :
+                "grid-cols-4 md:grid-cols-5"
+              } w-full justify-items-center`} style={{ perspective: "2000px" }}>
               {cards.map((card, i) => (
                 <div key={i} className="flex flex-col items-center space-y-5">
                   <motion.div

@@ -33,11 +33,11 @@ export function processMysticMarkdownContent(rawText: string): { processedConten
     .replace(/^(#+)\s+#+\s+/gm, '$1 ')
     .replace(/^(#+)\s+([#*]+)\s+/gm, '$1 ')
     // Separate headings merged with numbered items or bullet points on the same line
-    .replace(/^(#+[^\n0-9]+?)[：:\s]*(?=\b\d+[\.．。])/gm, '$1\n\n')
-    .replace(/^(#+[^\n-*]+?)[：:\s]*(?=[-*]\s)/gm, '$1\n\n')
+    .replace(/(#+[^\n]*?)\s+(?=[\*\s_]*(?:\d+|[一二三四五六七八九十]+)[\.．。、])/g, '$1\n\n')
+    .replace(/(#+[^\n]*?)\s+(?=[\*\s_]*[-*]\s)/g, '$1\n\n')
     // Separate merged numbered list items or bullet points stuck to sentences in paragraphs
-    .replace(/([。！？”」】\.\!\?])[：:\s]*(?=\b\d+[\.．。])/g, '$1\n\n')
-    .replace(/([。！？”」】\.\!\?])[：:\s]*(?=[-*]\s)/g, '$1\n\n')
+    .replace(/([。！？”」】\.\!\?])\s*(?=[\*\s_]*(?:\d+|[一二三四五六七八九十]+)[\.．。、])/g, '$1\n\n')
+    .replace(/([。！？”」】\.\!\?])\s*(?=[\*\s_]*[-*]\s)/g, '$1\n\n')
     // Fix spaces right before closing or after opening **
     .replace(/\*\*\s+([^\n*]+?)\s+\*\*/g, '**$1**')
     .replace(/([^\s*])\s+\*\*/g, '$1**')
