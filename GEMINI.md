@@ -1,3 +1,17 @@
+## [2026-05-18] Feature: Merged Markdown Heading/List AST Purification, Dynamic Spread Geometry & Unclipped Arc Fan Layout
+
+- **Decision: Bulletproof Regex Separation for Merged Headings and Numbered Lists (`TarotComponents.tsx`)**
+  - **Reason**: AI models occasionally output section headings (`## 🔮 牌阵解析`) and numbered items (`1. 现状: ...`, `2. 选项一: ...`) directly merged on a single continuous line without leading whitespace or proper halfwidth/fullwidth punctuation breaks. `ReactMarkdown` treated the entire line as a single `<h2>` AST node, causing the entire reading to be rendered inside `MemoH2` with glowing gold gradient text, large letter spacing, and flanking diamond ornaments (`⟡`), which made the whole reading look like a giant uppercase banner.
+  - **Action**: Injected robust pre-parsing regex rules (`/^(#+[^\n0-9]+?)[：:\s]*(?=\b\d+[\.．。])/gm`) into `processMysticMarkdownContent` to automatically detect boundary markers between headings or Chinese sentence periods (`。！？”`) and subsequent numbered list items (`\d+[\.．。]`). Clean double newlines (`\n\n`) are successfully inserted at these boundaries, isolating headings into standalone banners and restoring pristine paragraph and list formatting throughout historical diary reviews.
+
+- **Decision: Dynamic Spread Geometry & Occult Position Badges (`TarotRitualManager.tsx`)**
+  - **Reason**: Active spread slots and revealed cards were previously displayed in generic flat flex rows (`flex-wrap justify-center`). For complex 4, 5, 7, or 10 card spreads (like Celtic Cross or Four Elements), a flat row completely lost the mystical geometric formation expected of an authentic occult reading.
+  - **Action**: Dynamically passed the active `spread` configuration from `MysticTarot` into `TarotRitualManager`. Arranged active slots and revealed cards into custom grid geometries matching spread counts (e.g., 3-card triangle/row, 4-card 2x2 cross). Added a dedicated glowing obsidian badge under every single card slot and revealed card to anchor it with its precise occult position (e.g., `[过去]`, `[现在]`, `[未来]`, `[阻碍/助力]`).
+
+- **Decision: Decoupled Vertical Constraints for Unclipped 78-Card Arc Fan (`TarotRitualManager.tsx`)**
+  - **Reason**: The horizontal scroll container for the 78-card Arc Fan previously used `overflow-x-auto overflow-y-visible`. In CSS specification, when `overflow-x` is `auto`, `overflow-y` cannot be `visible` and is automatically computed as `auto` or `hidden`. This caused any card rotated or dropped downwards (`translateY`) at the edges of the fan to be sharply clipped by the scroll container's bounding box.
+  - **Action**: Decoupled `overflow-y` constraints and injected 112px symmetrical top and bottom padding (`pt-16 pb-32`), ensuring the rotated and dropped cards on the far edges of the 78-card fan remain flawlessly visible across all WebKit/Blink viewports.
+
 ## [2026-05-18] Feature: Premium Tarot Ritual UI Redesign (SVG & Physics)
 
 - **Decision: "Eye of Providence" Inline SVG Card Back (`TarotCardBack.tsx`)**

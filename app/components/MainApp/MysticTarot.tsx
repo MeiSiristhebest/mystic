@@ -312,6 +312,7 @@ export function MysticTarot({ initialHandoff, clearHandoff }: MysticTarotProps =
         {step === "ritual" && (
           <TarotRitualManager 
             cards={cards} 
+            spread={SPREAD_MODES.find(s => s.id === selectedSpread)}
             onComplete={handleRitualComplete} 
           />
         )}
