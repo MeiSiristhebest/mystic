@@ -1,4 +1,21 @@
-## [2026-05-18] Feature: 78-Card Interactive Tarot Deck & Realistic 3D Riffle Shuffle Physics
+## [2026-05-18] Feature: Premium Tarot Ritual UI Redesign (SVG & Physics)
+
+- **Decision: "Eye of Providence" Inline SVG Card Back (`TarotCardBack.tsx`)**
+  - **Reason**: The previous woven texture background looked generic and relied on an external texture link. The user desired a premium, highly esoteric card back. We determined that an unnumbered, pure geometric design best preserves the ritualistic mystery of a blind draw.
+  - **Action**: Created a 100% custom inline `<TarotCardBack />` component featuring concentric diamond geometric frames, radiating sunburst lines, and a central glowing Eye of Providence. Utilized ultra-fine 1px `#C9A84C` strokes against a deep midnight `#0A0518` gradient. The SVG format ensures flawless scaling and zero external dependencies.
+
+- **Decision: "Celestial Ribbon" Arc Shuffling Animation (`TarotRitualManager.tsx`)**
+  - **Reason**: The physical riffle shuffle felt too mechanical and jittery for a mystical application.
+  - **Action**: Engineered a "Celestial Ribbon" cascade animation using Framer Motion. The 12-card stack smoothly arcs out into a wide semicircle (ranging from -66° to +66°), hovers, and gracefully collapses back into a tight stack every 2.2 seconds, perfectly simulating the fluid hand movements of a master Tarot reader. Synchronized haptic feedback and paper audio to the collapse phase.
+
+- **Decision: 78-Card "Arc Fan" Drawing Layout (`TarotRitualManager.tsx`)**
+  - **Reason**: The 78-card flat grid was visually inert. A scattered layout would be too chaotic on mobile screens, so an elegant, mathematically structured fan layout was chosen as the most premium and scalable option.
+  - **Action**: Restructured the drawing phase DOM. Cards are horizontally arrayed in an overlapping curve using CSS grid with subtle rotation and translateY transforms based on their offset from the center index. Added a graceful vertical lift (`y: -20px`) on hover, and an elegant fly-up-to-slot animation when a card is selected. The instruction banner was elegantly pinned to the absolute bottom of the viewport with a delicate gold line.
+
+## [2026-05-18] Feature: Markdown Merged Heading Separation & Realistic 3D Riffle Shuffle Physics
+- **Decision: Robust Regex Separation for Merged Headings and Numbered Lists (`TarotComponents`)**
+  - **Reason**: AI models occasionally output section headings (`## 🔮 牌阵解析`) and numbered items (`1. 现状: ...`, `2. 选项一: ...`) directly merged on a single continuous line. `ReactMarkdown` treated the entire line as a single `<h2>` AST node, causing the entire reading to be rendered inside `MemoH2` with glowing gold gradient text, large letter spacing, and flanking diamond ornaments (`⟡`), which made the whole reading look like a giant uppercase banner.
+  - **Action**: Injected robust pre-parsing regex rules into `processMysticMarkdownContent` to automatically detect when headings (`#+`) or sentence periods (`。！？”`) are immediately followed on the same line by numbered list items (`\d+\.\s`) or bullet points. The pre-parser cleanly inserts double newlines (`\n\n`) at these boundaries, successfully isolating the heading title into a standalone `<h2>` component and restoring pristine, elegant paragraph formatting for the main reading body.
 
 - **Decision: Realistic 3D Riffle/Overhand Criss-Cross Shuffle Physics (`TarotRitualManager`)**
   - **Reason**: Users reported that the previous shuffling animation looked artificial because dummy cards simply swayed left and right in periodic sine waves without physical packet separation or interlaced criss-cross inserting.
