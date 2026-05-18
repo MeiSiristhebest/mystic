@@ -138,27 +138,48 @@ export default function TarotRitualManager({ cards, onComplete }: TarotRitualMan
               </div>
             </div>
 
-            {/* 78-Card Grid Layout (Middle) */}
-            <div className="w-full bg-black/40 border border-white/5 rounded-[2rem] p-6 md:p-8 backdrop-blur-xl shadow-2xl mt-12 mb-20 relative">
-              <div className="flex items-center justify-between pb-6 mb-8 border-b border-[#C9A84C]/20 text-xs text-[#C9A84C]/80 font-serif tracking-widest">
+            {/* 78-Card Arc Fan Layout (Middle) */}
+            <div className="w-full max-w-[90vw] mt-16 mb-24 relative">
+              <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#C9A84C]/20 text-xs text-[#C9A84C]/70 font-serif tracking-widest px-4 md:px-12">
                 <span>✦ 阿卡夏全副塔罗密卷 (78张)</span>
                 <span>请凭直觉点选卡牌</span>
               </div>
-              <div className="grid grid-cols-6 sm:grid-cols-10 md:grid-cols-13 gap-2 md:gap-3 max-h-[350px] overflow-y-auto pr-3 custom-scrollbar">
-                {fullDeck.map(deckIdx => {
-                  const isPicked = selectedDeckIndices.includes(deckIdx);
-                  return (
-                    <motion.div
-                      key={deckIdx}
-                      whileHover={!isPicked && selectedDeckIndices.length < cards.length ? { scale: 1.15, y: -6, zIndex: 10 } : {}}
-                      whileTap={!isPicked && selectedDeckIndices.length < cards.length ? { scale: 0.95 } : {}}
-                      onClick={() => handleDrawCard(deckIdx)}
-                      className={`relative aspect-[2/3] transition-all duration-500 ${isPicked ? "opacity-0 scale-50 pointer-events-none" : "cursor-pointer group"}`}
-                    >
-                      <TarotCardBack className="group-hover:shadow-[0_10px_25px_rgba(201,168,76,0.4)] group-hover:border-[#C9A84C]/80" />
-                    </motion.div>
-                  );
-                })}
+              
+              {/* Horizontal scroll container for the fan */}
+              <div className="w-full overflow-x-auto overflow-y-visible pb-16 pt-12 px-4 custom-scrollbar">
+                <div className="flex justify-center min-w-max px-20">
+                  {fullDeck.map((deckIdx) => {
+                    const isPicked = selectedDeckIndices.includes(deckIdx);
+                    // Calculate arc properties for the fan (78 cards)
+                    // We want them to overlap tightly and curve upwards
+                    const totalCards = 78;
+                    const centerIndex = (totalCards - 1) / 2;
+                    const offsetFromCenter = deckIdx - centerIndex;
+                    
+                    // The fan spreads horizontally and arcs downward at the edges
+                    const rotation = offsetFromCenter * 1.5; // degrees
+                    const translateY = Math.abs(offsetFromCenter) * 2.5; // px drop
+                    
+                    return (
+                      <motion.div
+                        key={deckIdx}
+                        initial={{ opacity: 0, y: 100, rotate: rotation }}
+                        animate={{ opacity: 1, y: translateY, rotate: rotation }}
+                        transition={{ delay: deckIdx * 0.01 }}
+                        whileHover={!isPicked && selectedDeckIndices.length < cards.length ? { scale: 1.15, y: translateY - 25, zIndex: 100 } : {}}
+                        whileTap={!isPicked && selectedDeckIndices.length < cards.length ? { scale: 0.95 } : {}}
+                        onClick={() => handleDrawCard(deckIdx)}
+                        className={`relative w-[4.5rem] h-[6.5rem] md:w-[5.5rem] md:h-[8rem] -ml-12 md:-ml-14 shrink-0 transition-all duration-500 ${isPicked ? "opacity-0 pointer-events-none translate-y-[-100px] scale-50" : "cursor-pointer hover:z-50"}`}
+                        style={{ 
+                          transformOrigin: 'bottom center',
+                          zIndex: deckIdx // default stacking order
+                        }}
+                      >
+                        <TarotCardBack className="shadow-[0_5px_15px_rgba(0,0,0,0.5)] hover:border-[#C9A84C]" />
+                      </motion.div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
