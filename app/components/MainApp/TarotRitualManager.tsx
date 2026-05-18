@@ -172,73 +172,72 @@ export default function TarotRitualManager({ cards, spread, onComplete }: TarotR
               </div>
             </div>
 
-            {/* True 78-Card Arc Fan Layout */}
-            <div className="w-full mt-6 mb-4 relative flex flex-col items-center">
+            {/* 78-Card Arc Fan — outer div = CSS positioning, inner motion.div = animations */}
+            <div className="w-full mt-6 mb-4 flex flex-col items-center">
               <div className="flex items-center justify-between pb-3 mb-6 w-full max-w-4xl border-b border-[#C9A84C]/20 text-xs text-[#C9A84C]/70 font-serif tracking-widest px-4 md:px-12">
                 <span>✦ 阿卡夏全副塔罗密卷 (78张)</span>
                 <span>请凭直觉点选卡牌</span>
               </div>
-              
+
               {/*
-                True arc fan using rotate+translate combination.
-                Each card is rotated by N degrees from center, then translated
-                UPWARD along its own local Y-axis (after rotation) so cards
-                spread out in a true physical fan arc, not just a pile.
-                The container has overflow:visible so rotated cards show fully.
+                CORRECT arc fan pattern:
+                  - Outer plain <div> applies rotate+translateY CSS transform for ARC POSITION.
+                    Framer Motion must NOT be on this element, or it will overwrite style.transform.
+                  - Inner <motion.div> handles ONLY opacity / scale entrance + hover animations.
+                    Because it's a child, its transforms (scale, hover) compose ON TOP of the outer
+                    positioning transform — they do not conflict.
               */}
               <div
-                className="relative flex items-end justify-center"
+                className="relative"
                 style={{
                   width: '100%',
-                  height: isMobile ? '200px' : '260px',
-                  // Cards extend outside this box, overflow must be visible
-                  overflow: 'visible',
+                  height: isMobile ? '210px' : '270px',
+                  overflow: 'visible',  // allow rotated cards to extend outside box
                 }}
               >
                 {fullDeck.map((deckIdx) => {
                   const isPicked = selectedDeckIndices.includes(deckIdx);
+                  const canDraw = !isPicked && selectedDeckIndices.length < cards.length;
                   const totalCards = 78;
                   const centerIndex = (totalCards - 1) / 2;
-                  const offsetFromCenter = deckIdx - centerIndex;
+                  const offset = deckIdx - centerIndex;
 
-                  // Total fan spread angle (degrees total across all 78 cards)
-                  const totalSpreadDeg = isMobile ? 100 : 130;
-                  const degPerCard = totalSpreadDeg / (totalCards - 1);
-                  const rotation = offsetFromCenter * degPerCard;
-
-                  // How far each card translates up its own axis to spread out
-                  const radius = isMobile ? 160 : 210; // px
-
-                  // Card dimensions
-                  const cardW = isMobile ? 48 : 60;  // px  (w-12 / w-[3.75rem])
-                  const cardH = isMobile ? 72 : 90;  // px
+                  // Arc geometry
+                  const totalDeg = isMobile ? 110 : 140;
+                  const rotation = offset * (totalDeg / (totalCards - 1));
+                  const radius = isMobile ? 170 : 230; // how far each card pokes up from center
+                  const cardW = isMobile ? 44 : 58;
+                  const cardH = isMobile ? 66 : 87;
 
                   return (
-                    <motion.div
+                    // OUTER: pure CSS positioning, NO Framer Motion props here
+                    <div
                       key={deckIdx}
-                      initial={{ opacity: 0, scale: 0.5 }}
-                      animate={{ opacity: isPicked ? 0 : 1, scale: isPicked ? 0 : 1 }}
-                      transition={{ delay: deckIdx * 0.006, duration: 0.3 }}
-                      whileHover={!isPicked && selectedDeckIndices.length < cards.length
-                        ? { scale: 1.18, zIndex: 200 }
-                        : {}}
-                      onClick={() => !isPicked && handleDrawCard(deckIdx)}
-                      className={`absolute ${isPicked ? "pointer-events-none" : "cursor-pointer"}`}
+                      className="absolute"
                       style={{
                         width: cardW,
                         height: cardH,
-                        // Position at bottom-center of the container
                         bottom: 0,
                         left: '50%',
                         marginLeft: -cardW / 2,
-                        // rotate card, then push it UP along its own local axis
                         transform: `rotate(${rotation}deg) translateY(-${radius}px)`,
-                        transformOrigin: `center bottom`,
+                        transformOrigin: 'center bottom',
                         zIndex: isPicked ? -1 : deckIdx,
+                        pointerEvents: isPicked ? 'none' : 'auto',
                       }}
                     >
-                      <TarotCardBack />
-                    </motion.div>
+                      {/* INNER: Framer Motion handles only opacity / hover-scale */}
+                      <motion.div
+                        className={`w-full h-full ${canDraw ? 'cursor-pointer' : ''}`}
+                        animate={{ opacity: isPicked ? 0 : 1, scale: isPicked ? 0 : 1 }}
+                        initial={{ opacity: 0, scale: 0.4 }}
+                        transition={{ delay: deckIdx * 0.005, duration: 0.25 }}
+                        whileHover={canDraw ? { scale: 1.2, y: -18 } : {}}
+                        onClick={() => canDraw && handleDrawCard(deckIdx)}
+                      >
+                        <TarotCardBack />
+                      </motion.div>
+                    </div>
                   );
                 })}
               </div>

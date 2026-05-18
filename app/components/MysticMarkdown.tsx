@@ -273,7 +273,7 @@ const MysticMarkdown = React.memo(({ content, cards, hideCards, isLoading, cente
     h5: ({ children }: any) => <MemoH3>{children}</MemoH3>,
     h6: ({ children }: any) => <MemoH3>{children}</MemoH3>,
     p: ({ children }: any) => (
-      <MemoP className={`mb-8 md:mb-10 last:mb-0 first-of-type:text-lg first-of-type:md:text-xl first-of-type:text-white first-of-type:border-l-2 first-of-type:border-[#C9A84C] first-of-type:pl-6 first-of-type:py-1 first-of-type:my-8 first-of-type:font-normal first-of-type:drop-shadow-sm text-left text-justify leading-relaxed tracking-wide`}>
+      <MemoP className={`mb-12 md:mb-14 last:mb-0 first-of-type:text-lg first-of-type:md:text-xl first-of-type:text-white first-of-type:border-l-2 first-of-type:border-[#C9A84C] first-of-type:pl-6 first-of-type:py-1 first-of-type:my-10 first-of-type:font-normal first-of-type:drop-shadow-sm text-left text-justify leading-relaxed tracking-wide`}>
         {children}
       </MemoP>
     ),
