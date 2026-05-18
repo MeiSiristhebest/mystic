@@ -1,8 +1,8 @@
 ## [2026-05-18] Feature: Multi-Pass Markdown AST Purification, Nested Arc Fan Physics & Complete Occult Spread Geometry
 
-- **Decision: Multi-Pass Line-by-Line Regex AST Separation for Merged Headings, Numbered Lists & Colon Keywords (`TarotComponents.tsx`)**
-  - **Reason**: AI models in IChing and Bazi mode output section headings (`## 卦象解析 （本卦与变卦）`) and keywords (`本卦：天泽履...`) merged on a single continuous line. `ReactMarkdown` treated the entire line as a single `<h2>` AST node, causing the entire reading to be rendered inside `MemoH2` with glowing gold gradient text.
-  - **Action**: Implemented a robust greedy capture-and-replace approach (`/^(#{1,6}\s+[^#：:\n]+?)\s+\*{0,2}(本卦|变卦|命主|大运|...)[：:]/gm`). By explicitly capturing the heading text (`$1`) and inserting double newlines before the keyword (`$1\n\n**$2：**`), headings are successfully isolated into standalone <h2> nodes and subsequent text is parsed as proper paragraphs.
+- **Decision: Universal `splitHeadingLine` Function for Zero-Hardcode AST Purification (`TarotComponents.tsx`)**
+  - **Reason**: Pattern-based regex (A/B/C) with character-count constraints (1-8 CJK chars, 30-char title limit) systematically missed labels > 8 chars (e.g. `个人成长与建议：`) and had no way to handle novel AI output patterns without adding more cases.
+  - **Action**: Replaced all regex patterns with `splitHeadingLine(line)` function applied line-by-line. The function finds the EARLIEST structural split signal among: (1) Colon-label `[\u4e00-\u9fa5\w][^:]{0,40}?[：:]` (CJK/word char + any content + colon, skips bracket-wrapped subtitles); (2) Sentence-end `[。！？]\s+\S`; (3) Numbered item `\s+\d+[\.。]`. No keyword lists, no char-count limits. Also added Phase 2 line-by-line orphaned `**` repair using odd-count detection.
 
 - **Decision: Nested Element Isolation for Arc Fan Framer Motion Conflict (`TarotRitualManager.tsx`)**
   - **Reason**: When applying CSS `transform: rotate() translateY()` for the 78-card Arc Fan on a `<motion.div>` that also had `animate` or `whileHover` props, Framer Motion completely hijacked the DOM style matrix and overwrote `style.transform`, causing all 78 cards to stack at the bottom origin.
@@ -22,9 +22,13 @@
   - **Reason**: The physical riffle shuffle felt too mechanical and jittery for a mystical application.
   - **Action**: Engineered a "Celestial Ribbon" cascade animation using Framer Motion. The 12-card stack smoothly arcs out into a wide semicircle (ranging from -66° to +66°), hovers, and gracefully collapses back into a tight stack every 2.2 seconds, perfectly simulating the fluid hand movements of a master Tarot reader. Synchronized haptic feedback and paper audio to the collapse phase.
 
-- **Decision: Dual-Viewport 78-Card "Arc Fan" Drawing Arena (`TarotRitualManager.tsx`)**
+- **Decision: Dual-Viewport 78-Card "Arc Fan" Drawing Arena & Premium Enlarged Dimensions (`TarotRitualManager.tsx`)**
   - **Reason**: The previous single-screen layout forced the spread slots and the 78-card deck into the same tight viewport, making the playable cards feel cramped and small.
-  - **Action**: Restructured the drawing phase into a breathtaking dual-viewport flow: Top 75vh dedicated exclusively to the Sacred Spread Slots, followed by a ritual scroll divider, and a Bottom 90vh full-screen arena for the 78-card Arc Fan. Desktop cards are massively enlarged (`88×132px`) sweeping across a `450px` radius with dramatic hover lift (`y: -30px`, `scale: 1.35`). When clicked, cards fly up into the top slots seamlessly.
+  - **Action**: Restructured the drawing phase into a breathtaking dual-viewport flow: Top 75vh dedicated exclusively to the Sacred Spread Slots, followed by a ritual scroll divider, and a Bottom 90vh full-screen arena for the 78-card Arc Fan. Increased desktop card dimensions across all phases (Shuffle: `64×96px`, Slots: `10.5×15.5rem`, Arc Fan: `96×144px` on `480px` radius, Reveal: `12.5×19.5rem`).
+
+- **Decision: Flawless Card Front DOM Isolation & Interactive "Reveal All" (`TarotRitualManager.tsx`)**
+  - **Reason**: During the transition to the revealing phase, server/initial render before Framer Motion mounted caused the front face name to flash briefly before flipping face-down. Additionally, revealing multi-card spreads one by one was tedious.
+  - **Action**: Applied strict DOM isolation on the front face (`opacity: i < revealedCount ? 1 : 0`, `visibility: hidden` and conditionally unmounted children when unrevealed), ensuring zero flash possible. Implemented an interactive "一键揭晓密卷 / REVEAL ALL" button with staggered completion timers and haptic feedback.
 
 ## [2026-05-18] Feature: Markdown Merged Heading Separation & Realistic 3D Riffle Shuffle Physics
 - **Decision: Robust Regex Separation for Merged Headings and Numbered Lists (`TarotComponents`)**

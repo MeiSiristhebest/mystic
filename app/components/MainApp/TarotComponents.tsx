@@ -15,70 +15,140 @@ export function processMysticMarkdownContent(rawText: string): { processedConten
   let soulMotto = "";
   let content = rawText || "";
 
+  // ── Phase 0: Strip non-markdown structured blocks ────────────────────────
   content = content
-    .replace(/\[SOUL_MOTTO\]([\s\S]*?)\[\/SOUL_MOTTO\]/g, (match, p1) => {
-      soulMotto = p1.trim();
-      return "";
-    })
+    .replace(/\[SOUL_MOTTO\]([\s\S]*?)\[\/SOUL_MOTTO\]/g, (_, p1) => { soulMotto = p1.trim(); return ""; })
     .replace(/<thinking>[\s\S]*?(?:<\/thinking>|$)/g, '')
     .replace(/<execute>[\s\S]*?(?:<\/execute>|$)/g, '')
-    .replace(/<mystic_association>([\s\S]*?)(?:<\/mystic_association>|$)/g, (match, p1) => {
+    .replace(/<mystic_association>([\s\S]*?)(?:<\/mystic_association>|$)/g, (_, p1) => {
       try { association = JSON.parse(p1.trim()); } catch (e) {}
       return "";
-    })
-    .replace(/^-(?=\*\*|\*)/gm, '- ')
-    .replace(/\*\*\*\*([^\n]*?)\*\*\*\*/g, '**$1**')
-    .replace(/\*\*\*\s+\*\*/g, '**')
-    .replace(/\*\*\s+\*\*\*/g, '***')
-    .replace(/^(#+)\s+#+\s+/gm, '$1 ')
-    .replace(/^(#+)\s+([#*]+)\s+/gm, '$1 ')
-    // ── Step 1: Heading + numbered/bullet item separation ───────────────────
-    // Use [^0-9\n]+ (greedy, stops at first digit) — the heading text capture
-    // ends EXACTLY where the numbered list item begins. Also handles bold numbers (**1.**).
-    .replace(/^(#{1,6}\s+[^0-9\n]+?)\s+\*{0,2}(\d+[\.．。、])/gm, '$1\n\n$2')
-    // Split heading from bullet/dash list items merged on same line
-    .replace(/^(#{1,6}\s+[^\n]+?)\s{2,}([-*]\s)/gm, '$1\n\n$2')
-    // Split heading when it merges with a colon-labeled keyword (e.g., "## 卦象解析 （本卦与变卦） 本卦：天泽履...")
-    .replace(/^(#{1,6}\s+[^#：:\n]+?)\s+\*{0,2}(本卦|变卦|互卦|错卦|综卦|命主|日主|八字|大运|流年|格局|五行|喜用神|十神|起卦|卦名|现状|过去|现在|未来|阻碍|助力|核心|建议|指引|结果|结局|选项[一二三]|牌面|牌义|逆位|正位|总览|总结|综合分析|爱情|事业|财运|健康|人际|学业|解读|解析|分析|启示)[：:]/gm, '$1\n\n**$2：**')
-    // ── Step 2: Sentence-end → numbered item or colon keyword in mid-paragraph ────────────────
-    // "...蓬勃成长。 2. 选项一：..." → insert double newline before "2."
-    .replace(/([。！？"」】\.!?])\s+\*{0,2}(\d+[\.．。、])/g, '$1\n\n$2')
-    .replace(/([。！？"」】\.!?])\s{2,}([-*]\s)/g, '$1\n\n$2')
-    .replace(/([。！？"」】\.!?])\s+\*{0,2}(本卦|变卦|互卦|错卦|综卦|命主|日主|八字|大运|流年|格局|五行|喜用神|十神|起卦|卦名|现状|过去|现在|未来|阻碍|助力|核心|建议|指引|结果|结局|选项[一二三]|牌面|牌义|逆位|正位|总览|总结|综合分析|爱情|事业|财运|健康|人际|学业|解读|解析|分析|启示)[：:]/g, '$1\n\n**$2：**')
-    // Fix spaces right before closing or after opening **
-    .replace(/\*\*\s+([^\n*]+?)\s+\*\*/g, '**$1**')
-    .replace(/([^\s*])\s+\*\*/g, '$1**')
-    .replace(/\*\*\s+([^\s*])/g, '**$1');
+    });
 
+  // ── Phase 1: Normalize malformed markdown syntax ──────────────────────────
+  content = content
+    .replace(/^-(?=\*\*|\*)/gm, '- ')              // "- **" missing space
+    .replace(/\*{4,}([^\n*]*?)\*{4,}/g, '**$1**')  // 4+ stars → 2
+    .replace(/^(#+)\s+#+\s+/gm, '$1 ')              // "## ## Title" → "## Title"
+    .replace(/^(#+)\s+([#*]+)\s+/gm, '$1 ');        // "## ** Title" → "## Title"
+
+  // ── Phase 2: Fix orphaned ** markers (line-by-line) ──────────────────────
+  // An ODD count of ** tokens on a line = the last one is unclosed/unopened.
+  // Instead of regex guessing, count precisely and remove the last orphan.
+  content = content.split('\n').map(line => {
+    const count = (line.match(/\*\*/g) || []).length;
+    if (count % 2 !== 0) {
+      const lastIdx = line.lastIndexOf('**');
+      return line.slice(0, lastIdx) + line.slice(lastIdx + 2);
+    }
+    return line;
+  }).join('\n');
+
+  // ── Phase 3: Split heading lines that contain merged body content ─────────
+  // UNIVERSAL ALGORITHM — no hardcoded keywords, no character-count constraints.
+  // For each heading line, we find the EARLIEST structural split signal:
+  //
+  //   Signal 1 (Colon-label): space + [CJK/word chars, not brackets] + [：:] + more text
+  //     Matches: "本卦：", "综合分析建议：", "个人成长与自我认识：" — any label length.
+  //     Skips:  "（本卦与变卦）" — bracket-wrapped subtitles stay in the heading.
+  //
+  //   Signal 2 (Sentence-end): [。！？] + space + more text
+  //     Matches: heading text that bleeds into a new sentence.
+  //
+  //   Signal 3 (Numbered item): space + [digit][./。] + non-space
+  //     Matches: "1. 现状", "2. 选项一" immediately following the heading text.
+  //
+  // The function takes the EARLIEST candidate across all signals to split cleanly.
+  function splitHeadingLine(line: string): string {
+    const headingMatch = /^(#{1,6}\s+)(.+)$/.exec(line);
+    if (!headingMatch) return line;
+    const [, hdr, text] = headingMatch;
+    // Short headings (≤28 chars) are always valid standalone headings — skip
+    if (text.length <= 28) return line;
+
+    type Candidate = { pos: number; tail: string };
+    const candidates: Candidate[] = [];
+    let re: RegExp;
+    let mm: RegExpExecArray | null;
+
+    // Signal 1: colon-label — starts with CJK/word char (not bracket/paren)
+    // [^：:\n（）〔〕【】{}\[\]]{0,40}? allows 0-40 intermediate chars (generous limit)
+    re = /\s+([\u4e00-\u9fa5\u3040-\u30ff\w][^：:\n（）〔〕【】{}\[\]]{0,40}?[：:]\s*\S)/g;
+    while ((mm = re.exec(text)) !== null) {
+      if (mm.index >= 2) candidates.push({ pos: mm.index, tail: text.slice(mm.index).trim() });
+    }
+
+    // Signal 2: sentence-end followed by more content
+    re = /[。！？!?]\s+(\S)/g;
+    while ((mm = re.exec(text)) !== null) {
+      if (mm.index >= 4) {
+        const splitAt = mm.index + 1;
+        candidates.push({ pos: splitAt, tail: text.slice(splitAt).trim() });
+      }
+    }
+
+    // Signal 3: numbered list item on same line as heading
+    re = /\s+(\d+[\.．。、]\s*\S)/g;
+    while ((mm = re.exec(text)) !== null) {
+      if (mm.index >= 2) candidates.push({ pos: mm.index, tail: text.slice(mm.index).trim() });
+    }
+
+    if (candidates.length === 0) return line;
+
+    // Use the earliest split point
+    candidates.sort((a, b) => a.pos - b.pos);
+    const { pos, tail } = candidates[0];
+    const title = text.slice(0, pos).trim();
+    if (!title || !tail) return line;
+    return `${hdr}${title}\n\n${tail}`;
+  }
+
+  // Apply splitHeadingLine to every line in the document
+  content = content.split('\n').map(line =>
+    /^#{1,6}\s/.test(line) ? splitHeadingLine(line) : line
+  ).join('\n');
+
+  // ── Phase 4: Split mid-paragraph sentence-end → new numbered/bullet item ──
+  // "...蓬勃成长。 2. 选项一：..." → insert double newline before "2."
+  content = content
+    .replace(/([。！？"」】\.!?])\s*(\d+[\.．。、]\s)/g, '$1\n\n$2')
+    .replace(/([。！？"」】\.!?])\s{2,}([-*]\s)/g, '$1\n\n$2');
+
+
+
+  // ── Phase 5: Protect and normalize valid ** / *** pairs ──────────────────
+  // Tokenize matched pairs so downstream cleanup can't break them.
   const tripleStars: string[] = [];
-  content = content.replace(/\*\*\*([\s\S]*?)\*\*\*/g, (match, p1) => {
+  content = content.replace(/\*\*\*([^\n*]{1,300}?)\*\*\*/g, (match, p1) => {
     if (!p1.trim()) return match;
     tripleStars.push(p1.trim());
     return `__MYSTIC_TRIPLE_${tripleStars.length - 1}__`;
   });
 
   const doubleStars: string[] = [];
-  content = content.replace(/\*\*([\s\S]*?)\*\*/g, (match, p1) => {
+  content = content.replace(/\*\*([^\n*]{1,300}?)\*\*/g, (match, p1) => {
     if (!p1.trim()) return match;
     doubleStars.push(p1.trim());
     return `__MYSTIC_DOUBLE_${doubleStars.length - 1}__`;
   });
 
-  content = content.replace(/__MYSTIC_TRIPLE_(\d+)__/g, (match, p1) => {
-    return ' ***' + tripleStars[parseInt(p1)] + '*** ';
-  });
 
-  content = content.replace(/__MYSTIC_DOUBLE_(\d+)__/g, (match, p1) => {
-    return ' **' + doubleStars[parseInt(p1)] + '** ';
-  });
+  // Restore tokenized bold/italic with clean spacing
+  content = content
+    .replace(/__MYSTIC_TRIPLE_(\d+)__/g, (_, p1) => ` ***${tripleStars[parseInt(p1)]}*** `)
+    .replace(/__MYSTIC_DOUBLE_(\d+)__/g, (_, p1) => ` **${doubleStars[parseInt(p1)]}** `);
 
-  content = content.replace(/\*\*\*? ([.,:;!?，。：；！？、）】”’])/g, match => match.replace(' ', ''));
-  content = content.replace(/([（【“‘]) \*\*\*?/g, match => match.replace(' ', ''));
+  // Fix bold/italic marker attachment to adjacent punctuation
+  content = content
+    .replace(/\*{1,3} ([.,:;!?，。：；！？、）】"'])/g, m => m.replace(' ', ''))
+    .replace(/([（【"']) \*{1,3}/g, m => m.replace(' ', ''));
 
+  // ── Phase 6: Final typography cleanups ────────────────────────────────────
   content = content
     .replace(/([\u4e00-\u9fa5])([a-zA-Z0-9@#%&=\$\(\)\[\]\{\}])/g, '$1 $2')
     .replace(/([a-zA-Z0-9@#%&=\$\(\)\[\]\{\}])([\u4e00-\u9fa5])/g, '$1 $2')
-    .replace(/ {2,}/g, ' ');
+    .replace(/ {2,}/g, ' ')
+    .replace(/\n{4,}/g, '\n\n\n');
 
   return { processedContent: content, association, soulMotto };
 }

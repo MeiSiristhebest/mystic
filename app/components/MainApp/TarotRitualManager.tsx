@@ -81,6 +81,15 @@ export default function TarotRitualManager({ cards, spread, onComplete }: TarotR
     }
   };
 
+  const handleRevealAll = () => {
+    if (revealedCount < cards.length) {
+      playMysticChime();
+      triggerHapticVibration([30, 100, 30]);
+      setRevealedCount(cards.length);
+      setTimeout(onComplete, 2200);
+    }
+  };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] py-8 space-y-12 select-none">
       <AnimatePresence mode="wait">
@@ -92,11 +101,11 @@ export default function TarotRitualManager({ cards, spread, onComplete }: TarotR
             exit={{ opacity: 0, scale: 1.1 }}
             className="flex flex-col items-center gap-16 my-auto"
           >
-            <div className="relative w-48 h-72" style={{ perspective: "1500px" }}>
+            <div className="relative w-56 h-84 md:w-64 md:h-96" style={{ perspective: "1500px" }}>
               {Array.from({ length: 12 }).map((_, i) => {
                 const angle = (i - 5.5) * 12; // -66 to +66 degrees
-                const xOffset = Math.sin(angle * Math.PI / 180) * 120;
-                const yOffset = Math.cos(angle * Math.PI / 180) * -30 + 30;
+                const xOffset = Math.sin(angle * Math.PI / 180) * 130;
+                const yOffset = Math.cos(angle * Math.PI / 180) * -35 + 35;
 
                 return (
                   <motion.div
@@ -105,7 +114,7 @@ export default function TarotRitualManager({ cards, spread, onComplete }: TarotR
                       x: [0, xOffset, xOffset, 0],
                       y: [0, yOffset, yOffset, 0],
                       rotateZ: [0, angle, angle, 0],
-                      scale: [1, 1.1, 1.1, 1],
+                      scale: [1, 1.12, 1.12, 1],
                     }}
                     transition={{ 
                       duration: 2.2, 
@@ -154,7 +163,7 @@ export default function TarotRitualManager({ cards, spread, onComplete }: TarotR
                   renderCard={(idx) => (
                     <div key={idx} className="flex flex-col items-center space-y-4">
                       <div 
-                        className={`w-28 h-42 md:w-[8rem] md:h-[12rem] rounded-xl md:rounded-[1.25rem] flex flex-col items-center justify-center transition-all duration-500 relative ${idx < selectedDeckIndices.length ? "scale-105 shadow-[0_0_35px_rgba(201,168,76,0.4)]" : "border border-dashed border-[#C9A84C]/30 bg-[#05020a]/60"}`}
+                        className={`w-32 h-48 md:w-[10.5rem] md:h-[15.5rem] rounded-xl md:rounded-[1.5rem] flex flex-col items-center justify-center transition-all duration-500 relative ${idx < selectedDeckIndices.length ? "scale-105 shadow-[0_0_35px_rgba(201,168,76,0.4)]" : "border border-dashed border-[#C9A84C]/30 bg-[#05020a]/60"}`}
                       >
                         {idx < selectedDeckIndices.length ? (
                           <TarotCardBack glowing />
@@ -189,14 +198,14 @@ export default function TarotRitualManager({ cards, spread, onComplete }: TarotR
               </div>
 
               {/*
-                Arc fan pattern with HUGE premium cards (88x132 desktop / 56x84 mobile).
-                Radius: massive 450px desktop sweep.
-                Container height: 580px desktop anchor.
+                Arc fan pattern with HUGE premium cards (96x144 desktop / 64x96 mobile).
+                Radius: massive 480px desktop sweep.
+                Container height: 640px desktop anchor.
               */}
               <div
                 className="relative w-full"
                 style={{
-                  height: isMobile ? '360px' : '580px',
+                  height: isMobile ? '380px' : '640px',
                   overflow: 'visible',
                 }}
               >
@@ -210,9 +219,9 @@ export default function TarotRitualManager({ cards, spread, onComplete }: TarotR
                   // Massive arc geometry
                   const totalDeg = isMobile ? 120 : 150;
                   const rotation = offset * (totalDeg / (totalCards - 1));
-                  const radius = isMobile ? 280 : 450;  // massive upward sweep distance
-                  const cardW = isMobile ? 56 : 88;
-                  const cardH = isMobile ? 84 : 132;
+                  const radius = isMobile ? 300 : 480;  // massive upward sweep distance
+                  const cardW = isMobile ? 64 : 96;
+                  const cardH = isMobile ? 96 : 144;
 
                   return (
                     // OUTER: pure CSS arc positioning — NO Framer Motion
@@ -292,17 +301,26 @@ export default function TarotRitualManager({ cards, spread, onComplete }: TarotR
                         mass: 1.1
                       }}
                       onClick={() => i === revealedCount && handleRevealCard()}
-                      className="relative w-36 h-56 md:w-[11rem] md:h-[18rem] rounded-[2rem] cursor-pointer"
+                      className="relative w-40 h-60 md:w-[12.5rem] md:h-[19.5rem] rounded-[2rem] cursor-pointer"
                       style={{ transformStyle: "preserve-3d" }}
                     >
-                      {/* Card Front (Revealed Face) */}
+                      {/* Card Front (Revealed Face) — Flawlessly isolated so no flash possible */}
                       <div 
                         className={`absolute inset-0 bg-gradient-to-b from-[#1a1033] to-[#080510] border border-[#C9A84C]/60 flex flex-col items-center justify-center p-6 text-center rounded-[2rem] ${i < revealedCount ? 'shadow-[0_0_50px_rgba(201,168,76,0.3)]' : ''}`}
-                        style={{ backfaceVisibility: 'hidden', transform: 'rotateY(0deg)' }}
+                        style={{ 
+                          backfaceVisibility: 'hidden', 
+                          transform: 'rotateY(0deg)',
+                          opacity: i < revealedCount ? 1 : 0,
+                          visibility: i < revealedCount ? 'visible' : 'hidden',
+                        }}
                       >
-                        <div className="absolute inset-2 border border-[#C9A84C]/20 rounded-[1.5rem] pointer-events-none" />
-                        <Sparkles className="w-8 h-8 text-[#C9A84C] mb-4" />
-                        <span className="font-serif text-[#E8DFB8] text-base md:text-lg tracking-widest font-medium drop-shadow-md">{cards[i]?.name}</span>
+                        {i < revealedCount && (
+                          <>
+                            <div className="absolute inset-2 border border-[#C9A84C]/20 rounded-[1.5rem] pointer-events-none" />
+                            <Sparkles className="w-8 h-8 text-[#C9A84C] mb-4" />
+                            <span className="font-serif text-[#E8DFB8] text-base md:text-xl tracking-widest font-medium drop-shadow-md">{cards[i]?.name}</span>
+                          </>
+                        )}
                       </div>
 
                       {/* Card Back (Hidden Face) */}
@@ -337,7 +355,7 @@ export default function TarotRitualManager({ cards, spread, onComplete }: TarotR
               />
             </div>
             
-            <div className="space-y-4 text-center">
+            <div className="flex flex-col items-center space-y-6 text-center">
               <div className="w-24 h-px bg-gradient-to-r from-transparent via-[#C9A84C]/50 to-transparent mx-auto" />
               <motion.p 
                 key={revealedCount}
@@ -347,7 +365,22 @@ export default function TarotRitualManager({ cards, spread, onComplete }: TarotR
               >
                 {revealedCount < cards.length ? `请感应并翻开第 ${revealedCount + 1} 张牌` : "✦ 阵法显化，正在解读深层启示 ✦"}
               </motion.p>
+
+              {/* 一键翻开按钮 */}
+              {revealedCount < cards.length && (
+                <motion.button
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  whileHover={{ scale: 1.05, boxShadow: "0 0 25px rgba(201,168,76,0.5)" }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleRevealAll}
+                  className="px-8 py-3 rounded-full bg-gradient-to-r from-[#2c1a0e] to-[#1a0f08] border border-[#C9A84C]/60 text-[#E8DFB8] text-sm font-serif tracking-widest uppercase shadow-[0_0_15px_rgba(201,168,76,0.3)] transition-all cursor-pointer"
+                >
+                  ✦ 一键揭晓密卷 / REVEAL ALL ✦
+                </motion.button>
+              )}
             </div>
+
           </motion.div>
         )}
       </AnimatePresence>
