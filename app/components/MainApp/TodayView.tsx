@@ -219,7 +219,7 @@ export function TodayView() {
           <span>宇宙能量：{dailyData?.cosmicEnergy}</span>
         </div>
         <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif text-[#E8DFB8]/90 tracking-tight leading-none">
-          {greeting}, <span className="gold-gradient-text italic font-light">{profile.name || "旅人"}</span>
+          {greeting}, <span className="gold-gradient-text italic font-light pr-3 inline-block">{profile.name || "旅人"}</span>
         </h1>
       </header>
 

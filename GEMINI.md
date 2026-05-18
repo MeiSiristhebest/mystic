@@ -1,3 +1,23 @@
+## [2026-05-18] Feature: 78-Card Interactive Tarot Deck & Realistic 3D Riffle Shuffle Physics
+
+- **Decision: Realistic 3D Riffle/Overhand Criss-Cross Shuffle Physics (`TarotRitualManager`)**
+  - **Reason**: Users reported that the previous shuffling animation looked artificial because dummy cards simply swayed left and right in periodic sine waves without physical packet separation or interlaced criss-cross inserting.
+  - **Action**: Engineered a high-fidelity 3D riffle/overhand shuffle simulation across 12 layered cards. The deck dynamically splits into two distinct opposing packets (Left packet tilting backwards, Right packet tilting forwards), rapidly converges towards the center with dynamic Z-index swapping to interlace the cards, and cleanly snaps into a squared central stack. Synchronized haptic vibrations and crisp paper friction ASMR audio intervals (`playCardSound()`) precisely to the 550ms physical mesh cadence.
+
+- **Decision: 78-Card Full Deck Interactive Drawing Experience & 3D Visibility Fix (`TarotRitualManager`)**
+  - **Reason**: In `TarotRitualManager`, during the ritual phase, the system previously only rendered the N target cards (e.g., 1 card) face down on the screen. Because `gpu-accelerated` applied `backface-visibility: hidden` and `transform: translateZ(0)` on the outer `motion.div`, when the card was dealt face down (`rotateY: 180`), the entire container disappeared, leaving a completely blank screen. Furthermore, users expected to choose cards from a full deck rather than just seeing pre-selected outcomes.
+  - **Action**: Removed `gpu-accelerated` from `motion.div` during the revealing phase to ensure flawless 3D flip visibility. Designed and integrated a breathtaking 78-card full Tarot deck grid drawing experience: users can sense and manually draw cards from the full deck, which beautifully animate into active spread slots before transitioning to the majestic revealing table.
+
+- **Decision: Right Padding & Inline-Block Encapsulation for Italic Gradient Typography (`TodayView`)**
+  - **Reason**: In `TodayView`, when rendering the username ("晚安, 花泽类") with `gold-gradient-text` (`background-clip: text`), the rightmost slanted italic stroke of Serif CJK glyphs leaned outside the inline text bounding box, causing minor right-side truncation.
+  - **Action**: Added `pr-3 inline-block` to the username `span`. This expands the gradient background box by 0.75rem to the right, fully covering any slanted calligraphic strokes with zero glyph truncation.
+
+## [2026-05-18] Feature: Typography Flexbox Encapsulation & Journey History Purification
+
+- **Decision: Flexbox Container Encapsulation for Heading Components (`MemoH1`, `MemoH2`, `MemoH3`)**
+  - **Reason**: In `MysticMarkdown`, custom memoized heading components (`MemoH2`, `MemoH3`) utilized horizontal flexbox containers (`flex items-center gap-6`, `inline-flex items-center gap-6`). When `ReactMarkdown` parsed markdown content without clear double newlines between headings and subsequent paragraphs or lists, it grouped multiple block/inline elements as an array of children under the heading node. When passed directly into the heading's flex container, flexbox treated every single paragraph or list item as a separate flex item, squeezing them side-by-side into extremely narrow vertical columns across the screen where Chinese text wrapped after every single character.
+  - **Action**: Wrapped `{children}` inside `<span className="flex-1 min-w-0"><span className="block w-full">{children}</span></span>` across `MemoH1`, `MemoH2`, and `MemoH3`. This guarantees that all child nodes remain encapsulated within a single unified flex item, preserving pristine inline/block formatting and completely eliminating unwanted multi-column vertical wrapping. Also updated `EntryDetailRenderer` to extract pure initial readings directly from the first model message. Verified 100% clean Next.js production build.
+
 ## [2026-05-18] Feature: Philosophical Daily Oracle Refinement & Precision Greeting Time Logic
 
 - **Decision: Precision 24-Hour Greeting Partition & Philosophical Poetic Prompt Engineering**

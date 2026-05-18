@@ -14,11 +14,9 @@ export default function EntryDetailRenderer({ entry }: EntryDetailRendererProps)
   const details = entry.details;
   if (!details) return <MysticMarkdown content={entry.summary} />;
 
-  // To guarantee we never render follow-up messages in the initial reading area,
-  // we extract the pure initial reading from messages[0] if available.
-  let initialText = (details.messages && details.messages.length > 0 && details.messages[0]?.content) 
-    ? details.messages[0].content 
-    : (details.text || entry.summary || "");
+  // Extract pure initial reading from the first model message or fallback to details.text
+  const modelMsg = details.messages && Array.isArray(details.messages) ? details.messages.find((m: any) => m.role === 'model') : null;
+  let initialText = modelMsg?.content || details.text || entry.summary || "";
 
   // If initialText contains legacy concatenated follow-ups, strip everything after the first question mark / separator
   if (initialText.includes('**问**：')) {

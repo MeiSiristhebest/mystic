@@ -55,8 +55,8 @@ const MemoH1 = React.memo(({ children }: { children?: React.ReactNode }) => (
       <span>✦ SACRED REVELATION ✦</span>
       <span className="w-16 h-px bg-gradient-to-l from-transparent to-[#C9A84C]/80" />
     </div>
-    <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif text-transparent bg-clip-text bg-gradient-to-b from-[#FFFDF6] via-[#E8DFB8] to-[#C9A84C] text-center tracking-[0.25em] drop-shadow-[0_0_35px_rgba(201,168,76,0.6)] py-4 font-normal scale-105 group-hover:scale-110 transition-transform duration-700">
-      {children}
+    <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif text-transparent bg-clip-text bg-gradient-to-b from-[#FFFDF6] via-[#E8DFB8] to-[#C9A84C] text-center tracking-[0.25em] drop-shadow-[0_0_35px_rgba(201,168,76,0.6)] py-4 font-normal scale-105 group-hover:scale-110 transition-transform duration-700 w-full overflow-hidden">
+      <span className="block w-full">{children}</span>
     </h1>
     <div className="flex items-center gap-3 mt-6">
       <div className="w-32 h-[2px] bg-gradient-to-r from-transparent via-[#C9A84C] to-transparent shadow-[0_0_15px_#C9A84C]" />
@@ -69,10 +69,10 @@ MemoH1.displayName = "MemoH1";
 
 const MemoH2 = React.memo(({ children }: { children?: React.ReactNode }) => (
   <div className="w-full flex flex-col items-center mb-16 mt-20 select-none">
-    <h2 className="text-2xl md:text-3xl lg:text-4xl font-serif text-transparent bg-clip-text bg-gradient-to-r from-[#FFFDF6] via-[#C9A84C] to-[#FFFDF6] pb-4 flex items-center gap-6 drop-shadow-[0_0_20px_rgba(201,168,76,0.5)] relative text-center tracking-widest bg-[length:200%_auto] animate-[gradient_8s_ease_infinite]">
-      <span className="text-[#C9A84C] text-xl drop-shadow-[0_0_12px_#C9A84C] animate-pulse">⟡</span>
-      {children}
-      <span className="text-[#C9A84C] text-xl drop-shadow-[0_0_12px_#C9A84C] animate-pulse">⟡</span>
+    <h2 className="text-2xl md:text-3xl lg:text-4xl font-serif text-transparent bg-clip-text bg-gradient-to-r from-[#FFFDF6] via-[#C9A84C] to-[#FFFDF6] pb-4 flex items-center gap-6 drop-shadow-[0_0_20px_rgba(201,168,76,0.5)] relative text-center tracking-widest bg-[length:200%_auto] animate-[gradient_8s_ease_infinite] max-w-full">
+      <span className="text-[#C9A84C] text-xl drop-shadow-[0_0_12px_#C9A84C] animate-pulse shrink-0 select-none">⟡</span>
+      <span className="flex-1 min-w-0">{children}</span>
+      <span className="text-[#C9A84C] text-xl drop-shadow-[0_0_12px_#C9A84C] animate-pulse shrink-0 select-none">⟡</span>
     </h2>
     <div className="w-80 h-[1px] bg-gradient-to-r from-transparent via-[#C9A84C]/60 to-transparent relative mt-1">
       <div className="absolute inset-0 bg-[#C9A84C]/40 blur-sm" />
@@ -84,12 +84,12 @@ MemoH2.displayName = "MemoH2";
 
 const MemoH3 = React.memo(({ children }: { children?: React.ReactNode }) => (
   <div className="w-full flex justify-center mb-12 mt-16 select-none">
-    <div className="inline-flex items-center gap-6 px-10 py-3 rounded-full bg-gradient-to-r from-transparent via-[#C9A84C]/15 to-transparent border-y border-[#C9A84C]/30 shadow-[inset_0_0_20px_rgba(201,168,76,0.15)]">
-      <span className="text-[#C9A84C] text-lg animate-pulse">✧</span>
-      <h3 className="text-xl md:text-2xl font-serif text-[#E8DFB8] tracking-widest text-center font-normal drop-shadow-md">
-        {children}
+    <div className="inline-flex items-center gap-6 px-10 py-3 rounded-full bg-gradient-to-r from-transparent via-[#C9A84C]/15 to-transparent border-y border-[#C9A84C]/30 shadow-[inset_0_0_20px_rgba(201,168,76,0.15)] max-w-full">
+      <span className="text-[#C9A84C] text-lg animate-pulse shrink-0 select-none">✧</span>
+      <h3 className="text-xl md:text-2xl font-serif text-[#E8DFB8] tracking-widest text-center font-normal drop-shadow-md flex-1 min-w-0">
+        <span className="block w-full">{children}</span>
       </h3>
-      <span className="text-[#C9A84C] text-lg animate-pulse">✧</span>
+      <span className="text-[#C9A84C] text-lg animate-pulse shrink-0 select-none">✧</span>
     </div>
   </div>
 ));
