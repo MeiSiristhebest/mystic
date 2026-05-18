@@ -173,26 +173,25 @@ export default function TarotRitualManager({ cards, spread, onComplete }: TarotR
             </div>
 
             {/* 78-Card Arc Fan — outer div = CSS positioning, inner motion.div = animations */}
-            <div className="w-full mt-6 mb-4 flex flex-col items-center">
-              <div className="flex items-center justify-between pb-3 mb-6 w-full max-w-4xl border-b border-[#C9A84C]/20 text-xs text-[#C9A84C]/70 font-serif tracking-widest px-4 md:px-12">
+            <div className="w-full mt-10 mb-2 flex flex-col items-center">
+              <div className="flex items-center justify-between pb-3 mb-4 w-full max-w-4xl border-b border-[#C9A84C]/20 text-xs text-[#C9A84C]/60 font-serif tracking-widest px-4 md:px-12">
                 <span>✦ 阿卡夏全副塔罗密卷 (78张)</span>
                 <span>请凭直觉点选卡牌</span>
               </div>
 
               {/*
                 CORRECT arc fan pattern:
-                  - Outer plain <div> applies rotate+translateY CSS transform for ARC POSITION.
-                    Framer Motion must NOT be on this element, or it will overwrite style.transform.
-                  - Inner <motion.div> handles ONLY opacity / scale entrance + hover animations.
-                    Because it's a child, its transforms (scale, hover) compose ON TOP of the outer
-                    positioning transform — they do not conflict.
+                  - Outer plain <div> = CSS transform for arc position. NO Framer Motion props.
+                  - Inner <motion.div> = ONLY opacity / scale / hover. Composes on top of outer.
+                Sizing: cards must be large enough to be interactive (68×102 desktop).
+                Radius: must be large enough that cards spread visibly across the viewport.
+                Container height: anchors the bottom pivot point; cards extend UPWARD via translateY.
               */}
               <div
-                className="relative"
+                className="relative w-full"
                 style={{
-                  width: '100%',
-                  height: isMobile ? '210px' : '270px',
-                  overflow: 'visible',  // allow rotated cards to extend outside box
+                  height: isMobile ? '280px' : '380px',
+                  overflow: 'visible',
                 }}
               >
                 {fullDeck.map((deckIdx) => {
@@ -202,15 +201,15 @@ export default function TarotRitualManager({ cards, spread, onComplete }: TarotR
                   const centerIndex = (totalCards - 1) / 2;
                   const offset = deckIdx - centerIndex;
 
-                  // Arc geometry
-                  const totalDeg = isMobile ? 110 : 140;
+                  // Arc geometry — larger values = bigger, more spread-out fan
+                  const totalDeg = isMobile ? 115 : 145;
                   const rotation = offset * (totalDeg / (totalCards - 1));
-                  const radius = isMobile ? 170 : 230; // how far each card pokes up from center
-                  const cardW = isMobile ? 44 : 58;
-                  const cardH = isMobile ? 66 : 87;
+                  const radius = isMobile ? 230 : 320;  // pivot distance upward
+                  const cardW = isMobile ? 52 : 68;
+                  const cardH = isMobile ? 78 : 102;
 
                   return (
-                    // OUTER: pure CSS positioning, NO Framer Motion props here
+                    // OUTER: pure CSS arc positioning — NO Framer Motion
                     <div
                       key={deckIdx}
                       className="absolute"
@@ -222,18 +221,20 @@ export default function TarotRitualManager({ cards, spread, onComplete }: TarotR
                         marginLeft: -cardW / 2,
                         transform: `rotate(${rotation}deg) translateY(-${radius}px)`,
                         transformOrigin: 'center bottom',
-                        zIndex: isPicked ? -1 : deckIdx,
+                        // Cards in the center of the fan have highest z-index naturally
+                        zIndex: isPicked ? -1 : (39 - Math.abs(Math.round(offset))),
                         pointerEvents: isPicked ? 'none' : 'auto',
                       }}
                     >
-                      {/* INNER: Framer Motion handles only opacity / hover-scale */}
+                      {/* INNER: Framer Motion handles entrance + hover — does NOT touch outer transform */}
                       <motion.div
                         className={`w-full h-full ${canDraw ? 'cursor-pointer' : ''}`}
+                        initial={{ opacity: 0, scale: 0.3 }}
                         animate={{ opacity: isPicked ? 0 : 1, scale: isPicked ? 0 : 1 }}
-                        initial={{ opacity: 0, scale: 0.4 }}
-                        transition={{ delay: deckIdx * 0.005, duration: 0.25 }}
-                        whileHover={canDraw ? { scale: 1.2, y: -18 } : {}}
+                        transition={{ delay: deckIdx * 0.004, duration: 0.3, ease: 'easeOut' }}
+                        whileHover={canDraw ? { scale: 1.28, y: -22, transition: { duration: 0.15 } } : {}}
                         onClick={() => canDraw && handleDrawCard(deckIdx)}
+                        style={{ filter: canDraw ? 'drop-shadow(0 0 6px rgba(201,168,76,0.3))' : 'none' }}
                       >
                         <TarotCardBack />
                       </motion.div>
@@ -244,7 +245,7 @@ export default function TarotRitualManager({ cards, spread, onComplete }: TarotR
             </div>
 
             {/* Prompt Banner (Bottom) */}
-            <div className="mt-8 mb-4 flex flex-col items-center space-y-4 w-full">
+            <div className="mt-6 mb-4 flex flex-col items-center space-y-4 w-full">
               <p className="font-serif tracking-[0.5em] text-sm md:text-lg text-[#E8DFB8] uppercase drop-shadow-md text-center">
                 {selectedDeckIndices.length < cards.length ? `请感应并抽取 ${cards.length} 张牌 （已选 ${selectedDeckIndices.length} / ${cards.length}）` : "✦ 抽取完毕，正在凝结命运印记 ✦"}
               </p>
