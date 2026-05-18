@@ -38,10 +38,13 @@ export function processMysticMarkdownContent(rawText: string): { processedConten
     .replace(/^(#{1,6}\s+[^0-9\n]+?)\s+\*{0,2}(\d+[\.．。、])/gm, '$1\n\n$2')
     // Split heading from bullet/dash list items merged on same line
     .replace(/^(#{1,6}\s+[^\n]+?)\s{2,}([-*]\s)/gm, '$1\n\n$2')
-    // ── Step 2: Sentence-end → numbered item in mid-paragraph ────────────────
+    // Split heading when it merges with a colon-labeled keyword (e.g., "## 卦象解析 （本卦与变卦） 本卦：天泽履...")
+    .replace(/^(#{1,6}\s+[^#：:\n]+?)\s+\*{0,2}(本卦|变卦|互卦|错卦|综卦|命主|日主|八字|大运|流年|格局|五行|喜用神|十神|起卦|卦名|现状|过去|现在|未来|阻碍|助力|核心|建议|指引|结果|结局|选项[一二三]|牌面|牌义|逆位|正位|总览|总结|综合分析|爱情|事业|财运|健康|人际|学业|解读|解析|分析|启示)[：:]/gm, '$1\n\n**$2：**')
+    // ── Step 2: Sentence-end → numbered item or colon keyword in mid-paragraph ────────────────
     // "...蓬勃成长。 2. 选项一：..." → insert double newline before "2."
     .replace(/([。！？"」】\.!?])\s+\*{0,2}(\d+[\.．。、])/g, '$1\n\n$2')
     .replace(/([。！？"」】\.!?])\s{2,}([-*]\s)/g, '$1\n\n$2')
+    .replace(/([。！？"」】\.!?])\s+\*{0,2}(本卦|变卦|互卦|错卦|综卦|命主|日主|八字|大运|流年|格局|五行|喜用神|十神|起卦|卦名|现状|过去|现在|未来|阻碍|助力|核心|建议|指引|结果|结局|选项[一二三]|牌面|牌义|逆位|正位|总览|总结|综合分析|爱情|事业|财运|健康|人际|学业|解读|解析|分析|启示)[：:]/g, '$1\n\n**$2：**')
     // Fix spaces right before closing or after opening **
     .replace(/\*\*\s+([^\n*]+?)\s+\*\*/g, '**$1**')
     .replace(/([^\s*])\s+\*\*/g, '$1**')

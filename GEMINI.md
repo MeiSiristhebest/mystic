@@ -1,8 +1,8 @@
 ## [2026-05-18] Feature: Multi-Pass Markdown AST Purification, Nested Arc Fan Physics & Complete Occult Spread Geometry
 
-- **Decision: Multi-Pass Line-by-Line Regex AST Separation for Merged Headings and Numbered Lists (`TarotComponents.tsx`)**
-  - **Reason**: AI models occasionally output section headings (`## 🔮 牌阵解析`) and numbered items (`1. 现状: ...`) merged on a single continuous line. Previous single-pass lookahead regex (`(?=...)`) failed because lazy quantifiers in JavaScript engines matched too early or didn't capture/replace the exact boundary.
-  - **Action**: Implemented a robust multi-pass capture-and-replace approach (`/^(#{1,6}\s+[^#\n]+?)\s+(\d+[\.．。、])/gm`). By explicitly capturing both the heading text (`$1`) and the numbered item (`$2`) and joining them with a double newline (`$1\n\n$2`), headings are successfully isolated into standalone <h2> nodes and subsequent text is parsed as proper paragraphs. Increased bottom margin on paragraphs to `mb-12 md:mb-14` for enhanced typographic breathing room.
+- **Decision: Multi-Pass Line-by-Line Regex AST Separation for Merged Headings, Numbered Lists & Colon Keywords (`TarotComponents.tsx`)**
+  - **Reason**: AI models in IChing and Bazi mode output section headings (`## 卦象解析 （本卦与变卦）`) and keywords (`本卦：天泽履...`) merged on a single continuous line. `ReactMarkdown` treated the entire line as a single `<h2>` AST node, causing the entire reading to be rendered inside `MemoH2` with glowing gold gradient text.
+  - **Action**: Implemented a robust greedy capture-and-replace approach (`/^(#{1,6}\s+[^#：:\n]+?)\s+\*{0,2}(本卦|变卦|命主|大运|...)[：:]/gm`). By explicitly capturing the heading text (`$1`) and inserting double newlines before the keyword (`$1\n\n**$2：**`), headings are successfully isolated into standalone <h2> nodes and subsequent text is parsed as proper paragraphs.
 
 - **Decision: Nested Element Isolation for Arc Fan Framer Motion Conflict (`TarotRitualManager.tsx`)**
   - **Reason**: When applying CSS `transform: rotate() translateY()` for the 78-card Arc Fan on a `<motion.div>` that also had `animate` or `whileHover` props, Framer Motion completely hijacked the DOM style matrix and overwrote `style.transform`, causing all 78 cards to stack at the bottom origin.
@@ -22,9 +22,9 @@
   - **Reason**: The physical riffle shuffle felt too mechanical and jittery for a mystical application.
   - **Action**: Engineered a "Celestial Ribbon" cascade animation using Framer Motion. The 12-card stack smoothly arcs out into a wide semicircle (ranging from -66° to +66°), hovers, and gracefully collapses back into a tight stack every 2.2 seconds, perfectly simulating the fluid hand movements of a master Tarot reader. Synchronized haptic feedback and paper audio to the collapse phase.
 
-- **Decision: 78-Card "Arc Fan" Drawing Layout (`TarotRitualManager.tsx`)**
-  - **Reason**: The 78-card flat grid was visually inert. A scattered layout would be too chaotic on mobile screens, so an elegant, mathematically structured fan layout was chosen as the most premium and scalable option.
-  - **Action**: Restructured the drawing phase DOM. Cards are horizontally arrayed in an overlapping curve using CSS grid with subtle rotation and translateY transforms based on their offset from the center index. Added a graceful vertical lift (`y: -20px`) on hover, and an elegant fly-up-to-slot animation when a card is selected. The instruction banner was elegantly pinned to the absolute bottom of the viewport with a delicate gold line.
+- **Decision: Dual-Viewport 78-Card "Arc Fan" Drawing Arena (`TarotRitualManager.tsx`)**
+  - **Reason**: The previous single-screen layout forced the spread slots and the 78-card deck into the same tight viewport, making the playable cards feel cramped and small.
+  - **Action**: Restructured the drawing phase into a breathtaking dual-viewport flow: Top 75vh dedicated exclusively to the Sacred Spread Slots, followed by a ritual scroll divider, and a Bottom 90vh full-screen arena for the 78-card Arc Fan. Desktop cards are massively enlarged (`88×132px`) sweeping across a `450px` radius with dramatic hover lift (`y: -30px`, `scale: 1.35`). When clicked, cards fly up into the top slots seamlessly.
 
 ## [2026-05-18] Feature: Markdown Merged Heading Separation & Realistic 3D Riffle Shuffle Physics
 - **Decision: Robust Regex Separation for Merged Headings and Numbered Lists (`TarotComponents`)**

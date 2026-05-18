@@ -133,28 +133,28 @@ export default function TarotRitualManager({ cards, spread, onComplete }: TarotR
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="flex flex-col items-center justify-between w-full h-full max-w-6xl mx-auto px-4 py-4 relative"
+            className="flex flex-col items-center w-full max-w-7xl mx-auto px-4 py-8 space-y-16 relative"
           >
-            {/* Active Spread Slots Header (Top) */}
-            <div className="flex flex-col items-center space-y-10 w-full mt-4">
-              <div className="flex flex-col items-center space-y-2 text-center">
-                <span className="text-[12px] font-mono tracking-[0.8em] text-[#C9A84C] uppercase font-bold drop-shadow-[0_0_10px_rgba(201,168,76,0.5)]">
-                  {spread ? `已感应卡牌 / ${spread.name}` : "已绘流生命运卡槽 / SPREAD SLOTS"}
+            {/* ── 视口 1 (上半页)：命运牌槽展示区 (提供极佳的占卜专注度) ── */}
+            <div className="flex flex-col items-center justify-center min-h-[75vh] w-full pt-4 pb-12">
+              <div className="flex flex-col items-center space-y-3 text-center mb-16">
+                <span className="text-xs font-mono tracking-[0.8em] text-[#C9A84C] uppercase font-bold drop-shadow-[0_0_10px_rgba(201,168,76,0.5)]">
+                  {spread ? `已感应流生命运法阵 / ${spread.name}` : "已绘流生命运卡槽 / SPREAD SLOTS"}
                 </span>
                 {spread?.description && (
-                  <span className="text-xs text-[#E8DFB8]/50 font-serif tracking-wider">{spread.description}</span>
+                  <span className="text-sm text-[#E8DFB8]/60 font-serif tracking-wider max-w-2xl px-4">{spread.description}</span>
                 )}
               </div>
 
-              {/* True Occult Spread Geometry Positions */}
-              <div className="w-full relative mt-8">
+              {/* 真实神秘学牌型占位框 */}
+              <div className="w-full relative mt-4">
                 <SpreadGeometry 
                   spreadId={spread?.id}
                   count={cards.length}
                   renderCard={(idx) => (
                     <div key={idx} className="flex flex-col items-center space-y-4">
                       <div 
-                        className={`w-24 h-36 md:w-[7rem] md:h-[10.5rem] rounded-xl md:rounded-[1.25rem] flex flex-col items-center justify-center transition-all duration-500 relative ${idx < selectedDeckIndices.length ? "scale-105 shadow-[0_0_35px_rgba(201,168,76,0.4)]" : "border border-dashed border-[#C9A84C]/30 bg-[#05020a]/60"}`}
+                        className={`w-28 h-42 md:w-[8rem] md:h-[12rem] rounded-xl md:rounded-[1.25rem] flex flex-col items-center justify-center transition-all duration-500 relative ${idx < selectedDeckIndices.length ? "scale-105 shadow-[0_0_35px_rgba(201,168,76,0.4)]" : "border border-dashed border-[#C9A84C]/30 bg-[#05020a]/60"}`}
                       >
                         {idx < selectedDeckIndices.length ? (
                           <TarotCardBack glowing />
@@ -162,8 +162,8 @@ export default function TarotRitualManager({ cards, spread, onComplete }: TarotR
                           <span className="text-xs font-mono text-[#C9A84C]/40 tracking-wider">待抽取</span>
                         )}
                       </div>
-                      {/* Position Label */}
-                      <div className="px-4 py-1.5 rounded-full bg-black/80 border border-[#C9A84C]/40 shadow-[0_0_15px_rgba(201,168,76,0.2)] text-[#C9A84C] text-[11px] font-serif tracking-widest text-center min-w-[80px] whitespace-nowrap">
+                      {/* 牌位名称标签 */}
+                      <div className="px-5 py-2 rounded-full bg-black/85 border border-[#C9A84C]/40 shadow-[0_0_15px_rgba(201,168,76,0.2)] text-[#C9A84C] text-xs font-serif tracking-widest text-center min-w-[90px] whitespace-nowrap">
                         {spread?.positions?.[idx] || `第 ${idx + 1} 张`}
                       </div>
                     </div>
@@ -172,25 +172,31 @@ export default function TarotRitualManager({ cards, spread, onComplete }: TarotR
               </div>
             </div>
 
-            {/* 78-Card Arc Fan — outer div = CSS positioning, inner motion.div = animations */}
-            <div className="w-full mt-10 mb-2 flex flex-col items-center">
-              <div className="flex items-center justify-between pb-3 mb-4 w-full max-w-4xl border-b border-[#C9A84C]/20 text-xs text-[#C9A84C]/60 font-serif tracking-widest px-4 md:px-12">
+            {/* ── 仪式过渡分割线 ── */}
+            <div className="w-full flex items-center justify-center my-12 relative opacity-70">
+              <div className="flex-1 h-px bg-gradient-to-r from-transparent to-[#C9A84C]/60" />
+              <span className="mx-6 text-xs font-serif tracking-[0.6em] text-[#C9A84C] uppercase flex items-center gap-2 animate-pulse">
+                ✦ 向下滑动，触碰阿卡夏密卷抽取命运印记 ✦
+              </span>
+              <div className="flex-1 h-px bg-gradient-to-l from-transparent to-[#C9A84C]/60" />
+            </div>
+
+            {/* ── 视口 2 (下半页)：一整页沉浸式 78 张宏大扇形牌面场 ── */}
+            <div className="w-full min-h-[90vh] flex flex-col items-center justify-end relative pt-12 pb-24">
+              <div className="flex items-center justify-between pb-4 mb-12 w-full max-w-5xl border-b border-[#C9A84C]/20 text-xs md:text-sm text-[#C9A84C]/70 font-serif tracking-widest px-6 md:px-12">
                 <span>✦ 阿卡夏全副塔罗密卷 (78张)</span>
-                <span>请凭直觉点选卡牌</span>
+                <span>请凭直觉触摸牌背感应抽取</span>
               </div>
 
               {/*
-                CORRECT arc fan pattern:
-                  - Outer plain <div> = CSS transform for arc position. NO Framer Motion props.
-                  - Inner <motion.div> = ONLY opacity / scale / hover. Composes on top of outer.
-                Sizing: cards must be large enough to be interactive (68×102 desktop).
-                Radius: must be large enough that cards spread visibly across the viewport.
-                Container height: anchors the bottom pivot point; cards extend UPWARD via translateY.
+                Arc fan pattern with HUGE premium cards (88x132 desktop / 56x84 mobile).
+                Radius: massive 450px desktop sweep.
+                Container height: 580px desktop anchor.
               */}
               <div
                 className="relative w-full"
                 style={{
-                  height: isMobile ? '280px' : '380px',
+                  height: isMobile ? '360px' : '580px',
                   overflow: 'visible',
                 }}
               >
@@ -201,12 +207,12 @@ export default function TarotRitualManager({ cards, spread, onComplete }: TarotR
                   const centerIndex = (totalCards - 1) / 2;
                   const offset = deckIdx - centerIndex;
 
-                  // Arc geometry — larger values = bigger, more spread-out fan
-                  const totalDeg = isMobile ? 115 : 145;
+                  // Massive arc geometry
+                  const totalDeg = isMobile ? 120 : 150;
                   const rotation = offset * (totalDeg / (totalCards - 1));
-                  const radius = isMobile ? 230 : 320;  // pivot distance upward
-                  const cardW = isMobile ? 52 : 68;
-                  const cardH = isMobile ? 78 : 102;
+                  const radius = isMobile ? 280 : 450;  // massive upward sweep distance
+                  const cardW = isMobile ? 56 : 88;
+                  const cardH = isMobile ? 84 : 132;
 
                   return (
                     // OUTER: pure CSS arc positioning — NO Framer Motion
@@ -221,20 +227,19 @@ export default function TarotRitualManager({ cards, spread, onComplete }: TarotR
                         marginLeft: -cardW / 2,
                         transform: `rotate(${rotation}deg) translateY(-${radius}px)`,
                         transformOrigin: 'center bottom',
-                        // Cards in the center of the fan have highest z-index naturally
                         zIndex: isPicked ? -1 : (39 - Math.abs(Math.round(offset))),
                         pointerEvents: isPicked ? 'none' : 'auto',
                       }}
                     >
-                      {/* INNER: Framer Motion handles entrance + hover — does NOT touch outer transform */}
+                      {/* INNER: Framer Motion handles entrance + hover */}
                       <motion.div
                         className={`w-full h-full ${canDraw ? 'cursor-pointer' : ''}`}
                         initial={{ opacity: 0, scale: 0.3 }}
                         animate={{ opacity: isPicked ? 0 : 1, scale: isPicked ? 0 : 1 }}
                         transition={{ delay: deckIdx * 0.004, duration: 0.3, ease: 'easeOut' }}
-                        whileHover={canDraw ? { scale: 1.28, y: -22, transition: { duration: 0.15 } } : {}}
+                        whileHover={canDraw ? { scale: 1.35, y: -30, transition: { duration: 0.15 } } : {}}
                         onClick={() => canDraw && handleDrawCard(deckIdx)}
-                        style={{ filter: canDraw ? 'drop-shadow(0 0 6px rgba(201,168,76,0.3))' : 'none' }}
+                        style={{ filter: canDraw ? 'drop-shadow(0 0 10px rgba(201,168,76,0.4))' : 'none' }}
                       >
                         <TarotCardBack />
                       </motion.div>
@@ -242,14 +247,14 @@ export default function TarotRitualManager({ cards, spread, onComplete }: TarotR
                   );
                 })}
               </div>
-            </div>
 
-            {/* Prompt Banner (Bottom) */}
-            <div className="mt-6 mb-4 flex flex-col items-center space-y-4 w-full">
-              <p className="font-serif tracking-[0.5em] text-sm md:text-lg text-[#E8DFB8] uppercase drop-shadow-md text-center">
-                {selectedDeckIndices.length < cards.length ? `请感应并抽取 ${cards.length} 张牌 （已选 ${selectedDeckIndices.length} / ${cards.length}）` : "✦ 抽取完毕，正在凝结命运印记 ✦"}
-              </p>
-              <div className="w-24 h-px bg-gradient-to-r from-transparent via-[#C9A84C]/80 to-transparent mx-auto" />
+              {/* 抽取进度指示横幅 (固定在底部区域) */}
+              <div className="mt-12 mb-4 flex flex-col items-center space-y-4 w-full">
+                <p className="font-serif tracking-[0.5em] text-sm md:text-xl text-[#E8DFB8] uppercase drop-shadow-[0_0_15px_rgba(201,168,76,0.5)] text-center">
+                  {selectedDeckIndices.length < cards.length ? `请感应并抽取 ${cards.length} 张牌 （已选 ${selectedDeckIndices.length} / ${cards.length}）` : "✦ 命运契印凝结完毕 ✦"}
+                </p>
+                <div className="w-36 h-[2px] bg-gradient-to-r from-transparent via-[#C9A84C] to-transparent mx-auto shadow-[0_0_10px_#C9A84C]" />
+              </div>
             </div>
           </motion.div>
         )}
