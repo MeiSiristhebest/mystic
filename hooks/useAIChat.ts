@@ -5,23 +5,26 @@ import { useAIStream } from './useAIStream';
 import { useJourney } from './useJourney';
 import { Message, DivinationType } from '@/app/types/divination';
 import { AKASHA_PERSONA } from '@/lib/prompts';
+import { AIProvider } from '@/lib/ai';
 
 interface UseAIChatOptions {
   type: DivinationType;
   model?: string;
   systemInstruction?: string;
   initialMessages?: Message[];
+  provider?: AIProvider;
 }
 
 export function useAIChat({ 
   type, 
   model, 
   systemInstruction = AKASHA_PERSONA,
-  initialMessages = []
+  initialMessages = [],
+  provider
 }: UseAIChatOptions) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [currentEntryId, setCurrentEntryId] = useState<string | null>(null);
-  const { stream, isLoading, error, abort } = useAIStream({ model });
+  const { stream, isLoading, error, abort } = useAIStream({ model, provider });
   const { addEntry, updateEntry } = useJourney();
 
   const resetChat = useCallback(() => {

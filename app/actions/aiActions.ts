@@ -77,8 +77,8 @@ export async function getQiMenServerData(date: Date) {
   };
 }
 
-export async function generateMysticImage(prompt: string, aspectRatio: any, docId: string) {
-  // 1. Check server-side Firebase cache first — if found, all clients share this result
+export async function generateMysticImage(prompt: string, aspectRatio: any, docId: string, provider: "gemini" | "agnes" = "gemini") {
+  // Check server-side Firebase cache first
   try {
     const docRef = adminDb.collection("daily-images").doc(docId);
     const cachedDoc = await docRef.get();
@@ -93,32 +93,79 @@ export async function generateMysticImage(prompt: string, aspectRatio: any, docI
     console.warn("[FIREBASE] Cache read failed:", error);
   }
 
-  // 2. Generate fresh image with Gemini
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error("GEMINI_API_KEY is not defined");
-  
-  const ai = new GoogleGenAI({ apiKey });
-  const fullPrompt = `In a high-end, mysterious, cosmic luxury style. Deep cosmic black background with mystic gold and nebula purple accents. Ethereal, dreamlike, sophisticated, professional digital art. Subject: ${prompt}. No text, no watermark.`;
-  
-  const response = await ai.models.generateContent({
-    model: "gemini-3.1-flash-image-preview",
-    contents: {
-      parts: [{ text: fullPrompt }],
-    },
-    config: {
-      imageConfig: {
-        aspectRatio,
-      },
-    },
-  });
-
-  const part = response.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
   let base64Data = "";
-  if (part?.inlineData?.data) {
+
+  if (provider === "agnes") {
+    // Agnes image generation via OpenAI-compatible API
+    const apiKey = process.env.AGNES_API_KEY;
+    if (!apiKey) throw new Error("AGNES_API_KEY is not defined");
+
+    const sizeMap: Record<string, string> = {
+      "1:1": "1024x1024",
+      "16:9": "1536x1024",
+      "9:16": "1024x1536",
+      "4:3": "1152x896",
+      "3:4": "896x1152",
+    };
+    const size = sizeMap[aspectRatio] || "1024x1024";
+
+    const response = await fetch("https://apihub.agnes-ai.com/v1/images/generations", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: "agnes-image-2.0-flash",
+        prompt: `In a high-end, mysterious, cosmic luxury style. Deep cosmic black background with mystic gold and nebula purple accents. Ethereal, dreamlike, sophisticated, professional digital art. Subject: ${prompt}. No text, no watermark.`,
+        size,
+        extra_body: {
+          response_format: "url",
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Agnes image generation failed: ${errorText}`);
+    }
+
+    const result = await response.json();
+    const imageUrl = result.data?.[0]?.url;
+    if (!imageUrl) {
+      throw new Error("No image URL received from Agnes");
+    }
+
+    // Fetch the image URL and convert to base64 for Firestore storage
+    const imgResp = await fetch(imageUrl);
+    const imgBuffer = Buffer.from(await imgResp.arrayBuffer());
+    base64Data = `data:image/png;base64,${imgBuffer.toString("base64")}`;
+  } else {
+    // Original Gemini image generation
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) throw new Error("GEMINI_API_KEY is not defined");
+    
+    const ai = new GoogleGenAI({ apiKey });
+    const fullPrompt = `In a high-end, mysterious, cosmic luxury style. Deep cosmic black background with mystic gold and nebula purple accents. Ethereal, dreamlike, sophisticated, professional digital art. Subject: ${prompt}. No text, no watermark.`;
+    
+    const response = await ai.models.generateContent({
+      model: "gemini-3.1-flash-image-preview",
+      contents: {
+        parts: [{ text: fullPrompt }],
+      },
+      config: {
+        imageConfig: {
+          aspectRatio,
+        },
+      },
+    });
+
+    const part = response.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+    if (!part?.inlineData?.data) {
+      throw new Error("No image data received");
+    }
     const mimeType = part.inlineData.mimeType || "image/png";
     base64Data = `data:${mimeType};base64,${part.inlineData.data}`;
-  } else {
-    throw new Error("No image data received");
   }
 
   // 3. Compress server-side if needed, then ALWAYS save to Firebase.

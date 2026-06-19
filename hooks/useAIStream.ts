@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
-import { generateContentStream, AKASHA_PERSONA } from '@/lib/ai';
+import { generateContentStream, AKASHA_PERSONA, AIProvider } from '@/lib/ai';
 
-export function useAIStream(options: { model?: string, config?: any } = {}) {
+export function useAIStream(options: { model?: string, config?: any, provider?: AIProvider } = {}) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -31,7 +31,7 @@ export function useAIStream(options: { model?: string, config?: any } = {}) {
         prompt as any,
         systemInstruction,
         abortControllerRef.current.signal,
-        { model: options.model, ...options.config }
+        { model: options.model, provider: options.provider, ...options.config }
       );
 
       for await (const chunk of responseStream) {
@@ -51,7 +51,7 @@ export function useAIStream(options: { model?: string, config?: any } = {}) {
       setIsLoading(false);
       abortControllerRef.current = null;
     }
-  }, [options.model, options.config]);
+  }, [options.model, options.config, options.provider]);
 
   const abort = useCallback(() => {
     if (abortControllerRef.current) {

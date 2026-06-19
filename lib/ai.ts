@@ -10,7 +10,14 @@ export const FALLBACK_CHAIN = [
   MODELS.LITE
 ];
 
-export const DEFAULT_MODEL = MODELS.FLASH;
+export const AGNES_MODELS = {
+  FLASH: "agnes-2.0-flash",
+  IMAGE: "agnes-image-2.0-flash",
+} as const;
+
+export const DEFAULT_MODEL = AGNES_MODELS.FLASH;
+
+export type AIProvider = "gemini" | "agnes";
 
 export function sanitizePrompt(input: string): string {
   if (!input) return "";
@@ -37,7 +44,7 @@ export async function generateContent(
   const response = await fetch('/api/ai', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ prompt, systemInstruction, config }),
+    body: JSON.stringify({ prompt, systemInstruction, config, provider: config.provider }),
   });
 
   if (!response.ok) {
@@ -72,7 +79,7 @@ export async function* generateContentStream(
       const response = await fetch('/api/ai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, systemInstruction, config }),
+        body: JSON.stringify({ prompt, systemInstruction, config, provider: config.provider }),
         signal
       });
 
