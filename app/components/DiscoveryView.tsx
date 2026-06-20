@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { safeParseAIJSON } from "@/lib/utils";
 import { 
   User, 
   Compass, 
@@ -171,7 +172,7 @@ export default function DiscoveryView({ onComplete }: { onComplete?: () => void 
         responseText += new TextDecoder().decode(value);
       }
 
-      const result = JSON.parse(responseText || "{}");
+      const result = safeParseAIJSON(responseText, { analysis: "", recommendation: "" });
       setArchetypeAnalysis(result.analysis);
       setSelectedArchetype(result.recommendation);
     } catch (err: any) {

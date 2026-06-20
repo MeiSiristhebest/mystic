@@ -22,7 +22,7 @@ import { useAIStream } from "@/hooks/useAIStream";
 import { AKASHA_PERSONA } from "@/lib/ai";
 import { getSoulAdvicePrompt } from "@/lib/prompts";
 import { getFromIndexedDB, saveToIndexedDB } from "@/lib/storage";
-import { cleanMysticContent } from "@/lib/utils";
+import { cleanMysticContent, safeParseAIJSON } from "@/lib/utils";
 
 export function SoulView() {
   const profile = useAppStore((state) => state.profile);
@@ -68,7 +68,7 @@ export function SoulView() {
         for await (const chunk of stream(prompt, AKASHA_PERSONA)) {
           fullOutput += chunk;
         }
-        const data = JSON.parse(fullOutput.replace(/```json|```/g, '').trim());
+        const data = safeParseAIJSON(fullOutput, { tips: [] });
         if (data.tips && Array.isArray(data.tips)) {
           setDailyAdvice(data.tips);
           await saveToIndexedDB(cacheKey, data.tips);

@@ -16,6 +16,7 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 import { useAppStore } from "@/lib/store";
 import { playMysticChime, triggerHapticVibration } from "@/lib/audio";
 import BreathingLoading from "../BreathingLoading";
+import { safeParseAIJSON } from "@/lib/utils";
 
 import { RitualLayout } from "./Visuals";
 
@@ -80,7 +81,7 @@ export function MysticTarot({ initialHandoff, clearHandoff }: MysticTarotProps =
         { responseMimeType: 'application/json' },
         matchAbortControllerRef.current.signal
       );
-      const data = JSON.parse(jsonStr);
+      const data = safeParseAIJSON(jsonStr, { categoryId: "", spreadId: "" });
       if (data.categoryId && CATEGORIES.some(c => c.id === data.categoryId)) {
         setSelectedCategory(data.categoryId);
       }

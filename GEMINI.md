@@ -1,3 +1,12 @@
+## [2026-06-20] Feature: Unified Model-Agnostic JSON Compatibility System
+
+- **Decision: Centralized Resilient JSON Parsing (`lib/utils.ts`)**
+  - **Reason**: Different AI models have varying output structures, often wrapping JSON in markdown code blocks or omitting trailing brackets/keys, which routinely crashed standard `JSON.parse` invocations across various modules.
+  - **Action**: Designed and exported `safeParseAIJSON<T>(text, fallbackValue)` helper. The function strips markdown blocks, extracts nested curly brace structures, cleans trailing commas, and implements a regex-based recovery engine for common data types (strings, arrays, booleans, and numbers) in case of structural syntax errors.
+- **Decision: Global Modular Integration**
+  - **Reason**: Direct un-guarded `JSON.parse` calls in explore guides, oracle views, tarot reading modules, and Bazi auto-matchers created high vulnerability to model output changes.
+  - **Action**: Refactored `TodayView.tsx`, `SoulView.tsx`, `OmniOracleGuide.tsx`, `DiscoveryView.tsx`, `MysticTarot.tsx`, and `useTarotReading.ts` to use `safeParseAIJSON`, unifying error handling and preventing frontend crashes.
+
 ## [2026-06-20] Hotfix: Agnes Stream Parser & Server-Side Caching Integration
 
 - **Decision: SSE stream parser in `/api/ai` (`app/api/ai/route.ts`)**

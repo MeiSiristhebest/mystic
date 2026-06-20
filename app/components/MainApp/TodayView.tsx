@@ -27,7 +27,7 @@ import { getSunSign } from "@/lib/astrology";
 import { getFromIndexedDB, saveToIndexedDB } from "@/lib/storage";
 import { useAppStore } from "@/lib/store";
 import { usePosterGenerator } from "@/hooks/usePosterGenerator";
-import { cleanMysticContent } from "@/lib/utils";
+import { cleanMysticContent, safeParseAIJSON } from "@/lib/utils";
 import { getCloudDailyOracle, saveCloudDailyOracle } from "@/app/actions/aiActions";
 import { getDailyOraclePrompt } from "@/lib/prompts";
 
@@ -152,7 +152,7 @@ export function TodayView() {
           fullOutput += chunk;
         }
 
-        const data = JSON.parse(fullOutput.replace(/```json|```/g, '').trim());
+        const data = safeParseAIJSON(fullOutput, { oracle: "", subMotto: "", imagePrompt: "", cosmicEnergy: "", energySuggestion: "" });
         const newDaily = {
           date: todayStr,
           reading: data.oracle,

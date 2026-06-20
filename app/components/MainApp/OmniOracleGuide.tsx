@@ -9,7 +9,7 @@ import { AmbientCosmicBackground } from "./Visuals";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { DivinationHandoff } from "@/app/types/divination";
 import BreathingLoading from "../BreathingLoading";
-import { cleanMysticContent } from "@/lib/utils";
+import { cleanMysticContent, safeParseAIJSON } from "@/lib/utils";
 
 interface OmniOracleGuideProps {
   onClose: () => void;
@@ -73,7 +73,7 @@ ${historyContext}
       if (executeMatch && executeMatch[1]) {
         try {
           const cleanJsonStr = executeMatch[1].replace(/```json|```/g, '').trim();
-          const actionData = JSON.parse(cleanJsonStr);
+          const actionData = safeParseAIJSON(cleanJsonStr, { system: "", modeId: "", question: "" });
           setHandoffData({
             system: actionData.system,
             modeId: actionData.modeId,
