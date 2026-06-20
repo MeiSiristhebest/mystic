@@ -93,7 +93,7 @@ async function callGemini(
   }
 
   const ai = new GoogleGenAI({ apiKey });
-  const modelName = userConfig.model || DEFAULT_MODEL;
+  const modelName = userConfig.model || MODELS.LITE;
 
   const contents = Array.isArray(prompt)
     ? prompt.map((m: any) => {
@@ -206,8 +206,8 @@ export async function POST(req: NextRequest) {
       config: userConfig = {},
     } = body;
     
-    // Determine provider: top-level 'provider' field, or from config.provider
-    const provider = (body.provider as string) || (userConfig.provider as string) || "gemini";
+    // Determine provider: only explicit 'gemini' switches to Gemini, everything else defaults to Agnes
+    const provider = (body.provider as string) || (userConfig.provider as string) || "agnes";
 
     // Route to the appropriate provider
     if (provider === "agnes") {
@@ -225,11 +225,9 @@ export async function POST(req: NextRequest) {
     }
 
     // Default: Gemini (original logic)
-    const cacheKey = generateCacheKey(prompt, userConfig.model || DEFAULT_MODEL, systemInstruction);
+    const cacheKey = generateCacheKey(prompt, userConfig.model || MODELS.LITE, systemInstruction);
     const result = await callGemini(prompt, systemInstruction, userConfig, cacheKey);
-    if (result) return result;
-
-    return new Response(JSON.stringify({ error: "Unexpected state" }), { status: 500 });
+    return result;
   } catch (error: any) {
     console.error("AI API Final Error:", error);
     const status = error.status || 500;

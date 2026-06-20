@@ -77,7 +77,7 @@ export async function getQiMenServerData(date: Date) {
   };
 }
 
-export async function generateMysticImage(prompt: string, aspectRatio: any, docId: string, provider: "gemini" | "agnes" = "gemini") {
+export async function generateMysticImage(prompt: string, aspectRatio: any, docId: string, provider: "gemini" | "agnes" = "agnes") {
   // Check server-side Firebase cache first
   try {
     const docRef = adminDb.collection("daily-images").doc(docId);
