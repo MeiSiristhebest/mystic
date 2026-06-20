@@ -69,10 +69,11 @@ ${historyContext}
         setMessages([...newMsgs, { role: "model", content: displayResponse }]);
       }
       
-      const executeMatch = fullResponse.match(/<execute>([\s\S]*?)<\/execute>/);
+      const executeMatch = fullResponse.match(/<execute>([\s\S]*?)(?:<\/execute>|$)/i);
       if (executeMatch && executeMatch[1]) {
         try {
-          const actionData = JSON.parse(executeMatch[1].trim());
+          const cleanJsonStr = executeMatch[1].replace(/```json|```/g, '').trim();
+          const actionData = JSON.parse(cleanJsonStr);
           setHandoffData({
             system: actionData.system,
             modeId: actionData.modeId,
