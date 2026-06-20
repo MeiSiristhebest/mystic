@@ -148,7 +148,7 @@ export default function TarotReadingResult({
           className="px-10 py-4 border border-amber-500/20 text-amber-500 hover:bg-amber-500/10 rounded-full font-serif tracking-widest transition-all flex items-center justify-center gap-2"
         >
           <RefreshCw className="w-4 h-4" />
-          重起一卦
+          重新起牌
         </button>
         <button
           onClick={() => handleGeneratePoster(posterRef.current, `tarot-${Date.now()}.jpg`)}

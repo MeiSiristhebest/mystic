@@ -17,7 +17,13 @@ export function processMysticMarkdownContent(rawText: string): { processedConten
 
   // ── Phase 0: Strip non-markdown structured blocks ────────────────────────
   content = content
+    // Extract SOUL_MOTTO block (paired tags — most common case)
     .replace(/\[SOUL_MOTTO\]([\s\S]*?)\[\/SOUL_MOTTO\]/g, (_, p1) => { soulMotto = p1.trim(); return ""; })
+    // Strip orphaned opening or closing tags (no paired match)
+    .replace(/\[\/?SOUL_MOTTO\]/g, "")
+    // Also catch variants where the markdown parser inserts spaces, e.g. [S OUL_MOTTO]
+    .replace(/\[S\s*OUL_MOTTO\]/g, "")
+    .replace(/\[\/S\s*OOL_MOTTO\]/g, "")
     .replace(/<thinking>[\s\S]*?(?:<\/thinking>|$)/g, '')
     .replace(/<execute>[\s\S]*?(?:<\/execute>|$)/g, '')
     .replace(/<mystic_association>([\s\S]*?)(?:<\/mystic_association>|$)/g, (_, p1) => {
