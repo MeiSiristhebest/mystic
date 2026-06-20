@@ -7,7 +7,7 @@ import { useJourney } from "@/hooks/useJourney";
 import BreathingLoading from "./BreathingLoading";
 import MysticMarkdown from "./MysticMarkdown";
 import { getSubconsciousPrompt } from '@/lib/prompts';
-import { MODELS, SUBCONSCIOUS_DREAM_PERSONA, SUBCONSCIOUS_FOOL_PERSONA } from "@/lib/ai";
+import { SUBCONSCIOUS_DREAM_PERSONA, SUBCONSCIOUS_FOOL_PERSONA } from "@/lib/ai";
 
 interface SubconsciousAppProps {
   initialHandoff?: any;
@@ -38,7 +38,6 @@ export default function SubconsciousApp({ initialHandoff, clearHandoff }: Subcon
   
   const { messages, sendMessage, isLoading, error } = useAIChat({
     type: 'subconscious',
-    model: MODELS.PRO,
     systemInstruction: mode === 'dream' ? SUBCONSCIOUS_DREAM_PERSONA : SUBCONSCIOUS_FOOL_PERSONA,
   });
 

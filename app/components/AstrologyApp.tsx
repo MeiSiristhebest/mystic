@@ -24,7 +24,7 @@ import { getStarChartData } from '@/app/actions/aiActions';
 import BreathingLoading from "./BreathingLoading";
 import { useJourney } from "@/hooks/useJourney";
 import { useUserProfile } from "@/hooks/useUserProfile";
-import { MODELS } from '@/lib/ai';
+
 
 const ZODIAC_SIGNS = [
   { id: "aries", name: "白羊座", element: "火", dates: "3.21-4.19" },
@@ -98,7 +98,7 @@ export default function AstrologyApp({ initialHandoff, clearHandoff }: Astrology
   const [birthCity, setBirthCity] = useState(profile.birthPlace || CITIES[0].name);
 
   const [messages, setMessages] = useState<{ role: 'user' | 'model'; content: string }[]>([]);
-  const { sendMessage, isLoading: isChatLoading } = useAIChat({ type: 'astrology', model: MODELS.PRO });
+  const { sendMessage, isLoading: isChatLoading } = useAIChat({ type: 'astrology' });
   const [currentEntryId, setCurrentEntryId] = useState<string | null>(null);
   const [isAskingFollowUp, setIsAskingFollowUp] = useState(false);
   const [inputMessage, setInputMessage] = useState("");

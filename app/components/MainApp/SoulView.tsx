@@ -19,7 +19,7 @@ import BreathingLoading from "../BreathingLoading";
 import { useAppStore } from "@/lib/store";
 import { MoodCheckIn } from "./MoodCheckIn";
 import { useAIStream } from "@/hooks/useAIStream";
-import { MODELS, AKASHA_PERSONA } from "@/lib/ai";
+import { AKASHA_PERSONA } from "@/lib/ai";
 import { getSoulAdvicePrompt } from "@/lib/prompts";
 import { getFromIndexedDB, saveToIndexedDB } from "@/lib/storage";
 import { cleanMysticContent } from "@/lib/utils";
@@ -36,7 +36,6 @@ export function SoulView() {
   const [isInitializingAdvice, setIsInitializingAdvice] = useState(true);
 
   const aiOptions = useMemo(() => ({
-    model: MODELS.FLASH, // Use FLASH for faster dashboard loading
     config: { responseMimeType: "application/json" }
   }), []);
 

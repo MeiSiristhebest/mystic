@@ -8,7 +8,7 @@ import dynamic from "next/dynamic";
 import { CATEGORIES, SPREAD_MODES } from "./constants";
 import { useAIStream } from "@/hooks/useAIStream";
 import { useAIChat } from "@/hooks/useAIChat";
-import { MODELS, generateContent } from "@/lib/ai";
+import { generateContent } from "@/lib/ai";
 import { getTarotPrompt } from '@/lib/prompts';
 import { getDailyTarotCards } from "@/lib/tarot-data";
 import { useJourney } from "@/hooks/useJourney";
@@ -80,8 +80,7 @@ export function MysticTarot({ initialHandoff, clearHandoff }: MysticTarotProps =
   };
 
   const { messages, setMessages, sendMessage, isLoading: isChatLoading, error: chatError } = useAIChat({
-    type: 'tarot',
-    model: MODELS.PRO
+    type: 'tarot'
   });
   const { addEntry, updateEntry } = useJourney();
   const { getProfileContext } = useUserProfile();

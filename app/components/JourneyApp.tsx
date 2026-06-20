@@ -23,7 +23,7 @@ import { useJourney } from '@/hooks/useJourney';
 import { useAIChat } from '@/hooks/useAIChat';
 import { useAIStream } from '@/hooks/useAIStream';
 import { useUserProfile } from '@/hooks/useUserProfile';
-import { MODELS, AKASHA_PERSONA } from '@/lib/ai';
+import { AKASHA_PERSONA } from '@/lib/ai';
 import { JourneyEntry } from '@/app/types/divination';
 import MysticChatInterface from './MainApp/MysticChatInterface';
 import EntryDetailRenderer from './MainApp/Journey/EntryDetailRenderer';
@@ -49,7 +49,7 @@ export default function JourneyApp() {
 
   const posterRef = useRef<HTMLDivElement>(null);
   const { isGeneratingPoster, handleGeneratePoster } = usePosterGenerator();
-  const { stream } = useAIStream({ model: MODELS.FLASH });
+  const { stream } = useAIStream();
   const { profile } = useUserProfile();
 
   const selectedEntry = useMemo(() => 

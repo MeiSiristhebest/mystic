@@ -8,7 +8,7 @@ import { useJourney } from "@/hooks/useJourney";
 import BreathingLoading from "./BreathingLoading";
 import MysticMarkdown from "./MysticMarkdown";
 import { getSynastryPrompt } from '@/lib/prompts';
-import { MODELS, SYNASTRY_PERSONA } from "@/lib/ai";
+import { SYNASTRY_PERSONA } from "@/lib/ai";
 import { cryptoShuffle, getCryptoRandom } from "@/lib/random";
 
 export default function SynastryApp() {
@@ -24,7 +24,6 @@ export default function SynastryApp() {
 
   const { sendMessage, isLoading, error } = useAIChat({
     type: 'synastry',
-    model: MODELS.PRO,
     systemInstruction: SYNASTRY_PERSONA,
   });
 

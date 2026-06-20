@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Send, X, Sparkles, ArrowRight } from "lucide-react";
 import { useAIStream } from "@/hooks/useAIStream";
-import { ORCHESTRATOR_PERSONA, MODELS } from "@/lib/ai";
+import { ORCHESTRATOR_PERSONA } from "@/lib/ai";
 import { AmbientCosmicBackground } from "./Visuals";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { DivinationHandoff } from "@/app/types/divination";
@@ -24,7 +24,7 @@ export function OmniOracleGuide({ onClose, onHandoff }: OmniOracleGuideProps) {
   const [isTyping, setIsTyping] = useState(false);
   const [handoffData, setHandoffData] = useState<DivinationHandoff | null>(null);
   
-  const { stream, isLoading, abort } = useAIStream({ model: MODELS.PRO });
+  const { stream, isLoading, abort } = useAIStream();
   const { getProfileContext } = useUserProfile();
   const bottomRef = useRef<HTMLDivElement>(null);
 

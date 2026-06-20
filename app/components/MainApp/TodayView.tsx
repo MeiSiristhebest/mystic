@@ -20,7 +20,7 @@ import { MysticImage } from "./MysticImage";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useJourney } from "@/hooks/useJourney";
 import { useAIStream } from "@/hooks/useAIStream";
-import { AKASHA_PERSONA, MODELS } from "@/lib/ai";
+import { AKASHA_PERSONA } from "@/lib/ai";
 import { getSunSign } from "@/lib/astrology";
 import { getFromIndexedDB, saveToIndexedDB } from "@/lib/storage";
 import { useAppStore } from "@/lib/store";
@@ -32,7 +32,6 @@ export function TodayView() {
   const { profile, isLoaded: isProfileLoaded } = useUserProfile();
   const { entries, isLoaded: journeyLoaded } = useJourney();
   const aiOptions = useMemo(() => ({ 
-    model: MODELS.FLASH,
     config: { responseMimeType: "application/json" } 
   }), []);
 

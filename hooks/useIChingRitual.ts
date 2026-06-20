@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useAIStream } from '@/hooks/useAIStream';
-import { MODELS, AKASHA_PERSONA } from '@/lib/ai';
+import { AKASHA_PERSONA } from '@/lib/ai';
 import { useJourney } from '@/hooks/useJourney';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { cryptoCoinToss } from '@/lib/random';
@@ -18,7 +18,7 @@ export function useIChingRitual() {
 
   const { getProfileContext } = useUserProfile();
   const { addEntry } = useJourney();
-  const { stream, isLoading: isReading } = useAIStream({ model: MODELS.PRO });
+  const { stream, isLoading: isReading } = useAIStream();
 
   const tossCoins = useCallback(() => {
     if (lines.length >= 6 || isTossing) return;

@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useAIStream } from '@/hooks/useAIStream';
-import { MODELS, AKASHA_PERSONA } from '@/lib/ai';
+import { AKASHA_PERSONA } from '@/lib/ai';
 import { useJourney } from '@/hooks/useJourney';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { getShadowWorkPrompt } from '@/lib/prompts';
@@ -12,7 +12,7 @@ export function useShadowWork() {
 
   const { getProfileContext } = useUserProfile();
   const { addEntry } = useJourney();
-  const { stream, isLoading: isExploring } = useAIStream({ model: MODELS.PRO });
+  const { stream, isLoading: isExploring } = useAIStream();
 
   const startShadowExploration = useCallback(async (issue: string) => {
     const profileContext = getProfileContext();

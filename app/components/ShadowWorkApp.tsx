@@ -6,7 +6,7 @@ import { useAIChat } from "@/hooks/useAIChat";
 import { useJourney } from "@/hooks/useJourney";
 import BreathingLoading from "./BreathingLoading";
 import MysticMarkdown from "./MysticMarkdown";
-import { MODELS, SHADOW_WORK_PERSONA } from "@/lib/ai";
+import { SHADOW_WORK_PERSONA } from "@/lib/ai";
 import { getShadowWorkPrompt } from "@/lib/prompts";
 
 interface ShadowWorkAppProps {
@@ -35,7 +35,6 @@ export default function ShadowWorkApp({ initialHandoff, clearHandoff }: ShadowWo
 
   const { messages, sendMessage, isLoading, error } = useAIChat({
     type: 'shadow_work',
-    model: MODELS.PRO,
     systemInstruction: SHADOW_WORK_PERSONA,
   });
 

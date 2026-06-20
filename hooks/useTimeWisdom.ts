@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useAIStream } from '@/hooks/useAIStream';
-import { MODELS, AKASHA_PERSONA } from '@/lib/ai';
+import { AKASHA_PERSONA } from '@/lib/ai';
 import { useJourney } from '@/hooks/useJourney';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { getTimeWisdomPrompt } from '@/lib/prompts';
@@ -12,7 +12,7 @@ export function useTimeWisdom() {
 
   const { getProfileContext } = useUserProfile();
   const { addEntry } = useJourney();
-  const { stream, isLoading: isObserving } = useAIStream({ model: MODELS.FLASH });
+  const { stream, isLoading: isObserving } = useAIStream();
 
   const observeTimeStream = useCallback(async (question: string) => {
     const profileContext = getProfileContext();

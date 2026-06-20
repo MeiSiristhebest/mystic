@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useAIStream } from '@/hooks/useAIStream';
-import { MODELS, AKASHA_PERSONA } from '@/lib/ai';
+import { AKASHA_PERSONA } from '@/lib/ai';
 import { useJourney } from '@/hooks/useJourney';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { getRelationshipSynastryPrompt } from '@/lib/prompts';
@@ -19,7 +19,7 @@ export function useSynastryAnalysis() {
 
   const { profile, getProfileContext } = useUserProfile();
   const { addEntry } = useJourney();
-  const { stream, isLoading: isAnalyzing } = useAIStream({ model: MODELS.PRO });
+  const { stream, isLoading: isAnalyzing } = useAIStream();
 
   const runAnalysis = useCallback(async (partner: PartnerData, question: string) => {
     const profileContext = getProfileContext();

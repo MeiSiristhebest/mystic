@@ -9,7 +9,7 @@ import { useJourney } from "@/hooks/useJourney";
 import BreathingLoading from "./BreathingLoading";
 import MysticMarkdown from "./MysticMarkdown";
 import { getTimeWisdomPrompt } from '@/lib/prompts';
-import { MODELS, TIME_WISDOM_PERSONA } from "@/lib/ai";
+import { TIME_WISDOM_PERSONA } from "@/lib/ai";
 
 // Dynamic Global Context instruction
 const GLOBAL_CONTEXT_INSTRUCTION = `
@@ -59,7 +59,6 @@ export default function TimeWisdomApp() {
 
   const { messages, setMessages, sendMessage, isLoading, error } = useAIChat({
     type: 'time',
-    model: MODELS.FLASH,
     systemInstruction: TIME_WISDOM_PERSONA,
   });
 

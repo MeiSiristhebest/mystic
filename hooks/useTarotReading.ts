@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { useAIStream } from '@/hooks/useAIStream';
 import { useJourney } from '@/hooks/useJourney';
 import { useUserProfile } from '@/hooks/useUserProfile';
-import { AKASHA_PERSONA, SOCRATIC_PERSONA, MODELS } from '@/lib/ai';
+import { AKASHA_PERSONA, SOCRATIC_PERSONA } from '@/lib/ai';
 import { SPREAD_MODES, CATEGORIES } from '@/app/components/MainApp/constants';
 import { getTarotJsonPrompt } from '@/lib/prompts';
 
@@ -16,7 +16,6 @@ export function useTarotReading() {
   const { getProfileContext } = useUserProfile();
   const { addEntry, updateEntry } = useJourney();
   const { stream, isLoading: isReading, abort } = useAIStream({ 
-    model: MODELS.PRO,
     config: { responseMimeType: 'application/json' }
   });
 
