@@ -25,7 +25,7 @@ async function callAgnesStream(
   fullMessages.push(...messages);
 
   const agnesConfig: Record<string, any> = {
-    model: userConfig.model || "agnes-2.0-flash",
+    model: userConfig.model || DEFAULT_MODEL,
     messages: fullMessages,
     stream: true,
   };
