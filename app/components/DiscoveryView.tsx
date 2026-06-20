@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   User, 
@@ -73,6 +73,15 @@ export default function DiscoveryView({ onComplete }: { onComplete?: () => void 
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [archetypeAnalysis, setArchetypeAnalysis] = useState("");
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (isLoaded && profile !== prevProfile) {
@@ -123,6 +132,11 @@ export default function DiscoveryView({ onComplete }: { onComplete?: () => void 
 
   const exploreArchetype = async () => {
     setIsAnalyzing(true);
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    abortControllerRef.current = new AbortController();
+
     try {
       const { res: mbti, identity } = calculateMBTI();
       const bazi = calculateBazi(formData.birthDate, formData.birthTime);
@@ -143,7 +157,8 @@ export default function DiscoveryView({ onComplete }: { onComplete?: () => void 
           prompt: promptText,
           systemInstruction: "你是一位深层心理学专家、荣格分析师及神秘学导师。",
           config: { responseMimeType: "application/json" }
-        })
+        }),
+        signal: abortControllerRef.current.signal
       });
 
       if (!resObj.ok) throw new Error("API request failed");
@@ -159,11 +174,16 @@ export default function DiscoveryView({ onComplete }: { onComplete?: () => void 
       const result = JSON.parse(responseText || "{}");
       setArchetypeAnalysis(result.analysis);
       setSelectedArchetype(result.recommendation);
-    } catch (err) {
+    } catch (err: any) {
+      if (err.name === 'AbortError') {
+        console.log("Archetype exploration aborted");
+        return;
+      }
       console.error("Archetype exploration failed:", err);
       setArchetypeAnalysis("星象运行受阻，请稍后再试。你可以先手动选择一个你感应最深的原型。");
     } finally {
       setIsAnalyzing(false);
+      abortControllerRef.current = null;
     }
   };
 

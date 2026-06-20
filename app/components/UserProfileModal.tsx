@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, User, Calendar, MapPin, Brain, Save, Sparkles, LogOut, ChevronRight } from "lucide-react";
+import { X, User, Calendar, MapPin, Brain, Save, Sparkles, LogOut, ChevronRight, Sun, Moon } from "lucide-react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { calculateBazi, getZodiac, getSunSign } from "@/lib/metaphysics";
 
@@ -95,16 +95,40 @@ export default function UserProfileModal({
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <InputGroup label="姓名/昵称" value={formData.name || ""} onChange={(v) => setFormData({ ...formData, name: v })} />
                     <div className="space-y-1.5">
-                      <label className="text-[10px] text-amber-100/40 ml-1">性别</label>
-                      <select 
-                        className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-amber-100 outline-none focus:border-amber-500/40 transition-all appearance-none"
-                        value={formData.gender}
-                        onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
-                      >
-                        <option value="">未知</option>
-                        <option value="男">男 (乾造)</option>
-                        <option value="女">女 (坤造)</option>
-                      </select>
+                      <label className="text-[10px] text-amber-100/40 ml-1">性别 (元气属性)</label>
+                      <div className="grid grid-cols-3 gap-2 bg-black/40 p-1.5 border border-white/10 rounded-2xl">
+                        {[
+                          { value: "男", label: "乾造 (男)", icon: Sun, color: "text-amber-500", glow: "rgba(245,158,11,0.15)" },
+                          { value: "女", label: "坤造 (女)", icon: Moon, color: "text-purple-400", glow: "rgba(192,132,252,0.15)" },
+                          { value: "", label: "太极 (未知)", icon: Sparkles, color: "text-amber-200/50", glow: "rgba(251,191,36,0.08)" }
+                        ].map((item) => {
+                          const isActive = formData.gender === item.value;
+                          const Icon = item.icon;
+                          return (
+                            <button
+                              key={item.value}
+                              type="button"
+                              onClick={() => setFormData({ ...formData, gender: item.value })}
+                              className={`relative flex flex-col items-center justify-center py-2 px-1 rounded-xl transition-all duration-500 gap-1 overflow-hidden select-none cursor-pointer ${
+                                isActive 
+                                  ? "text-white border border-amber-500/30 bg-[#160f22]/60" 
+                                  : "text-amber-100/40 hover:text-amber-100 hover:bg-white/5 border border-transparent"
+                              }`}
+                              style={isActive ? { boxShadow: `0 0 15px ${item.glow}` } : {}}
+                            >
+                              {isActive && (
+                                <motion.div 
+                                  layoutId="activeGenderGlow"
+                                  className="absolute inset-0 bg-gradient-to-b from-amber-500/5 to-[#2d1b4e]/20 -z-10 pointer-events-none"
+                                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                                />
+                              )}
+                              <Icon className={`w-3.5 h-3.5 ${item.color} ${isActive ? 'scale-110' : 'scale-100'} transition-transform duration-500`} />
+                              <span className="text-[9px] font-serif tracking-wider">{item.label}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                     <InputGroup label="出生日期" type="date" value={formData.birthDate || ""} onChange={(v) => setFormData({ ...formData, birthDate: v })} />
                     <InputGroup label="出生时间" type="time" value={formData.birthTime || ""} onChange={(v) => setFormData({ ...formData, birthTime: v })} />
@@ -180,10 +204,15 @@ export default function UserProfileModal({
 
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-black/40 border border-white/5 rounded-2xl p-3 flex flex-col items-center justify-center text-center">
-      <span className="text-[9px] uppercase tracking-widest text-amber-500/40 mb-1">{label}</span>
+    <motion.div 
+      whileHover={{ y: -3, scale: 1.02 }}
+      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+      className="bg-gradient-to-b from-[#181122]/60 to-[#0c0714]/80 backdrop-blur-xl border border-amber-500/15 rounded-2xl p-3 flex flex-col items-center justify-center text-center shadow-lg hover:border-amber-500/40 transition-colors duration-500 relative group overflow-hidden select-none"
+    >
+      <div className="absolute inset-0 bg-gradient-to-tr from-amber-500/0 via-amber-500/2 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+      <span className="text-[9px] uppercase tracking-[0.2em] font-serif text-amber-500/50 mb-1 group-hover:text-amber-500/75 transition-colors">{label}</span>
       <span className="text-xs font-serif text-amber-100 line-clamp-1">{value}</span>
-    </div>
+    </motion.div>
   );
 }
 
@@ -196,13 +225,13 @@ function InputGroup({ label, value, onChange, type = "text", placeholder = "" }:
 }) {
   return (
     <div className="space-y-1.5">
-      <label className="text-[10px] text-amber-100/40 ml-1">{label}</label>
+      <label className="text-[10px] text-amber-100/40 ml-1 font-serif tracking-[0.15em] uppercase">{label}</label>
       <input
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-amber-100 outline-none focus:border-amber-500/40 transition-all placeholder:text-white/5 text-sm [color-scheme:dark]"
+        className="w-full bg-[#080510]/40 backdrop-blur-3xl border border-white/10 rounded-2xl px-4 py-3 text-amber-100 outline-none focus:border-amber-500/40 focus:bg-[#080510]/60 focus:shadow-[0_0_30px_rgba(245,158,11,0.06)] transition-all placeholder:text-white/10 text-sm [color-scheme:dark]"
       />
     </div>
   );

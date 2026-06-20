@@ -67,6 +67,8 @@ export const MysticImage = ({
   const loadingRef = useRef(false);
   const currentRequestRef = useRef<string | null>(null);
   const imageUrlRef = useRef<string | null>(null);
+  const isMountedRef = useRef(true);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const generateImage = useCallback(async (force = false) => {
     const requestKey = `${prompt}_${aspectRatio}_${seed}`;
@@ -78,8 +80,15 @@ export const MysticImage = ({
     setError(null);
     setIsFallback(false);
     
-    const globalTimeout = setTimeout(() => {
-      if (loadingRef.current && currentRequestRef.current === requestKey) {
+    const cleanTimeout = () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+    };
+
+    timeoutRef.current = setTimeout(() => {
+      if (isMountedRef.current && loadingRef.current && currentRequestRef.current === requestKey) {
         const fb = getFallbackImageUrl(prompt, aspectRatio);
         imageUrlRef.current = fb;
         setImageUrl(fb);
@@ -102,7 +111,8 @@ export const MysticImage = ({
       
       const localCache = await getFromIndexedDB(`mystic_img_${docId}`);
       if (localCache) {
-        clearTimeout(globalTimeout);
+        cleanTimeout();
+        if (!isMountedRef.current) return;
         imageUrlRef.current = localCache as string;
         setImageUrl(localCache as string);
         setIsLoading(false);
@@ -118,26 +128,39 @@ export const MysticImage = ({
         await saveToIndexedDB(`mystic_img_${docId}`, base64Data);
       } catch (_) { /* silently ignore local cache failures */ }
       
-      clearTimeout(globalTimeout);
+      cleanTimeout();
+      if (!isMountedRef.current) return;
       imageUrlRef.current = base64Data;
       setImageUrl(base64Data);
     } catch (err: any) {
-      clearTimeout(globalTimeout);
+      cleanTimeout();
+      if (!isMountedRef.current) return;
       const fb = getFallbackImageUrl(prompt, aspectRatio);
       imageUrlRef.current = fb;
       setImageUrl(fb);
       setIsFallback(true);
     } finally {
-      setIsLoading(false);
-      loadingRef.current = false;
+      if (isMountedRef.current) {
+        setIsLoading(false);
+        loadingRef.current = false;
+      }
     }
   }, [prompt, aspectRatio, seed]);
 
   useEffect(() => {
+    isMountedRef.current = true;
     const timer = setTimeout(() => {
-      generateImage();
+      if (isMountedRef.current) {
+        generateImage();
+      }
     }, 0);
-    return () => clearTimeout(timer);
+    return () => {
+      isMountedRef.current = false;
+      clearTimeout(timer);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
   }, [generateImage]);
 
   return (

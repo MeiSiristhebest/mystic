@@ -14,6 +14,8 @@ import {
   ChevronRight,
   BookOpen
 } from "lucide-react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 // Components & Hooks
 import { MysticImage } from "./MysticImage";
@@ -27,6 +29,11 @@ import { useAppStore } from "@/lib/store";
 import { usePosterGenerator } from "@/hooks/usePosterGenerator";
 import { cleanMysticContent } from "@/lib/utils";
 import { getCloudDailyOracle, saveCloudDailyOracle } from "@/app/actions/aiActions";
+import { getDailyOraclePrompt } from "@/lib/prompts";
+
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 export function TodayView() {
   const { profile, isLoaded: isProfileLoaded } = useUserProfile();
@@ -40,6 +47,7 @@ export function TodayView() {
   const setActiveTab = useAppStore((state) => state.setActiveTab);
   const setHandoff = useAppStore((state: any) => state.setHandoff);
   const posterRef = useRef<HTMLDivElement>(null);
+  const textRef = useRef<HTMLParagraphElement>(null);
   
   const [dailyData, setDailyData] = useState<{
     date: string;
@@ -74,6 +82,11 @@ export function TodayView() {
       fullDateDisplay: `${year}年${month}月${day}日`
     };
   }, []);
+
+  const oracleCharacters = useMemo(() => {
+    if (!dailyData?.reading) return [];
+    return Array.from(cleanMysticContent(dailyData.reading).replace(/「|」/g, ''));
+  }, [dailyData]);
 
   const { addEntry } = useJourney();
   const [isInscribing, setIsInscribing] = useState(false);
@@ -131,30 +144,7 @@ export function TodayView() {
         console.warn("Cloud cache read failed", e);
       }
       
-      const prompt = `
-<instruction>
-你是一位超然、充满大智慧的阿卡夏哲人与心灵导师。请为求问者生成一份极简、深邃、直击灵魂的今日灵感。
-【创作法则】：
-1. 每日神谕（oracle）：绝对不要生硬罗列求问者的命理术语或八字符号（不要出现类似庚金、四柱、自性化等生硬学术词汇）。请引述一句契合当下意境的伟大哲人名言（如荣格、尼采、赫尔曼·黑塞、老子等），或由你原创一两句极具诗意与生命哲理的箴言。字数控制在 25-45 字以内，意境悠远，给人启迪。
-2. 每日能量建议（energySuggestion）：不要再说千篇一律的“保持宁静”或“冥想30分钟”。请结合今日的星空运行意象与灵性气场，给出具有生活实操感、温暖且睿智的一句话心灵指引（例如：针对今日气场，建议如何看待得失、如何与人沟通、或推荐一种微小温暖的生活仪式）。
-
-请严格输出纯净的 JSON 格式，不要包含任何多余文字或 Markdown 标记。
-</instruction>
-
-<user_state>
-探索者：${profile.name || "旅人"} | 气场：${profile.mbti || "灵性探索者"}
-</user_state>
-
-<output_schema>
-{
-  "subMotto": "4-8字诗意四字短句（如：微光破晓 / 观照静默 / 风过疏竹 / 守护温柔）",
-  "oracle": "一两句极具深度的哲学箴言或名言（25-45字）",
-  "imagePrompt": "A breathtaking high-end mystical wallpaper prompt, cosmic stars, subtle sacred geometry, cinematic lighting",
-  "cosmicEnergy": "今日宇宙共振词（如：沉寂 / 蜕变 / 涌动 / 生长 / 和解）",
-  "energySuggestion": "一句温暖睿智、富于生活实操感与灵性觉察的行动指引"
-}
-</output_schema>
-      `;
+      const prompt = getDailyOraclePrompt(profile);
 
       let fullOutput = "";
       try {
@@ -195,6 +185,32 @@ export function TodayView() {
     initDaily();
   }, [isLoaded, profile, todayStr, stream]);
 
+  useEffect(() => {
+    if (!dailyData?.reading || !textRef.current) return;
+
+    const chars = textRef.current.querySelectorAll(".reveal-char");
+    if (chars.length === 0) return;
+
+    const anim = gsap.to(chars, {
+      opacity: 1,
+      stagger: 0.05,
+      ease: "power1.out",
+      scrollTrigger: {
+        trigger: textRef.current,
+        start: "top 85%",
+        end: "bottom 55%",
+        scrub: true,
+      }
+    });
+
+    return () => {
+      if (anim.scrollTrigger) {
+        anim.scrollTrigger.kill();
+      }
+      anim.kill();
+    };
+  }, [dailyData?.reading]);
+
   if (isInitializing) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6">
@@ -211,13 +227,13 @@ export function TodayView() {
       className="max-w-6xl mx-auto px-6 py-8 md:py-12 space-y-10 md:space-y-12"
     >
       {/* 1. Header: Date & Greeting */}
-      <header className="space-y-3">
+      <header className="space-y-3 max-w-4xl">
         <div className="flex items-center gap-3 text-[10px] text-[#C9A84C]/60 font-serif tracking-[0.3em] uppercase">
           <span>{fullDateDisplay}</span>
           <span className="w-1 h-1 rounded-full bg-[#C9A84C]/40" />
           <span>宇宙能量：{dailyData?.cosmicEnergy}</span>
         </div>
-        <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif text-[#E8DFB8]/90 tracking-tight leading-none">
+        <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif text-[#E8DFB8]/90 tracking-tight leading-[1.1] max-w-3xl">
           {greeting}, <span className="gold-gradient-text italic font-light pr-3 inline-block">{profile.name || "旅人"}</span>
         </h1>
       </header>
@@ -234,7 +250,7 @@ export function TodayView() {
           </div>
           
           <div className="absolute inset-0 bg-gradient-to-t from-[#050308] via-[#050308]/65 to-[#050308]/30 z-10" />
-          <div className="absolute inset-0 opacity-30 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] pointer-events-none" />
+          <div className="absolute inset-0 opacity-30 mix-blend-overlay bg-[url('/patterns/stardust.png')] pointer-events-none" />
 
           <div className="relative z-20 flex flex-col items-center justify-center p-6 md:p-12 text-center space-y-8 my-auto">
             <div className="space-y-2">
@@ -242,8 +258,21 @@ export function TodayView() {
               <span className="text-[10px] font-serif tracking-[0.8em] text-[#C9A84C] uppercase font-medium">今日神谕</span>
             </div>
 
-            <p className="text-xl md:text-2xl lg:text-3xl font-serif text-[#E8DFB8] leading-[2] tracking-[0.03em] italic max-w-4xl drop-shadow-[0_0_40px_rgba(201,168,76,0.3)] px-4 md:px-8">
-              「 {dailyData?.reading ? cleanMysticContent(dailyData.reading).replace(/「|」/g, '') : "正在感应阿卡夏场域..."} 」
+            <p 
+              ref={textRef}
+              className="text-xl md:text-2xl lg:text-3xl font-serif text-[#E8DFB8] leading-[2] tracking-[0.03em] italic max-w-4xl drop-shadow-[0_0_40px_rgba(201,168,76,0.3)] px-4 md:px-8"
+            >
+              「{' '}
+              {oracleCharacters.length > 0 ? (
+                oracleCharacters.map((char, index) => (
+                  <span key={index} className="reveal-char opacity-15 inline-block">
+                    {char}
+                  </span>
+                ))
+              ) : (
+                <span className="opacity-40">正在感应阿卡夏场域...</span>
+              )}
+              {' '}」
             </p>
 
             <div className="flex flex-col items-center gap-6 w-full pt-2">
@@ -317,14 +346,17 @@ export function TodayView() {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <button 
+          <motion.button 
+            whileHover={{ y: -6, scale: 1.01 }}
+            whileTap={{ scale: 0.98 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
             onClick={() => {
               setHandoff({ system: 'tarot', context: '今日单牌占卜' });
               setActiveTab("explore");
             }}
-            className="obsidian-glass border border-[#C9A84C]/25 hover:border-[#C9A84C]/50 rounded-[2.5rem] p-8 text-left group transition-all duration-500 min-h-[220px] flex flex-col justify-between relative overflow-hidden shadow-xl cursor-pointer"
+            className="obsidian-glass border border-[#C9A84C]/25 hover:border-[#C9A84C]/50 rounded-[2.5rem] p-8 text-left group min-h-[220px] flex flex-col justify-between relative overflow-hidden shadow-xl cursor-pointer w-full"
           >
-             <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 group-hover:scale-110 group-hover:rotate-12 transition-all duration-700 pointer-events-none">
+             <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-25 group-hover:scale-115 group-hover:rotate-12 transition-all duration-700 pointer-events-none">
               <Sparkles className="w-24 h-24 text-[#C9A84C]" />
             </div>
             <div className="space-y-1">
@@ -335,13 +367,16 @@ export function TodayView() {
               <h4 className="text-2xl md:text-3xl font-serif text-[#E8DFB8] tracking-wider group-hover:text-white transition-colors font-medium">每日单牌占卜</h4>
               <p className="text-xs text-[#E8DFB8]/60 font-serif leading-relaxed max-w-xs font-light">抽取今日灵性指引，洞察潜意识波澜。</p>
             </div>
-          </button>
+          </motion.button>
 
-          <button 
+          <motion.button 
+            whileHover={{ y: -6, scale: 1.01 }}
+            whileTap={{ scale: 0.98 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
             onClick={() => setActiveTab("journal")}
-            className="obsidian-glass border border-[#C9A84C]/25 hover:border-[#C9A84C]/50 rounded-[2.5rem] p-8 text-left group transition-all duration-500 min-h-[220px] flex flex-col justify-between relative overflow-hidden shadow-xl cursor-pointer"
+            className="obsidian-glass border border-[#C9A84C]/25 hover:border-[#C9A84C]/50 rounded-[2.5rem] p-8 text-left group min-h-[220px] flex flex-col justify-between relative overflow-hidden shadow-xl cursor-pointer w-full"
           >
-            <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 group-hover:scale-110 group-hover:-rotate-12 transition-all duration-700 pointer-events-none">
+            <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-25 group-hover:scale-115 group-hover:-rotate-12 transition-all duration-700 pointer-events-none">
               <BookOpen className="w-24 h-24 text-[#C9A84C]" />
             </div>
             <div className="space-y-1">
@@ -358,7 +393,7 @@ export function TodayView() {
                   : "尚未有任何灵魂记录，点击开启你的阿卡夏之旅。"}
               </p>
             </div>
-          </button>
+          </motion.button>
         </div>
       </section>
     </motion.div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useAIStream } from './useAIStream';
 import { useJourney } from './useJourney';
 import { Message, DivinationType } from '@/app/types/divination';
@@ -116,6 +116,12 @@ export function useAIChat({
       throw err;
     }
   }, [messages, currentEntryId, stream, addEntry, updateEntry, systemInstruction, type]);
+
+  useEffect(() => {
+    return () => {
+      abort();
+    };
+  }, [abort]);
 
   return {
     messages,

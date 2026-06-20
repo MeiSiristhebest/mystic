@@ -302,7 +302,7 @@ const MysticMarkdown = React.memo(({ content, cards, hideCards, isLoading, cente
     table: ({ children }: any) => <MemoTable>{children}</MemoTable>,
     th: ({ children }: any) => <MemoTh>{children}</MemoTh>,
     td: ({ children }: any) => <MemoTd>{children}</MemoTd>,
-  }), [centered]);
+  }), []);
 
   return (
     <div className="mystic-markdown relative">

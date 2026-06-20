@@ -1,3 +1,48 @@
+## [2026-06-20] Feature: GSAP Scroll-Scrub Typography Reveal & Hero H1 Clamp Layout
+
+- **Decision: GSAP Scroll-Scrub Character Reveal on Daily Oracle (`TodayView.tsx`)**
+  - **Reason**: The daily oracle text card felt static and lacked interactive feedback. We mapped the oracle reading into a character-level array and wrapped each character in a container. Using GSAP ScrollTrigger, we animated the characters' opacity from a baseline of 0.15 to 1.0 sequentially as the user scrolls, creating a tactile editorial reveal.
+- **Decision: Hero H1 Horizontal Clamp Layout (`TodayView.tsx`)**
+  - **Reason**: The greeting H1 header previously spanned full width, which risked wrapping awkwardly into 4-6 lines on specific viewports. We constrained the header width (`max-w-4xl`) and H1 layout (`max-w-3xl`) with customized line heights (`leading-[1.1]`) to guarantee text wraps cleanly in exactly 2-3 lines max.
+
+## [2026-06-20] Feature: Ancient IChing Astrolabe Animations & Loader Garble Restoration
+
+- **Decision: 3-Ring Kinetic Astrolabe Loader (`BreathingLoading.tsx`)**
+  - **Reason**: The loading indicator previously used basic opacity pulses and suffered from a CJK character garbling bug (`"阿卡夏正在感?.."`). We restored the text to `"阿卡夏正在感应中..."` and designed a 3-ring counter-rotating astrolabe structure using staggered Framer Motion values, producing a premium orbital breathing animation.
+- **Decision: Deep Obsidian IChing Hexagram Stacking Canvas (`IChingRitualManager.tsx`)**
+  - **Reason**: The hexagram stacking container used flat CSS boxes that broke visual consistency with the Tarot ritual screen. We upgraded the container to share the project-wide `obsidian-glass` and `liquid-border` utility classes, giving it a glowing mask-based border.
+- **Decision: Metallic Gold Mirror Finish for Yin/Yang Lines (`IChingRitualManager.tsx`)**
+  - **Reason**: The previous lines used basic dark orange gradients (`#B46E14`). We redesigned them to use a polished 3-stop gold mirror gradient (`#C9A84C` -> `#F5E6AD` -> `#C9A84C`), adding glowing drop shadows and spring-based entrance animations.
+- **Decision: Compass/Bagua Spin Animation Integration (`IChingRitualManager.tsx` / `globals.css`)**
+  - **Reason**: The background Bagua Compass element was static because the animation token `--animate-spin-slow` was not registered in the stylesheet. We registered `--animate-spin-slow: spin 45s linear infinite` to activate the rotating bagua background.
+- **Decision: Spring Recoil Action Button (`IChingRitualManager.tsx`)**
+  - **Reason**: Replaced the static toss button with a dynamic spring button supporting click compression.
+
+## [2026-06-20] Feature: UI/UX Pro Max Custom Toggle Cards & Spring Physics Integration
+
+- **Decision: Replace Native Select with Yin/Yang/Taiji Toggle Cards (`UserProfileModal.tsx`)**
+  - **Reason**: The native dropdown select element for gender felt generic and disrupted the mystical luxury aesthetic. We rebuilt it as a custom three-state toggle group (乾造/坤造/太极) styled with amber and purple ambient glows, sun/moon icon indicators, and smooth state transitions.
+- **Decision: Interactive Bento Stat Card Physics & Glow Effects (`UserProfileModal.tsx`)**
+  - **Reason**: Standard card panels felt flat. Upgraded the MBTI/Zodiac cards to a premium dark gradient obsidian glass layer featuring 3D spring hover lifting (`y: -3px`) and subtle stardust light leaks.
+- **Decision: Framer Motion Spring Physics for Quick Action Buttons (`TodayView.tsx`)**
+  - **Reason**: The static CSS hover filters lacked tactile feedback. Replaced the "Daily Tarot" and "Akashic Journal" quick start buttons with `<motion.button>` elements configured with custom spring inertia (`stiffness: 300`, `damping: 20`), providing realistic physical recoil and scale magnification on hover/tap.
+- **Decision: Standardize Inputs to Custom Obsidian Glass Glassmorphism**
+  - **Reason**: Kept native styling intact while refining focus borders and shadow glows to match the design language.
+
+## [2026-06-20] Feature: Abort Cascading, Strict State Guards & Server Action Timeouts
+
+- **Decision: Cascade req.signal to upstream fetches (`app/api/ai/route.ts`)**
+  - **Reason**: When a user closes or changes pages, client-side aborts were not forwarded to the backend. The edge handler now hooks `req.signal` directly into upstream fetch calls to Agnes AI `/chat/completions`, saving significant API billing.
+- **Decision: Component-level unmount abort cleanup (`useAIStream`, `useAIChat`, `CardMeaningModal`, `DiscoveryView`)**
+  - **Reason**: If users navigate away or quickly restart actions, active streams and requests continued fetching in the background, risking React memory leaks and unnecessary network resource waste.
+  - **Action**: Injected `useEffect` cleanup hook to trigger `abort()` when these custom hooks/components unmount. Used local `AbortController` in `CardMeaningModal`, `DiscoveryView`, and `MysticTarot`.
+- **Decision: isMounted guards and timeout cleanup in `MysticImage.tsx`**
+  - **Reason**: The image generator component had a 15-second fallback timeout, but it was not cleared on unmount. This triggered state updates on unmounted components if the page was closed before generation finished.
+  - **Action**: Stored the timer in `timeoutRef` and added `isMountedRef` to guard all async state updates.
+- **Decision: Server Action timeouts (`aiActions.ts`)**
+  - **Reason**: Prevent long-running serverless threads from hanging on Slow API/Image fetches.
+  - **Action**: Introduced `AbortSignal.timeout` (25s / 15s) in both fetch actions.
+
 ## [2026-05-18] Feature: Multi-Pass Markdown AST Purification, Nested Arc Fan Physics & Complete Occult Spread Geometry
 
 - **Decision: Universal `splitHeadingLine` Function for Zero-Hardcode AST Purification (`TarotComponents.tsx`)**

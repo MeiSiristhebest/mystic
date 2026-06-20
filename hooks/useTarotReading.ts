@@ -55,9 +55,35 @@ export function useTarotReading() {
         fullResponse += chunk;
       }
 
-      const data = JSON.parse(fullResponse);
-      const finalContent = data.reading;
-      setSoulMotto(data.soulMotto);
+      let finalContent = "";
+      let soulMottoStr = "";
+
+      try {
+        const cleanedResponse = fullResponse.replace(/```json|```/g, '').trim();
+        const data = JSON.parse(cleanedResponse);
+        finalContent = data.reading || "";
+        soulMottoStr = data.soulMotto || "";
+      } catch (err) {
+        console.warn("[JSON Parse Failed] Attempting regular expression recovery...", err);
+        const readingMatch = fullResponse.match(/"reading"\s*:\s*"([\s\S]*?)"(?=\s*,\s*"soulMotto"|\s*\})/);
+        const mottoMatch = fullResponse.match(/"soulMotto"\s*:\s*"([\s\S]*?)"/);
+        
+        if (readingMatch) {
+          finalContent = readingMatch[1]
+            .replace(/\\n/g, "\n")
+            .replace(/\\"/g, '"');
+        } else {
+          finalContent = fullResponse;
+        }
+
+        if (mottoMatch) {
+          soulMottoStr = mottoMatch[1].replace(/\\"/g, '"');
+        } else {
+          soulMottoStr = "探索未知，觉察当下。";
+        }
+      }
+
+      setSoulMotto(soulMottoStr);
       setMessages([{ role: 'model', content: finalContent }]);
 
       const displayTitle = question 

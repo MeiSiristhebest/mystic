@@ -96,12 +96,15 @@ export const deleteFromIndexedDB = (key: string) => deleteFromStore('reports', k
  */
 export const zustandStorage = {
   getItem: async (name: string): Promise<string | null> => {
+    if (typeof window === 'undefined') return null;
     return (await getFromStore('app-state', name)) || null;
   },
   setItem: async (name: string, value: string): Promise<void> => {
+    if (typeof window === 'undefined') return;
     await saveToStore('app-state', name, value);
   },
   removeItem: async (name: string): Promise<void> => {
+    if (typeof window === 'undefined') return;
     await deleteFromStore('app-state', name);
   },
 };

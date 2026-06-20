@@ -10,11 +10,18 @@ import {
   clearStore 
 } from '@/lib/storage';
 import { JourneyEntry, JourneyDetails } from '@/app/types/divination';
+import { useAppStore } from '@/lib/store';
 
 const LEGACY_KEY = 'akasha_journey_v3';
 
 export function useJourney() {
-  const [entries, setEntries] = useState<JourneyEntry[]>([]);
+  const entries = useAppStore(state => state.entries);
+  const setEntries = useAppStore(state => state.setEntries);
+  const addStoreEntry = useAppStore(state => state.addStoreEntry);
+  const updateStoreEntry = useAppStore(state => state.updateStoreEntry);
+  const deleteStoreEntry = useAppStore(state => state.deleteStoreEntry);
+  const clearStoreJourney = useAppStore(state => state.clearStoreJourney);
+  
   const [isLoaded, setIsLoaded] = useState(false);
 
   const loadJourney = useCallback(async () => {
@@ -51,7 +58,7 @@ export function useJourney() {
     } finally {
       setIsLoaded(true);
     }
-  }, []);
+  }, [setEntries]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -69,7 +76,7 @@ export function useJourney() {
     };
     
     // Optimistic update
-    setEntries(prev => [newEntry, ...prev]);
+    addStoreEntry(newEntry);
     // Atomic save
     await saveToStore('journey-entries', id, newEntry);
     return id;
@@ -93,18 +100,18 @@ export function useJourney() {
     }
 
     // 3. Update Memory State
-    setEntries(prev => prev.map(e => e.id === id ? updatedEntry : e));
+    updateStoreEntry(id, updatedEntry);
     // 4. Update Database
     await saveToStore('journey-entries', id, updatedEntry);
   };
 
   const deleteEntry = async (id: string) => {
-    setEntries(prev => prev.filter(e => e.id !== id));
+    deleteStoreEntry(id);
     await deleteFromStore('journey-entries', id);
   };
 
   const clearJourney = async () => {
-    setEntries([]);
+    clearStoreJourney();
     await clearStore('journey-entries');
   };
 

@@ -4,9 +4,10 @@
  */
 
 export function getCryptoRandom(): number {
-  if (typeof window !== 'undefined' && window.crypto && window.crypto.getRandomValues) {
+  const globalCrypto = typeof crypto !== 'undefined' ? crypto : (typeof window !== 'undefined' ? window.crypto : null);
+  if (globalCrypto && globalCrypto.getRandomValues) {
     const buffer = new Uint32Array(1);
-    window.crypto.getRandomValues(buffer);
+    globalCrypto.getRandomValues(buffer);
     return buffer[0] / (0xffffffff + 1);
   }
   return Math.random();

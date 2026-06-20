@@ -1,7 +1,7 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { generateContentStream, AKASHA_PERSONA, AIProvider } from '@/lib/ai';
 
-export function useAIStream(options: { model?: string, config?: any, provider?: AIProvider } = {}) {
+export function useAIStream(options: { model?: string, config?: any, provider?: AIProvider, timeoutMs?: number } = {}) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -19,12 +19,13 @@ export function useAIStream(options: { model?: string, config?: any, provider?: 
     }
     abortControllerRef.current = new AbortController();
     
-    // Set a timeout of 120 seconds (extended for Pro models and complex rituals)
+    // Set dynamic timeout (fallback to 120 seconds)
+    const timeoutMs = options.timeoutMs || 120000;
     const timeoutId = setTimeout(() => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort(new Error('Request timed out'));
       }
-    }, 120000);
+    }, timeoutMs);
 
     try {
       const responseStream = generateContentStream(
@@ -51,7 +52,7 @@ export function useAIStream(options: { model?: string, config?: any, provider?: 
       setIsLoading(false);
       abortControllerRef.current = null;
     }
-  }, [options.model, options.config, options.provider]);
+  }, [options.model, options.config, options.provider, options.timeoutMs]);
 
   const abort = useCallback(() => {
     if (abortControllerRef.current) {
@@ -59,6 +60,14 @@ export function useAIStream(options: { model?: string, config?: any, provider?: 
       abortControllerRef.current = null;
       setIsLoading(false);
     }
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, []);
 
   return { stream, isLoading, error, abort };

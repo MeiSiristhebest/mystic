@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { zustandStorage } from '@/lib/storage';
-import { DivinationHandoff } from '@/app/types/divination';
+import { DivinationHandoff, JourneyEntry } from '@/app/types/divination';
 
 export interface LifeEvent {
   id: string;
@@ -70,6 +70,14 @@ interface AppState {
   setLoaded: (loaded: boolean) => void;
   handoff: DivinationHandoff | null;
   setHandoff: (handoff: DivinationHandoff | null) => void;
+
+  // Global Journey Entries State Hoisting
+  entries: JourneyEntry[];
+  setEntries: (entries: JourneyEntry[]) => void;
+  addStoreEntry: (entry: JourneyEntry) => void;
+  updateStoreEntry: (id: string, entry: JourneyEntry) => void;
+  deleteStoreEntry: (id: string) => void;
+  clearStoreJourney: () => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -110,10 +118,21 @@ export const useAppStore = create<AppState>()(
       clearProfile: () => set({ profile: DEFAULT_PROFILE }),
       handoff: null,
       setHandoff: (handoff: DivinationHandoff | null) => set({ handoff }),
+
+      entries: [],
+      setEntries: (entries) => set({ entries }),
+      addStoreEntry: (entry) => set((state) => ({ entries: [entry, ...state.entries] })),
+      updateStoreEntry: (id, entry) => set((state) => ({
+        entries: state.entries.map((e) => (e.id === id ? entry : e)),
+      })),
+      deleteStoreEntry: (id) => set((state) => ({
+        entries: state.entries.filter((e) => e.id !== id),
+      })),
+      clearStoreJourney: () => set({ entries: [] }),
     }),
     {
       name: 'mystic-app-storage',
-      storage: typeof window !== 'undefined' ? createJSONStorage(() => zustandStorage) : undefined,
+      storage: createJSONStorage(() => zustandStorage),
       partialize: (state) => ({ profile: state.profile, activeTab: state.activeTab, hasAcceptedTerms: state.hasAcceptedTerms }),
       onRehydrateStorage: () => (state) => {
         if (state && typeof window !== 'undefined') {

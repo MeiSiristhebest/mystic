@@ -109,7 +109,8 @@ export async function generateMysticImage(prompt: string, aspectRatio: any, docI
     };
     const size = sizeMap[aspectRatio] || "1024x1024";
 
-    const response = await fetch("https://apihub.agnes-ai.com/v1/images/generations", {
+    const agnesApiUrl = (process.env.AGNES_API_URL || "https://apihub.agnes-ai.com/v1").replace(/\/$/, "");
+    const response = await fetch(`${agnesApiUrl}/images/generations`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -123,6 +124,7 @@ export async function generateMysticImage(prompt: string, aspectRatio: any, docI
           response_format: "url",
         },
       }),
+      signal: AbortSignal.timeout(25000),
     });
 
     if (!response.ok) {
@@ -136,8 +138,10 @@ export async function generateMysticImage(prompt: string, aspectRatio: any, docI
       throw new Error("No image URL received from Agnes");
     }
 
-    // Fetch the image URL and convert to base64 for Firestore storage
-    const imgResp = await fetch(imageUrl);
+    // Fetch the image URL and convert to base64 for Firestore storage with a timeout
+    const imgResp = await fetch(imageUrl, {
+      signal: AbortSignal.timeout(15000),
+    });
     const imgBuffer = Buffer.from(await imgResp.arrayBuffer());
     base64Data = `data:image/png;base64,${imgBuffer.toString("base64")}`;
   } else {

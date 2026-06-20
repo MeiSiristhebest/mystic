@@ -265,7 +265,10 @@ export function CardMeaningModal({ isOpen, onClose, card, cache, setCache }: Car
   const { isGeneratingPoster, handleGeneratePoster } = usePosterGenerator();
 
   useEffect(() => {
-    setMounted(true);
+    const timer = setTimeout(() => {
+      setMounted(true);
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
@@ -283,6 +286,7 @@ export function CardMeaningModal({ isOpen, onClose, card, cache, setCache }: Car
       }, 0);
       let full = "";
       let isSubscribed = true;
+      const controller = new AbortController();
       const runAI = async () => {
         try {
           const prompt = `<system_instruction>
@@ -338,7 +342,7 @@ export function CardMeaningModal({ isOpen, onClose, card, cache, setCache }: Car
 ### 🌟 破局指引与学者寄语
 （给出 3-4 条极具实操性的能量调和与行动建议，最后以一段温暖、宽容且赋能的“学者寄语”收尾）
 </output_format>`;
-          for await (const chunk of generateContentStream(prompt, AKASHA_PERSONA)) {
+          for await (const chunk of generateContentStream(prompt, AKASHA_PERSONA, controller.signal)) {
             if (!isSubscribed) return;
             full += chunk;
             setDeepMeaning(full);
@@ -346,7 +350,11 @@ export function CardMeaningModal({ isOpen, onClose, card, cache, setCache }: Car
           if (isSubscribed && cache && setCache) {
             setCache({ ...cache, [cacheKey]: full });
           }
-        } catch (err) {
+        } catch (err: any) {
+          if (err.name === 'AbortError') {
+            console.log("CardMeaningModal generation aborted");
+            return;
+          }
           console.error(err);
           if (isSubscribed) setDeepMeaning("深层链接感应波动，请检查网络或稍后再试...");
         } finally {
@@ -357,6 +365,7 @@ export function CardMeaningModal({ isOpen, onClose, card, cache, setCache }: Car
 
       return () => {
         isSubscribed = false;
+        controller.abort();
       };
     }
   }, [isOpen, card, cache, setCache]);

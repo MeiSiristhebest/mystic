@@ -26,7 +26,7 @@ export default function TarotRitualManager({ cards, spread, onComplete }: TarotR
   const [isMobile, setIsMobile] = useState(false);
 
   // 78 dummy cards for the full tarot deck
-  const fullDeck = useRef(Array.from({ length: 78 }, (_, i) => i)).current;
+  const fullDeck = Array.from({ length: 78 }, (_, i) => i);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);

@@ -1,7 +1,7 @@
 export const MODELS = {
-  PRO: "gemini-3.1-pro-preview",       // 25 RPM / 2M TPM / 250 RPD
-  FLASH: "gemini-3-flash-preview",     // 1K RPM / 2M TPM / 10K RPD
-  LITE: "gemini-3.1-flash-lite",       // 4K RPM / 4M TPM / 150K RPD
+  PRO: process.env.GEMINI_MODEL_PRO || "gemini-3.1-pro-preview",       // 25 RPM / 2M TPM / 250 RPD
+  FLASH: process.env.GEMINI_MODEL_FLASH || "gemini-3-flash-preview",   // 1K RPM / 2M TPM / 10K RPD
+  LITE: process.env.GEMINI_MODEL_LITE || "gemini-3.1-flash-lite",     // 4K RPM / 4M TPM / 150K RPD
 } as const;
 
 export const FALLBACK_CHAIN = [
@@ -11,8 +11,8 @@ export const FALLBACK_CHAIN = [
 ];
 
 export const AGNES_MODELS = {
-  FLASH: "agnes-2.0-flash",
-  IMAGE: "agnes-image-2.0-flash",
+  FLASH: process.env.AGNES_MODEL_FLASH || "agnes-2.0-flash",
+  IMAGE: process.env.AGNES_MODEL_IMAGE || "agnes-image-2.0-flash",
 } as const;
 
 export const DEFAULT_MODEL = AGNES_MODELS.FLASH;
@@ -39,12 +39,14 @@ import { AKASHA_PERSONA } from './prompts/personas';
 export async function generateContent(
   prompt: string | any[],
   systemInstruction: string = AKASHA_PERSONA,
-  config: any = {}
+  config: any = {},
+  signal?: AbortSignal
 ): Promise<string> {
   const response = await fetch('/api/ai', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ prompt, systemInstruction, config, provider: config.provider }),
+    signal
   });
 
   if (!response.ok) {

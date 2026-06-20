@@ -40,6 +40,15 @@ export function MysticTarot({ initialHandoff, clearHandoff }: MysticTarotProps =
   const [reading, setReading] = useState("");
   const [currentEntryId, setCurrentEntryId] = useState<string | null>(null);
   const carouselRef = useRef<HTMLDivElement>(null);
+  const matchAbortControllerRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (matchAbortControllerRef.current) {
+        matchAbortControllerRef.current.abort();
+      }
+    };
+  }, []);
 
   const scrollBy = (offset: number) => {
     if (carouselRef.current) {
@@ -55,12 +64,22 @@ export function MysticTarot({ initialHandoff, clearHandoff }: MysticTarotProps =
       return;
     }
     setIsMatching(true);
+    if (matchAbortControllerRef.current) {
+      matchAbortControllerRef.current.abort();
+    }
+    matchAbortControllerRef.current = new AbortController();
+
     try {
       const categoriesMini = CATEGORIES.map(c => `${c.id}:${c.name}`).join('; ');
       const spreadsMini = SPREAD_MODES.map(s => `${s.id}:${s.name}`).join('; ');
       const prompt = `分析用户困惑：“${question}”。从分类表 [${categoriesMini}] 和牌阵表 [${spreadsMini}] 中，推测最完美匹配的一个分类ID和一个牌阵ID。返回严格JSON格式数据：{"categoryId":"...","spreadId":"..."}`;
 
-      const jsonStr = await generateContent(prompt, "你是一位精准的塔罗匹配师，只输出合法JSON。", { responseMimeType: 'application/json' });
+      const jsonStr = await generateContent(
+        prompt, 
+        "你是一位精准的塔罗匹配师，只输出合法JSON。", 
+        { responseMimeType: 'application/json' },
+        matchAbortControllerRef.current.signal
+      );
       const data = JSON.parse(jsonStr);
       if (data.categoryId && CATEGORIES.some(c => c.id === data.categoryId)) {
         setSelectedCategory(data.categoryId);
@@ -72,10 +91,15 @@ export function MysticTarot({ initialHandoff, clearHandoff }: MysticTarotProps =
           carouselRef.current.scrollTo({ left: sIdx * 304, behavior: 'smooth' });
         }
       }
-    } catch (err) {
+    } catch (err: any) {
+      if (err.name === 'AbortError') {
+        console.log("Tarot auto-matching aborted");
+        return;
+      }
       console.error("Matching failed:", err);
     } finally {
       setIsMatching(false);
+      matchAbortControllerRef.current = null;
     }
   };
 

@@ -11,7 +11,8 @@ export const maxDuration = 300;
 async function callAgnesStream(
   messages: Array<{ role: string; content: string }>,
   systemInstruction: string,
-  userConfig: any
+  userConfig: any,
+  signal?: AbortSignal
 ): Promise<Response> {
   const apiKey = process.env.AGNES_API_KEY;
   if (!apiKey) {
@@ -36,13 +37,15 @@ async function callAgnesStream(
     agnesConfig.response_format = { type: "json_object" };
   }
 
-  const response = await fetch("https://apihub.agnes-ai.com/v1/chat/completions", {
+  const agnesApiUrl = (process.env.AGNES_API_URL || "https://apihub.agnes-ai.com/v1").replace(/\/$/, "");
+  const response = await fetch(`${agnesApiUrl}/chat/completions`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify(agnesConfig),
+    signal
   });
 
   if (!response.ok) {
@@ -118,8 +121,11 @@ async function callGemini(
   if (userConfig.temperature !== undefined) generationConfig.temperature = userConfig.temperature;
   if (userConfig.maxOutputTokens !== undefined) generationConfig.maxOutputTokens = userConfig.maxOutputTokens;
 
-  // Execute with Systematic Fallback Logic
-  const fallbackChain = [modelName, ...FALLBACK_CHAIN.filter(m => m !== modelName)];
+  // Execute with Systematic Fallback Logic (Prevent upward scaling to save quota)
+  const currentRank = FALLBACK_CHAIN.indexOf(modelName);
+  const fallbackChain = currentRank !== -1 
+    ? FALLBACK_CHAIN.slice(currentRank)
+    : [modelName, MODELS.LITE];
   let lastError: any = null;
 
   for (let i = 0; i < fallbackChain.length; i++) {
@@ -199,6 +205,50 @@ async function callGemini(
 
 export async function POST(req: NextRequest) {
   try {
+    // 1. Same-Origin Check (Security defense against external theft)
+    const referer = req.headers.get("referer");
+    const origin = req.headers.get("origin");
+    const secFetchSite = req.headers.get("sec-fetch-site");
+    const host = req.headers.get("host");
+
+    let isSameOrigin = false;
+    if (secFetchSite === "same-origin") {
+      isSameOrigin = true;
+    } else if (origin) {
+      try {
+        const originUrl = new URL(origin);
+        const hostUrl = host ? (host.includes("://") ? host : `https://${host}`) : "";
+        if (hostUrl) {
+          const hostParsed = new URL(hostUrl);
+          if (originUrl.host === hostParsed.host) {
+            isSameOrigin = true;
+          }
+        }
+      } catch (e) {
+        // Parse error, fallback to false
+      }
+    } else if (referer) {
+      try {
+        const refererUrl = new URL(referer);
+        const hostUrl = host ? (host.includes("://") ? host : `https://${host}`) : "";
+        if (hostUrl) {
+          const hostParsed = new URL(hostUrl);
+          if (refererUrl.host === hostParsed.host) {
+            isSameOrigin = true;
+          }
+        }
+      } catch (e) {
+        // Parse error, fallback to false
+      }
+    } else {
+      // Fallback for internal / local server invocations where headers are absent
+      isSameOrigin = true;
+    }
+
+    if (!isSameOrigin) {
+      return new Response("Unauthorized: Cross-origin requests are forbidden.", { status: 403 });
+    }
+
     const body = await req.json();
     const {
       prompt,
@@ -211,23 +261,64 @@ export async function POST(req: NextRequest) {
 
     // Route to the appropriate provider
     if (provider === "agnes") {
-      // Convert Gemini-style prompt to Agnes messages format
-      const messages: Array<{ role: string; content: string }> = Array.isArray(prompt)
-        ? prompt.map((m: any) => {
-            if (typeof m === "string") return { role: "user", content: m };
-            if (m.content) return { role: m.role || "user", content: m.content };
-            if (m.text) return { role: m.role || "user", content: m.text };
-            return { role: "user", content: JSON.stringify(m) };
-          })
-        : [{ role: "user", content: prompt }];
+      try {
+        // Convert Gemini-style prompt to Agnes messages format (with role alignment & parts merging)
+        const messages: Array<{ role: string; content: string }> = Array.isArray(prompt)
+          ? prompt.map((m: any) => {
+              const role = m.role === "model" ? "assistant" : (m.role || "user");
+              
+              // Handle parts format of multi-turn chat
+              if (Array.isArray(m.parts)) {
+                const textContent = m.parts.map((p: any) => p.text || "").join("");
+                return { role, content: textContent };
+              }
+              
+              if (typeof m === "string") return { role: "user", content: m };
+              if (m.content) return { role, content: m.content };
+              if (m.text) return { role, content: m.text };
+              return { role, content: typeof m === "object" ? JSON.stringify(m) : String(m) };
+            })
+          : [{ role: "user", content: String(prompt) }];
 
-      return callAgnesStream(messages, systemInstruction, userConfig);
+        return await callAgnesStream(messages, systemInstruction, userConfig, req.signal);
+      } catch (agnesError) {
+        console.warn("[AI Provider Agnes Failed] Attempting disaster recovery fallback to Gemini...", agnesError);
+        if (!process.env.GEMINI_API_KEY) {
+          throw agnesError; // Cannot failover
+        }
+        const cacheKey = generateCacheKey(prompt, userConfig.model || MODELS.LITE, systemInstruction);
+        return await callGemini(prompt, systemInstruction, userConfig, cacheKey);
+      }
     }
 
-    // Default: Gemini (original logic)
-    const cacheKey = generateCacheKey(prompt, userConfig.model || MODELS.LITE, systemInstruction);
-    const result = await callGemini(prompt, systemInstruction, userConfig, cacheKey);
-    return result;
+    // Default: Gemini (with Agnes recovery fallback)
+    try {
+      const cacheKey = generateCacheKey(prompt, userConfig.model || MODELS.LITE, systemInstruction);
+      return await callGemini(prompt, systemInstruction, userConfig, cacheKey);
+    } catch (geminiError) {
+      console.warn("[AI Provider Gemini Failed] Attempting disaster recovery fallback to Agnes...", geminiError);
+      if (!process.env.AGNES_API_KEY) {
+        throw geminiError;
+      }
+      
+      const messages: Array<{ role: string; content: string }> = Array.isArray(prompt)
+        ? prompt.map((m: any) => {
+            const role = m.role === "model" ? "assistant" : (m.role || "user");
+            
+            if (Array.isArray(m.parts)) {
+              const textContent = m.parts.map((p: any) => p.text || "").join("");
+              return { role, content: textContent };
+            }
+            
+            if (typeof m === "string") return { role: "user", content: m };
+            if (m.content) return { role, content: m.content };
+            if (m.text) return { role, content: m.text };
+            return { role, content: typeof m === "object" ? JSON.stringify(m) : String(m) };
+          })
+        : [{ role: "user", content: String(prompt) }];
+
+      return await callAgnesStream(messages, systemInstruction, userConfig, req.signal);
+    }
   } catch (error: any) {
     console.error("AI API Final Error:", error);
     const status = error.status || 500;

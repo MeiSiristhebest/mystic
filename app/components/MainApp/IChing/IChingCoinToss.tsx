@@ -15,7 +15,9 @@ export function IChingCoinToss({ isTossing, results = ["yang", "yang", "yin"], o
 
   useEffect(() => {
     if (isTossing) {
-      setLanded(false);
+      const initTimer = setTimeout(() => {
+        setLanded(false);
+      }, 0);
       triggerHapticVibration([15, 30, 15]);
       
       // Coins land after 1.6s
@@ -26,7 +28,10 @@ export function IChingCoinToss({ isTossing, results = ["yang", "yang", "yin"], o
         setTimeout(() => onTossComplete?.(), 800);
       }, 1600);
 
-      return () => clearTimeout(timer);
+      return () => {
+        clearTimeout(initTimer);
+        clearTimeout(timer);
+      };
     }
   }, [isTossing, onTossComplete]);
 

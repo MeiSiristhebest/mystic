@@ -16,6 +16,7 @@
   --animate-aurora-flow: aurora-flow 30s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
   --animate-liquid-morph: liquid-morph 15s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
   --animate-shimmer: shimmer 4s linear infinite;
+  --animate-spin-slow: spin 45s linear infinite;
 
   --ease-mystic: cubic-bezier(0.2, 0.8, 0.2, 1);
 
