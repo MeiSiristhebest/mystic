@@ -1,3 +1,12 @@
+## [2026-06-20] Hotfix: Agnes Stream Parser & Server-Side Caching Integration
+
+- **Decision: SSE stream parser in `/api/ai` (`app/api/ai/route.ts`)**
+  - **Reason**: When using the new Agnes AI model, the edge route was forwarding the raw Server-Sent Events (SSE) body (e.g. `data: {"id" ...}`) directly to the client. The client-side hooks, expecting raw text chunks, attempted to parse the aggregated output, resulting in `SyntaxError: Unexpected token 'd'` crashes.
+  - **Action**: Intercepted the upstream stream inside `callAgnesStream`. Implemented a robust text-decoding line parser to extract only the text delta content (`choices[0].delta.content`) and stream clean text chunks to the client, mirroring the Gemini behavior.
+- **Decision: Caching integration for Agnes AI**
+  - **Reason**: The previous Agnes route did not check or save to the memory cache, leading to unnecessary redundant API calls and latency.
+  - **Action**: Integrated `getCachedResponse` check and `setCachedResponse` saving in `callAgnesStream` and `POST` handlers using standard cache keys.
+
 ## [2026-06-20] Feature: GSAP Scroll-Scrub Typography Reveal & Hero H1 Clamp Layout
 
 - **Decision: GSAP Scroll-Scrub Character Reveal on Daily Oracle (`TodayView.tsx`)**

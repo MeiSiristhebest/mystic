@@ -12,7 +12,8 @@ async function callAgnesStream(
   messages: Array<{ role: string; content: string }>,
   systemInstruction: string,
   userConfig: any,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  cacheKey?: string
 ): Promise<Response> {
   const apiKey = process.env.AGNES_API_KEY;
   if (!apiKey) {
@@ -53,16 +54,67 @@ async function callAgnesStream(
     return new Response(errorText || "Agnes API error", { status: response.status });
   }
 
-  // Forward the SSE stream directly
+  // Decode SSE stream chunks and enqueue only text content
   const stream = new ReadableStream({
     async start(controller) {
+      const decoder = new TextDecoder();
+      const encoder = new TextEncoder();
+      let buffer = "";
+      let fullContent = "";
+
       try {
         if (response.body) {
           const reader = response.body.getReader();
           while (true) {
             const { done, value } = await reader.read();
             if (done) break;
-            controller.enqueue(value);
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split("\n");
+
+            // Keep the last incomplete line in the buffer
+            buffer = lines.pop() || "";
+
+            for (const line of lines) {
+              const trimmed = line.trim();
+              if (!trimmed) continue;
+              if (trimmed === "data: [DONE]") continue;
+              if (trimmed.startsWith("data: ")) {
+                try {
+                  const jsonStr = trimmed.slice(6).trim();
+                  const parsed = JSON.parse(jsonStr);
+                  const content = parsed.choices?.[0]?.delta?.content || "";
+                  if (content) {
+                    fullContent += content;
+                    controller.enqueue(encoder.encode(content));
+                  }
+                } catch (e) {
+                  // Ignore JSON parsing errors for malformed or incomplete stream chunks
+                }
+              }
+            }
+          }
+
+          // Process remaining buffer
+          if (buffer) {
+            const trimmed = buffer.trim();
+            if (trimmed && trimmed.startsWith("data: ") && trimmed !== "data: [DONE]") {
+              try {
+                const jsonStr = trimmed.slice(6).trim();
+                const parsed = JSON.parse(jsonStr);
+                const content = parsed.choices?.[0]?.delta?.content || "";
+                if (content) {
+                  fullContent += content;
+                  controller.enqueue(encoder.encode(content));
+                }
+              } catch (e) {
+                // Ignore
+              }
+            }
+          }
+
+          if (cacheKey && fullContent) {
+            setCachedResponse(cacheKey, fullContent);
           }
         }
         controller.close();
@@ -280,7 +332,15 @@ export async function POST(req: NextRequest) {
             })
           : [{ role: "user", content: String(prompt) }];
 
-        return await callAgnesStream(messages, systemInstruction, userConfig, req.signal);
+        const cacheKey = generateCacheKey(prompt, userConfig.model || DEFAULT_MODEL, systemInstruction);
+        const cached = getCachedResponse(cacheKey);
+        if (cached) {
+          return new Response(cached, {
+            headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+          });
+        }
+
+        return await callAgnesStream(messages, systemInstruction, userConfig, req.signal, cacheKey);
       } catch (agnesError) {
         console.warn("[AI Provider Agnes Failed] Attempting disaster recovery fallback to Gemini...", agnesError);
         if (!process.env.GEMINI_API_KEY) {
@@ -292,8 +352,8 @@ export async function POST(req: NextRequest) {
     }
 
     // Default: Gemini (with Agnes recovery fallback)
+    const cacheKey = generateCacheKey(prompt, userConfig.model || MODELS.LITE, systemInstruction);
     try {
-      const cacheKey = generateCacheKey(prompt, userConfig.model || MODELS.LITE, systemInstruction);
       return await callGemini(prompt, systemInstruction, userConfig, cacheKey);
     } catch (geminiError) {
       console.warn("[AI Provider Gemini Failed] Attempting disaster recovery fallback to Agnes...", geminiError);
@@ -317,7 +377,7 @@ export async function POST(req: NextRequest) {
           })
         : [{ role: "user", content: String(prompt) }];
 
-      return await callAgnesStream(messages, systemInstruction, userConfig, req.signal);
+      return await callAgnesStream(messages, systemInstruction, userConfig, req.signal, cacheKey);
     }
   } catch (error: any) {
     console.error("AI API Final Error:", error);
