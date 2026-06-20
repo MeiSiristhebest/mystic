@@ -86,7 +86,7 @@ async function callGemini(
   systemInstruction: string,
   userConfig: any,
   cacheKey: string
-): Promise<Response | null> {
+): Promise<Response> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     return new Response("GEMINI_API_KEY is not configured", { status: 500 });
