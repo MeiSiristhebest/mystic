@@ -236,9 +236,13 @@ export function ExploreView() {
             onClose={() => setIsGuideOpen(false)} 
             onHandoff={(data: any) => {
               setIsGuideOpen(false);
-              setHandoffData(data);
-              setSubTab(data.system);
-              window.scrollTo({ top: 0, behavior: 'smooth' });
+              if (data.system === "discovery") {
+                setActiveTab("discovery");
+              } else {
+                setHandoffData(data);
+                setSubTab(data.system);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }
             }} 
           />
         )}

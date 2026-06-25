@@ -9,6 +9,7 @@ import ReactMarkdown from "react-markdown";
 import { generateContentStream, AKASHA_PERSONA } from "@/lib/ai";
 import { AssociationBubble } from "../AssociationBubble";
 import { usePosterGenerator } from "@/hooks/usePosterGenerator";
+import { safeParseAIJSON } from "@/lib/utils";
 
 export function processMysticMarkdownContent(rawText: string): { processedContent: string; association: any; soulMotto: string } {
   let association: any = null;
@@ -27,7 +28,10 @@ export function processMysticMarkdownContent(rawText: string): { processedConten
     .replace(/<thinking>[\s\S]*?(?:<\/thinking>|$)/g, '')
     .replace(/<execute>[\s\S]*?(?:<\/execute>|$)/g, '')
     .replace(/<mystic_association>([\s\S]*?)(?:<\/mystic_association>|$)/g, (_, p1) => {
-      try { association = JSON.parse(p1.trim()); } catch (e) {}
+      const parsed = safeParseAIJSON<any>(p1.trim(), null);
+      if (parsed && (parsed.target || parsed.reason || parsed.system)) {
+        association = parsed;
+      }
       return "";
     });
 

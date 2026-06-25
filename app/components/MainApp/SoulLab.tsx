@@ -20,14 +20,29 @@ interface SoulLabProps {
 
 export default function SoulLab({ initialHandoff, clearHandoff }: SoulLabProps) {
   const [activeTab, setActiveTab] = useState<"shadow" | "subconscious">(
-    initialHandoff?.soulLabTab === "subconscious" || initialHandoff?.system === "subconscious" ? "subconscious" : "shadow"
+    initialHandoff?.modeId === "subconscious" ||
+    initialHandoff?.modeId === "dream" ||
+    initialHandoff?.modeId === "imagination" ||
+    initialHandoff?.soulLabTab === "subconscious" ||
+    initialHandoff?.system === "subconscious"
+      ? "subconscious"
+      : "shadow"
   );
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (initialHandoff?.soulLabTab === "subconscious" || initialHandoff?.system === "subconscious") {
+      if (
+        initialHandoff?.modeId === "subconscious" ||
+        initialHandoff?.modeId === "dream" ||
+        initialHandoff?.modeId === "imagination" ||
+        initialHandoff?.soulLabTab === "subconscious" ||
+        initialHandoff?.system === "subconscious"
+      ) {
         setActiveTab("subconscious");
-      } else if (initialHandoff?.soulLabTab === "shadow") {
+      } else if (
+        initialHandoff?.modeId === "shadow" ||
+        initialHandoff?.soulLabTab === "shadow"
+      ) {
         setActiveTab("shadow");
       }
     }, 0);

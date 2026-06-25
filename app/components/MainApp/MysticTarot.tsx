@@ -2,11 +2,11 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Sparkles, Send, X, RefreshCw, ChevronRight, ChevronLeft, Layers } from "lucide-react";
+import { Sparkles, ChevronRight, ChevronLeft, Layers } from "lucide-react";
 import dynamic from "next/dynamic";
 
 import { CATEGORIES, SPREAD_MODES } from "./constants";
-import { useAIStream } from "@/hooks/useAIStream";
+
 import { useAIChat } from "@/hooks/useAIChat";
 import { generateContent } from "@/lib/ai";
 import { getTarotPrompt } from '@/lib/prompts';

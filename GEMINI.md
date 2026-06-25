@@ -1,3 +1,15 @@
+## [2026-06-20] Feature: Code Cleanliness, Guide Redirections & Tarot UI Optimization
+
+- **Decision: Dead Code Eradication**
+  - **Reason**: The hook `useTarotReading.ts` and the prompt `getTarotJsonPrompt` were legacy remnants that were never imported or consumed by the application, causing codebase bloat.
+  - **Action**: Deleted `hooks/useTarotReading.ts` and removed `getTarotJsonPrompt` from `lib/prompts/divination.ts`. Also sanitized unused imports in `MysticTarot.tsx`.
+- **Decision: Multi-System Orchestrator Redirection & Handoff Alignment**
+  - **Reason**: The AI Omni-Oracle Guide could not correctly redirect users to the "Discovery" Tab (since it was not in the sub-tabs array) or the "Soul Lab" systems (since `soul` was not registered in the orchestrator systems list and `modeId` was not correctly mapped in `SoulLab.tsx`).
+  - **Action**: Updated `ORCHESTRATOR_PERSONA` to include `soul` system with `shadow`, `dream`, and `imagination` modes. Modified `ExploreView.tsx` `onHandoff` to route `discovery` system to the main tab `discovery` via `setActiveTab`, and others to nested explore sub-tabs. Enhanced `SoulLab.tsx` state and effect lifecycle to properly map `modeId` parameters from handoff context.
+- **Decision: Tarot Card Art Preloading & Resilient Association Parsing**
+  - **Reason**: Flickering and blank loading states occurred when cards were flipped in the reveal table due to image loading latency. Also, minor JSON formatting errors from the AI model in `<mystic_association>` blocks caused parser crashes.
+  - **Action**: Integrated an asynchronous image preloader in `TarotRitualManager.tsx` that prefetches card front face artworks during the shuffling and drawing phases. Replaced `JSON.parse` with `safeParseAIJSON<any>` in `TarotComponents.tsx` to handle imperfect JSON outputs in the association block.
+
 ## [2026-06-20] Feature: Unified Model-Agnostic JSON Compatibility System
 
 - **Decision: Centralized Resilient JSON Parsing (`lib/utils.ts`)**

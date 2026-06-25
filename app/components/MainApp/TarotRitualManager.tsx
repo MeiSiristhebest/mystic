@@ -34,6 +34,20 @@ export default function TarotRitualManager({ cards, spread, onComplete }: TarotR
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Silent image preloading for tarot card faces to eliminate load delays during reveal
+  useEffect(() => {
+    if (cards && cards.length > 0) {
+      cards.forEach((card) => {
+        if (card) {
+          const imageUrl = card.image || 
+            `https://www.trustedtarot.com/img/cards/${card.englishName?.toLowerCase().replace(/ /g, '-') || card.id?.toLowerCase()}.png`;
+          const img = new Image();
+          img.src = imageUrl;
+        }
+      });
+    }
+  }, [cards]);
+
   useEffect(() => {
     if (phase === "shuffling") {
       playMysticChime();

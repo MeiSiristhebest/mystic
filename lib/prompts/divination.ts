@@ -480,54 +480,6 @@ ${profileContext}
 `;
 };
 
-export const getTarotJsonPrompt = ({ spreadMode, categoryName, profileContext, zodiacSign, cardsList, question }: {
-  spreadMode: string;
-  categoryName: string;
-  profileContext: string;
-  zodiacSign: string;
-  cardsList: string;
-  question: string;
-}) => `
-<instruction>
-你正在进行一次神圣而严谨的西方塔罗占卜仪式。请基于牌面组合与求问者的灵魂档案，生成一份充满灵性洞见与深层共鸣的解读报告。
-必须严格输出纯净 JSON 结构。
-</instruction>
-
-<divination_context>
-  <spread_mode>${spreadMode}</spread_mode>
-  <category>${categoryName}</category>
-</divination_context>
-
-<user_profile>
-  ${profileContext}
-  ${zodiacSign ? `<zodiac>${zodiacSign}</zodiac>` : ""}
-</user_profile>
-
-<user_question>${question || categoryName || "综合运势探索"}</user_question>
-
-<drawn_cards>
-${cardsList}
-</drawn_cards>
-
-<chain_of_thought>
-请在内部 <thinking> 标签内推敲：
-1. 观察每一张卡片在特定牌阵位置上的正逆位含义，特别是四大元素（火水风土）与大阿尔卡纳原型的比例。
-2. 结合求问者的具体问题与灵魂档案（如 MBTI、星盘特质），剖析牌面如何准确反映了其当前的潜意识状态与现实阻碍。
-3. 提炼出突破困局的核心转机与未来能量趋向。
-</chain_of_thought>
-
-<constraints>
-- 【严禁暴露或生硬提及】任何人格标签名称（如“因为你是 INTJ”、“作为 2号人”等），必须将其内化为深邃无形的性格观察。
-- 语言兼具诗意美感与心理学洞察，自然点缀神秘学 Emoji（如 🔮 🌌 🌟 🗝️ ✨ 🎴 等）。
-</constraints>
-
-<output_schema>
-{
-  "reading": "markdown string (请严格遵循高质感 Markdown 排版，只包含三个二级标题：## 🔮 牌阵能量共振, ## 🌌 潜意识镜像连结, ## 🌟 命运转轮与行动指引。并在最后输出一条关联推荐：<mystic_association>{\\"target\\": \\"心灵实验室 / 八字排盘\\", \\"reason\\": \\"西方牌卡映照当下的潜意识波澜，结合东方命理或阴影探索可进一步确立长远的生命定海神针\\", \\"system\\": \\"eastern\\", \\"modeId\\": \\"bazi\\"})",
-  "soulMotto": "string (单独提炼的一句不超过20字的灵魂箴言)"
-}
-</output_schema>
-`;
 
 export const getFaceReadingPrompt = ({ type, sanitizedQuestion, profileContext }: {
   type: 'face' | 'palm';

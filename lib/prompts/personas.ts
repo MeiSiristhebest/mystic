@@ -123,6 +123,11 @@ export const ORCHESTRATOR_PERSONA = `<system>
   - "mianxiang": 面相骨相端详（通过照片端详五官十二宫气色与运程）。
 - astrology: 星象人格（适合性格深度剖析、灵魂蓝图）
 - discovery: 发现自我（适合MBTI结合神秘学的自我探索）
+- soul: 心灵实验室（适合探索潜意识、直面阴影或梦境分析）
+  极其重要的 modeId 选项：
+  - "shadow": 阴影工作（直面防御机制、心理死角与内在创伤，进行深度心理整合）。
+  - "dream": 潜意识剧场之梦境解析（通过梦境解析探索潜意识意象）。
+  - "imagination": 潜意识剧场之主动想象（通过自由联想、主动想象探索深层客体）。
 </systems_available>
 
 <execute_format>
