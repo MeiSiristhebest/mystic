@@ -1,3 +1,18 @@
+## [2026-06-25] Feature: Resilient Timeout Handling & Image Generation Robustness (Agnes Only)
+
+- **Decision: Immediate Stream Flushing to Bypass Vercel 25s limit**
+  - **Reason**: Vercel Edge functions terminate requests if no initial response headers are sent within 25 seconds. Agnes AI API completions can sometimes be slow to respond.
+  - **Action**: Enqueued a space character `" "` immediately at the start of the `callAgnesStream` ReadableStream inside `app/api/ai/route.ts` to start the HTTP response instantly.
+- **Decision: Server-Side Timeout Boundaries for Agnes Completions**
+  - **Reason**: Prevent requests from hanging indefinitely.
+  - **Action**: Set a strict 18-second fetch timeout to the Agnes completions call. Removed the Gemini fallback to align with the single-model configuration.
+- **Decision: Handled Image Generation Exceptions**
+  - **Reason**: Next.js Server Actions thrown with raw DOM `TimeoutError` exceptions cause 500 Internal Server Errors in Vercel serverless environments.
+  - **Action**: Wrapped Agnes image generation in `app/actions/aiActions.ts` with `try...catch` blocks and threw clean business errors instead.
+- **Decision: Multi-Stage Image Loading & Race Condition Prevention**
+  - **Reason**: The `MysticImage` component ignored subsequent prompt updates when `loadingRef.current` was true, and was vulnerable to stale async responses overwriting newer images.
+  - **Action**: Refactored `MysticImage.tsx` to permit new requests if the prompt key changes, and guarded state updates with `currentRequestRef.current === requestKey` matching to prevent race conditions.
+
 ## [2026-06-20] Feature: Code Cleanliness, Guide Redirections & Tarot UI Optimization
 
 - **Decision: Dead Code Eradication**

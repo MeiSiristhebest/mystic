@@ -39,6 +39,20 @@ async function callAgnesStream(
   }
 
   const agnesApiUrl = (process.env.AGNES_API_URL || "https://apihub.agnes-ai.com/v1").replace(/\/$/, "");
+  
+  // Combine signal with 18-second timeout to abort early and allow recovery/handling
+  let combinedSignal = signal;
+  try {
+    if (typeof AbortSignal.any === "function" && signal) {
+      combinedSignal = AbortSignal.any([signal, AbortSignal.timeout(18000)]);
+    } else {
+      combinedSignal = AbortSignal.timeout(18000);
+    }
+  } catch (e) {
+    console.warn("Could not combine signals, using AbortSignal.timeout", e);
+    combinedSignal = AbortSignal.timeout(18000);
+  }
+
   const response = await fetch(`${agnesApiUrl}/chat/completions`, {
     method: "POST",
     headers: {
@@ -46,7 +60,7 @@ async function callAgnesStream(
       Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify(agnesConfig),
-    signal
+    signal: combinedSignal
   });
 
   if (!response.ok) {
@@ -57,6 +71,9 @@ async function callAgnesStream(
   // Decode SSE stream chunks and enqueue only text content
   const stream = new ReadableStream({
     async start(controller) {
+      // Send an initial space to start the response immediately and prevent Vercel 25s timeout
+      controller.enqueue(new TextEncoder().encode(" "));
+      
       const decoder = new TextDecoder();
       const encoder = new TextEncoder();
       let buffer = "";
@@ -342,12 +359,8 @@ export async function POST(req: NextRequest) {
 
         return await callAgnesStream(messages, systemInstruction, userConfig, req.signal, cacheKey);
       } catch (agnesError) {
-        console.warn("[AI Provider Agnes Failed] Attempting disaster recovery fallback to Gemini...", agnesError);
-        if (!process.env.GEMINI_API_KEY) {
-          throw agnesError; // Cannot failover
-        }
-        const cacheKey = generateCacheKey(prompt, userConfig.model || MODELS.LITE, systemInstruction);
-        return await callGemini(prompt, systemInstruction, userConfig, cacheKey);
+        console.error("[AI Provider Agnes Failed]", agnesError);
+        throw agnesError;
       }
     }
 

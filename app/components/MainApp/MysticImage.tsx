@@ -72,7 +72,9 @@ export const MysticImage = ({
 
   const generateImage = useCallback(async (force = false) => {
     const requestKey = `${prompt}_${aspectRatio}_${seed}`;
-    if (!force && (loadingRef.current || (imageUrlRef.current && currentRequestRef.current === requestKey))) return;
+    
+    // Only skip if it's the exact same request key and it's already loading or loaded
+    if (!force && currentRequestRef.current === requestKey && (loadingRef.current || imageUrlRef.current)) return;
     
     loadingRef.current = true;
     currentRequestRef.current = requestKey;
@@ -112,7 +114,7 @@ export const MysticImage = ({
       const localCache = await getFromIndexedDB(`mystic_img_${docId}`);
       if (localCache) {
         cleanTimeout();
-        if (!isMountedRef.current) return;
+        if (!isMountedRef.current || currentRequestRef.current !== requestKey) return;
         imageUrlRef.current = localCache as string;
         setImageUrl(localCache as string);
         setIsLoading(false);
@@ -129,18 +131,18 @@ export const MysticImage = ({
       } catch (_) { /* silently ignore local cache failures */ }
       
       cleanTimeout();
-      if (!isMountedRef.current) return;
+      if (!isMountedRef.current || currentRequestRef.current !== requestKey) return;
       imageUrlRef.current = base64Data;
       setImageUrl(base64Data);
     } catch (err: any) {
       cleanTimeout();
-      if (!isMountedRef.current) return;
+      if (!isMountedRef.current || currentRequestRef.current !== requestKey) return;
       const fb = getFallbackImageUrl(prompt, aspectRatio);
       imageUrlRef.current = fb;
       setImageUrl(fb);
       setIsFallback(true);
     } finally {
-      if (isMountedRef.current) {
+      if (isMountedRef.current && currentRequestRef.current === requestKey) {
         setIsLoading(false);
         loadingRef.current = false;
       }
