@@ -40,30 +40,41 @@ async function callAgnesStream(
 
   const agnesApiUrl = (process.env.AGNES_API_URL || "https://apihub.agnes-ai.com/v1").replace(/\/$/, "");
   
-  // Combine signal with 18-second timeout to abort early and allow recovery/handling
-  let combinedSignal = signal;
-  try {
-    if (typeof AbortSignal.any === "function" && signal) {
-      combinedSignal = AbortSignal.any([signal, AbortSignal.timeout(18000)]);
+  const abortController = new AbortController();
+  const timeoutId = setTimeout(() => {
+    abortController.abort(new Error("Connection timed out"));
+  }, 18000);
+
+  // Link client abort signal to our controller to cancel the fetch and stream if client aborts
+  let onAbort: (() => void) | null = null;
+  if (signal) {
+    if (signal.aborted) {
+      abortController.abort();
     } else {
-      combinedSignal = AbortSignal.timeout(18000);
+      onAbort = () => abortController.abort();
+      signal.addEventListener("abort", onAbort);
     }
-  } catch (e) {
-    console.warn("Could not combine signals, using AbortSignal.timeout", e);
-    combinedSignal = AbortSignal.timeout(18000);
   }
 
-  const response = await fetch(`${agnesApiUrl}/chat/completions`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify(agnesConfig),
-    signal: combinedSignal
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${agnesApiUrl}/chat/completions`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify(agnesConfig),
+      signal: abortController.signal
+    });
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   if (!response.ok) {
+    if (signal && onAbort) {
+      signal.removeEventListener("abort", onAbort);
+    }
     const errorText = await response.text();
     return new Response(errorText || "Agnes API error", { status: response.status });
   }
@@ -78,6 +89,12 @@ async function callAgnesStream(
       const encoder = new TextEncoder();
       let buffer = "";
       let fullContent = "";
+
+      const cleanup = () => {
+        if (signal && onAbort) {
+          signal.removeEventListener("abort", onAbort);
+        }
+      };
 
       try {
         if (response.body) {
@@ -138,6 +155,8 @@ async function callAgnesStream(
       } catch (e) {
         console.error("[Agnes Stream Error]", e);
         controller.error(e);
+      } finally {
+        cleanup();
       }
     },
   });

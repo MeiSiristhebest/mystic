@@ -77,7 +77,12 @@ export async function getQiMenServerData(date: Date) {
   };
 }
 
-export async function generateMysticImage(prompt: string, aspectRatio: any, docId: string, provider: "gemini" | "agnes" = "agnes") {
+export async function generateMysticImage(
+  prompt: string,
+  aspectRatio: any,
+  docId: string,
+  provider: "gemini" | "agnes" = "agnes"
+): Promise<{ success: boolean; imageUrl?: string; error?: string }> {
   // Check server-side Firebase cache first
   try {
     const docRef = adminDb.collection("daily-images").doc(docId);
@@ -86,7 +91,7 @@ export async function generateMysticImage(prompt: string, aspectRatio: any, docI
       const data = cachedDoc.data();
       if (data?.imageUrl) {
         console.log(`[FIREBASE] Cache HIT for ${docId}`);
-        return data.imageUrl;
+        return { success: true, imageUrl: data.imageUrl };
       }
     }
   } catch (error) {
@@ -177,8 +182,7 @@ export async function generateMysticImage(prompt: string, aspectRatio: any, docI
     }
   } catch (error: any) {
     console.error(`[IMAGE GENERATION] Failed for provider ${provider}:`, error.message || error);
-    // Throw a clean, handled error message instead of letting a raw DOMException/TimeoutError bubble up
-    throw new Error(`Failed to generate image via ${provider}: ${error.message || error}`);
+    return { success: false, error: error.message || String(error) };
   }
 
   // 3. Compress server-side if needed, then ALWAYS save to Firebase.
@@ -210,7 +214,7 @@ export async function generateMysticImage(prompt: string, aspectRatio: any, docI
     console.error(`[FIREBASE] FAILED to save ${docId}:`, error.message);
   }
 
-  return base64Data;
+  return { success: true, imageUrl: base64Data };
 }
 
 /**

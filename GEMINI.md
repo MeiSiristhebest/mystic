@@ -6,9 +6,12 @@
 - **Decision: Server-Side Timeout Boundaries for Agnes Completions**
   - **Reason**: Prevent requests from hanging indefinitely.
   - **Action**: Set a strict 18-second fetch timeout to the Agnes completions call. Removed the Gemini fallback to align with the single-model configuration.
-- **Decision: Handled Image Generation Exceptions**
-  - **Reason**: Next.js Server Actions thrown with raw DOM `TimeoutError` exceptions cause 500 Internal Server Errors in Vercel serverless environments.
-  - **Action**: Wrapped Agnes image generation in `app/actions/aiActions.ts` with `try...catch` blocks and threw clean business errors instead.
+- **Decision: Connection-Only Timeout for Agnes Stream**
+  - **Reason**: Passing a timeout signal directly to fetch aborts the stream mid-reading if the response is very long and exceeds 18 seconds.
+  - **Action**: Refactored `callAgnesStream` to use a manual connection-only timeout, clearing it once response headers are received, and linked the client abort signal to the abort controller to prevent stream cut-offs.
+- **Decision: Handled Image Generation Exceptions & Structured Returns**
+  - **Reason**: Next.js Server Actions thrown with raw DOM `TimeoutError` or standard errors cause 500 Internal Server Errors in Vercel serverless environments, cluttering error logs.
+  - **Action**: Refactored `generateMysticImage` in `app/actions/aiActions.ts` to return a structured `{ success, imageUrl, error }` object instead of throwing. Handled the structured result on the client in `MysticImage.tsx` by throwing a client-side error to trigger Unsplash fallback, ensuring 0% server-side 500 errors.
 - **Decision: Multi-Stage Image Loading & Race Condition Prevention**
   - **Reason**: The `MysticImage` component ignored subsequent prompt updates when `loadingRef.current` was true, and was vulnerable to stale async responses overwriting newer images.
   - **Action**: Refactored `MysticImage.tsx` to permit new requests if the prompt key changes, and guarded state updates with `currentRequestRef.current === requestKey` matching to prevent race conditions.

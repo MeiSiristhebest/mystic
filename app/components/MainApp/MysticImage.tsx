@@ -123,7 +123,13 @@ export const MysticImage = ({
       }
 
       // Generate securely using Server Action.
-      const base64Data = await generateMysticImage(prompt, aspectRatio, docId);
+      const result = await generateMysticImage(prompt, aspectRatio, docId);
+
+      if (!result || !result.success || !result.imageUrl) {
+        throw new Error(result?.error || "Failed to generate image");
+      }
+
+      const base64Data = result.imageUrl;
 
       // Save a local IndexedDB copy for instant subsequent loads on this device
       try {
