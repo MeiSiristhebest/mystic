@@ -1,7 +1,3 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
-
 # 🔮 Mystic - Gemini Multimodal AI Wisdom & Astrology Suite (玄犀)
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
@@ -15,9 +11,9 @@
 
 ## 📖 项目简介
 
-**Mystic (玄犀)** 是一款基于 **Google AI Studio** 架构原型设计、部署于 **Next.js 14 App Router** 的多模态 AI 东方玄学与西方星象智慧探索平台。
+**Mystic (玄犀)** 是一款基于 **Next.js 14 App Router** 架构构建的高性能多模态 AI 东方玄学与西方星象智慧探索平台。
 
-系统集成了 **Gemini Stream API** 与 **Gemini Vision API**，结合自定义的“Prompt Context Pipeline（上下文约束管道）”，构建了包含西方占星排盘、东方八字命盘、视觉相学面相分析、周易六十四卦卜筮、紫微斗数、AI 塔罗牌占卜、梦境解析以及集体意识共鸣镜（Collective Mirror）在内的八大智慧推理模态。
+系统深度集成了 **Gemini Stream API** 与 **Gemini Vision API**，结合自定义的“Prompt Context Pipeline（上下文约束管道）”，构建了包含西方占星排盘、东方八字命盘、视觉相学面相分析、周易六十四卦卜筮、紫微斗数、AI 塔罗牌占卜、梦境解析以及集体意识共鸣镜（Collective Mirror）在内的八大智慧推理模态。
 
 系统的核心亮点在于**零幻觉 Prompt Context 管道控制**、**实时 SSE 流式响应渲染**、**视觉图像多模态推理**以及完整的 **PWA 渐进式 Web 应用架构支持**。
 
@@ -132,7 +128,7 @@ mystic/
 │   └── page.tsx                    # 视图入口
 ├── firebase-applet-config.json     # Firebase 实时云端配置
 ├── firestore.rules                 # Firestore 数据库读写安全规则
-├── GEMINI.md                       # Google AI Studio 架构规范与 Prompt 设计
+├── GEMINI.md                       # 架构规范与 Context Prompt 设计
 └── README.md                       # 本说明文档
 ```
 
@@ -147,7 +143,6 @@ mystic/
 | **实时云数据库** | Firebase Firestore | 匿名集体共鸣镜数据实时广播与同步 |
 | **样式与视觉设计**| TailwindCSS + Glassmorphism UI | 极具未来感的深色调水晶流体视觉设计 |
 | **PWA 跨端体验** | Service Worker + PwaInstallPrompt | 支持手机端一键添加到主屏幕体验 |
-| **原型构建平台** | Google AI Studio | Prompt 上下文验证与 API 功能编排 |
 
 ---
 
@@ -155,7 +150,7 @@ mystic/
 
 ### 1. 环境准备
 - **Node.js**: 18.0 或更高版本
-- **Google AI Studio API Key**: 从 [Google AI Studio](https://aistudio.google.com/) 获取
+- **Gemini API Key**: 获取 API Key
 
 ### 2. 安装依赖
 ```bash
