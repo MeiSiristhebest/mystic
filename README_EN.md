@@ -1,7 +1,3 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
-
 # 🔮 Mystic - Gemini Multimodal AI Wisdom & Astrology Suite (玄犀)
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
@@ -15,7 +11,7 @@
 
 ## 📖 Introduction
 
-**Mystic (玄犀)** is a multimodal AI-powered Eastern wisdom, astrology, and spiritual exploration platform prototyped on **Google AI Studio** and built with **Next.js 14 App Router**.
+**Mystic (玄犀)** is a modern, high-performance multimodal AI-powered Eastern wisdom, astrology, and spiritual exploration platform built with **Next.js 14 App Router**.
 
 Integrating the **Gemini Stream API** and **Gemini Vision API**, Mystic orchestrates eight wisdom domain engines—including Western Astrology, Eastern BaZi (Four Pillars), Vision-based Face Reading, I-Ching Hexagram divination, ZiWei DouShu, AI Tarot readings, Dream Analysis, and a Firebase-backed Collective Mirror—guarded by a zero-hallucination **Prompt Context Pipeline**.
 
@@ -132,7 +128,7 @@ mystic/
 │   └── page.tsx                    # View Entry Point
 ├── firebase-applet-config.json     # Firebase Realtime Cloud Config
 ├── firestore.rules                 # Firestore Security Rules
-├── GEMINI.md                       # Google AI Studio Architecture & Prompt Specs
+├── GEMINI.md                       # Architecture & Prompt Specs
 └── README.md                       # Main Documentation
 ```
 
@@ -147,7 +143,6 @@ mystic/
 | **Realtime Cloud DB** | Firebase Firestore | Anonymous Collective Insight Sync |
 | **Styling & UI** | TailwindCSS + Glassmorphism UI | Futuristic Dark Crystal Visual System |
 | **PWA Experience** | Service Worker + PwaInstallPrompt | Add to Home Screen Native Mobile Support |
-| **Prototyping Platform**| Google AI Studio | Prompt Context Verification & API Design |
 
 ---
 
@@ -155,7 +150,7 @@ mystic/
 
 ### 1. Prerequisites
 - **Node.js**: 18.0 or higher
-- **Google AI Studio API Key**: Obtain from [Google AI Studio](https://aistudio.google.com/)
+- **Gemini API Key**: Obtain API Key
 
 ### 2. Installation
 ```bash
