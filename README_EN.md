@@ -1,8 +1,8 @@
-# 🔮 Mystic - Gemini Multimodal AI Wisdom & Astrology Suite (玄犀)
+# 🔮 Mystic - Gemini Multimodal AI Wisdom & Astrology Suite
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
 [![Next.js](https://img.shields.io/badge/Next.js-14_App_Router-black.svg?style=for-the-badge)](README_EN.md)
-[![Google Gemini](https://img.shields.io/badge/AI_Engine-Gemini_1.5_Pro_Stream_%26_Vision-8E44AD.svg?style=for-the-badge)](README_EN.md)
+[![Google Gemini](https://img.shields.io/badge/AI_Engine-Gemini_Stream_%26_Vision_API-8E44AD.svg?style=for-the-badge)](README_EN.md)
 [![Firebase](https://img.shields.io/badge/Database-Firebase_Firestore-FFCA28.svg?style=for-the-badge)](README_EN.md)
 
 [🇨🇳 中文](README.md) | [🇺🇸 English](README_EN.md)
@@ -11,7 +11,7 @@
 
 ## 📖 Introduction
 
-**Mystic (玄犀)** is a modern, high-performance multimodal AI-powered Eastern wisdom, astrology, and spiritual exploration platform built with **Next.js 14 App Router**.
+**Mystic** is a modern, high-performance multimodal AI-powered Eastern wisdom, astrology, and spiritual exploration platform built with **Next.js 14 App Router**.
 
 Integrating the **Gemini Stream API** and **Gemini Vision API**, Mystic orchestrates eight wisdom domain engines—including Western Astrology, Eastern BaZi (Four Pillars), Vision-based Face Reading, I-Ching Hexagram divination, ZiWei DouShu, AI Tarot readings, Dream Analysis, and a Firebase-backed Collective Mirror—guarded by a zero-hallucination **Prompt Context Pipeline**.
 
@@ -46,7 +46,7 @@ graph TD
     end
 
     subgraph GeminiEngine [Google Gemini AI Engine]
-        StreamAPI[Gemini 1.5 Pro Stream API]
+        StreamAPI[Gemini Stream API]
         VisionAPI[Gemini Multimodal Vision API]
     end
 
@@ -139,7 +139,7 @@ mystic/
 | Layer | Core Technology | Role |
 |:------|:-----------|:--------|
 | **Frontend Framework** | Next.js 14 (App Router) + React 18 | Modern React Fullstack Framework |
-| **AI LLM Engine** | Google Gemini 1.5 Pro (Stream & Vision API) | SSE Real-time Streaming & Multimodal Vision |
+| **Core AI Engine** | Google Gemini API (Stream & Vision) | SSE Real-time Streaming & Multimodal Vision |
 | **Realtime Cloud DB** | Firebase Firestore | Anonymous Collective Insight Sync |
 | **Styling & UI** | TailwindCSS + Glassmorphism UI | Futuristic Dark Crystal Visual System |
 | **PWA Experience** | Service Worker + PwaInstallPrompt | Add to Home Screen Native Mobile Support |
