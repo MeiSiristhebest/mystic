@@ -4,13 +4,16 @@
 
 # 🔮 Mystic - Gemini Multimodal AI Wisdom & Astrology Suite (玄犀)
 
-[🇨🇳 中文](#-中文) | [🇺🇸 English](#-english)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
+[![Next.js](https://img.shields.io/badge/Next.js-14_App_Router-black.svg?style=for-the-badge)](README.md)
+[![Google Gemini](https://img.shields.io/badge/AI_Engine-Gemini_1.5_Pro_Stream_%26_Vision-8E44AD.svg?style=for-the-badge)](README.md)
+[![Firebase](https://img.shields.io/badge/Database-Firebase_Firestore-FFCA28.svg?style=for-the-badge)](README.md)
+
+[🇨🇳 中文](README.md) | [🇺🇸 English](README_EN.md)
 
 ---
 
-## 🇨🇳 中文
-
-### 📖 项目简介
+## 📖 项目简介
 
 **Mystic (玄犀)** 是一款基于 **Google AI Studio** 架构原型设计、部署于 **Next.js 14 App Router** 的多模态 AI 东方玄学与西方星象智慧探索平台。
 
@@ -175,31 +178,6 @@ npm run dev
 
 ---
 
-## 🇺🇸 English
+## 📜 许可证 (License)
 
-### 📖 Introduction
-
-**Mystic (玄犀)** is a multimodal AI-powered astrology, Eastern wisdom, and spiritual exploration platform prototyped on **Google AI Studio** and built with **Next.js 14 App Router**.
-
-Integrating the **Gemini Stream API** and **Gemini Vision API**, Mystic orchestrates eight wisdom domain engines—including Western Astrology, Eastern BaZi (Four Pillars), Vision-based Face Reading, I-Ching Hexagram divination, ZiWei DouShu, AI Tarot readings, Dream Analysis, and a Firebase-backed Collective Mirror—guarded by a zero-hallucination **Prompt Context Pipeline**.
-
----
-
-## 🛠️ Architecture Highlights
-
-### 1. Multimodal AI & Context Control Pipeline 🌌
-Combines structured system instructions, domain knowledge rules, and user-supplied parameters before passing requests to Gemini 1.5 Pro. Multimodal requests (e.g., face photo analysis) utilize the Gemini Vision API for zero-shot feature extraction.
-
-### 2. Eight Core Wisdom Modules ☯️
-- **AstrologyApp**: Planetary aspect & birth chart engine.
-- **BaziApp**: Four Pillars calculation with Five Elements balancing.
-- **FaceReadingApp**: Vision AI facial feature & mark analysis.
-- **IChingApp**: Simulated coin tossing with hexagram transforms.
-- **TarotApp**: Single-card & 3-card spread with dynamic bubbles.
-- **CollectiveMirrorApp**: Real-time anonymous shared insights via Firebase.
-
----
-
-## 📜 License
-
-Licensed under the [MIT License](LICENSE).
+基于 [MIT License](LICENSE) 开源协议。
