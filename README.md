@@ -1,8 +1,8 @@
-# 🔮 Mystic - Gemini Multimodal AI Wisdom & Astrology Suite (玄犀)
+# 🔮 Mystic - Gemini Multimodal AI Wisdom & Astrology Suite
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
 [![Next.js](https://img.shields.io/badge/Next.js-14_App_Router-black.svg?style=for-the-badge)](README.md)
-[![Google Gemini](https://img.shields.io/badge/AI_Engine-Gemini_1.5_Pro_Stream_%26_Vision-8E44AD.svg?style=for-the-badge)](README.md)
+[![Google Gemini](https://img.shields.io/badge/AI_Engine-Gemini_Stream_%26_Vision_API-8E44AD.svg?style=for-the-badge)](README.md)
 [![Firebase](https://img.shields.io/badge/Database-Firebase_Firestore-FFCA28.svg?style=for-the-badge)](README.md)
 
 [🇨🇳 中文](README.md) | [🇺🇸 English](README_EN.md)
@@ -11,7 +11,7 @@
 
 ## 📖 项目简介
 
-**Mystic (玄犀)** 是一款基于 **Next.js 14 App Router** 架构构建的高性能多模态 AI 东方玄学与西方星象智慧探索平台。
+**Mystic** 是一款基于 **Next.js 14 App Router** 架构构建的高性能多模态 AI 东方玄学与西方星象智慧探索平台。
 
 系统深度集成了 **Gemini Stream API** 与 **Gemini Vision API**，结合自定义的“Prompt Context Pipeline（上下文约束管道）”，构建了包含西方占星排盘、东方八字命盘、视觉相学面相分析、周易六十四卦卜筮、紫微斗数、AI 塔罗牌占卜、梦境解析以及集体意识共鸣镜（Collective Mirror）在内的八大智慧推理模态。
 
@@ -46,7 +46,7 @@ graph TD
     end
 
     subgraph GeminiEngine [Google Gemini AI 引擎]
-        StreamAPI[Gemini 1.5 Pro Stream API]
+        StreamAPI[Gemini Stream API]
         VisionAPI[Gemini Multimodal Vision API]
     end
 
@@ -139,7 +139,7 @@ mystic/
 | 层级 | 核心技术 | 作用 |
 |:------|:-----------|:--------|
 | **前端应用框架** | Next.js 14 (App Router) + React 18 | 现代化 React 全栈应用框架 |
-| **核心 AI 引擎** | Google Gemini 1.5 Pro (Stream & Vision API) | 实时 SSE 流式推理与多模态图像识别 |
+| **核心 AI 引擎** | Google Gemini API (Stream & Vision) | 实时 SSE 流式推理与多模态图像识别 |
 | **实时云数据库** | Firebase Firestore | 匿名集体共鸣镜数据实时广播与同步 |
 | **样式与视觉设计**| TailwindCSS + Glassmorphism UI | 极具未来感的深色调水晶流体视觉设计 |
 | **PWA 跨端体验** | Service Worker + PwaInstallPrompt | 支持手机端一键添加到主屏幕体验 |
