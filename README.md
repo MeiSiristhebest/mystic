@@ -1,4 +1,4 @@
-<img width="1262" height="694" alt="image" src="https://github.com/user-attachments/assets/0f120c15-1bb1-420d-b348-6779694247c7" /># 🔮 Mystic - Gemini Multimodal AI Wisdom & Astrology Suite
+# 🔮 Mystic - Gemini Multimodal AI Wisdom & Astrology Suite
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
 [![Next.js](https://img.shields.io/badge/Next.js-14_App_Router-black.svg?style=for-the-badge)](https://nextjs.org/)
