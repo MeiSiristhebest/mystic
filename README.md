@@ -1,4 +1,4 @@
-# 🔮 Mystic - Gemini Multimodal AI Wisdom & Astrology Suite
+<img width="1262" height="694" alt="image" src="https://github.com/user-attachments/assets/0f120c15-1bb1-420d-b348-6779694247c7" /># 🔮 Mystic - Gemini Multimodal AI Wisdom & Astrology Suite
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
 [![Next.js](https://img.shields.io/badge/Next.js-14_App_Router-black.svg?style=for-the-badge)](https://nextjs.org/)
@@ -12,8 +12,9 @@
 ## 🎬 产品截图
 
 <p align="center">
-  <em>📌 在此处放置 PWA 首页、星座排盘、八字命盘、塔罗牌阵等功能的截图或 GIF 动图。</em><br/>
-  <em>（参考标杆仓库 kitao/pyxel：多图网格布局，视觉冲击力最强）</em>
+
+  <img width="1262" height="694" alt="image" src="https://github.com/user-attachments/assets/64f63a5e-c24d-414b-ac60-d86552c7c563" />
+
 </p>
 
 ---
