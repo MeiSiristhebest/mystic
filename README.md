@@ -1,11 +1,20 @@
 # 🔮 Mystic - Gemini Multimodal AI Wisdom & Astrology Suite
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
-[![Next.js](https://img.shields.io/badge/Next.js-14_App_Router-black.svg?style=for-the-badge)](README.md)
-[![Google Gemini](https://img.shields.io/badge/AI_Engine-Gemini_Stream_%26_Vision_API-8E44AD.svg?style=for-the-badge)](README.md)
-[![Firebase](https://img.shields.io/badge/Database-Firebase_Firestore-FFCA28.svg?style=for-the-badge)](README.md)
+[![Next.js](https://img.shields.io/badge/Next.js-14_App_Router-black.svg?style=for-the-badge)](https://nextjs.org/)
+[![Google Gemini](https://img.shields.io/badge/AI_Engine-Gemini_Stream_%26_Vision_API-8E44AD.svg?style=for-the-badge)](https://ai.google.dev/)
+[![Firebase](https://img.shields.io/badge/Database-Firebase_Firestore-FFCA28.svg?style=for-the-badge)](https://firebase.google.com/)
 
 [🇨🇳 中文](README.md) | [🇺🇸 English](README_EN.md)
+
+---
+
+## 🎬 产品截图
+
+<p align="center">
+  <em>📌 在此处放置 PWA 首页、星座排盘、八字命盘、塔罗牌阵等功能的截图或 GIF 动图。</em><br/>
+  <em>（参考标杆仓库 kitao/pyxel：多图网格布局，视觉冲击力最强）</em>
+</p>
 
 ---
 
@@ -13,7 +22,7 @@
 
 **Mystic** 是一款基于 **Next.js 14 App Router** 架构构建的高性能多模态 AI 东方玄学与西方星象智慧探索平台。
 
-系统深度集成了 **Gemini Stream API** 与 **Gemini Vision API**，结合自定义的“Prompt Context Pipeline（上下文约束管道）”，构建了包含西方占星排盘、东方八字命盘、视觉相学面相分析、周易六十四卦卜筮、紫微斗数、AI 塔罗牌占卜、梦境解析以及集体意识共鸣镜（Collective Mirror）在内的八大智慧推理模态。
+系统深度集成了 **Gemini Stream API** 与 **Gemini Vision API**，结合自定义的"Prompt Context Pipeline（上下文约束管道）"，构建了包含西方占星排盘、东方八字命盘、视觉相学面相分析、周易六十四卦卜筮、紫微斗数、AI 塔罗牌占卜、梦境解析以及集体意识共鸣镜（Collective Mirror）在内的八大智慧推理模态。
 
 系统的核心亮点在于**零幻觉 Prompt Context 管道控制**、**实时 SSE 流式响应渲染**、**视觉图像多模态推理**以及完整的 **PWA 渐进式 Web 应用架构支持**。
 
@@ -30,33 +39,33 @@
 
 ```mermaid
 graph TD
-    subgraph ClientLayer [客户端交互层 - Next.js 14 PWA]
-        UI[App Entry - DiscoveryView]
-        Astrology[AstrologyApp - 星座排盘]
-        Bazi[BaziApp - 八字命盘]
-        Face[FaceReadingApp - 视觉面相分析]
-        IChing[IChingApp - 周易六爻]
-        Tarot[TarotApp - 塔罗牌矩阵]
+    subgraph ClientLayer["客户端交互层 - Next.js 14 PWA"]
+        UI["App Entry - DiscoveryView"]
+        Astrology["AstrologyApp - 星座排盘"]
+        Bazi["BaziApp - 八字命盘"]
+        Face["FaceReadingApp - 视觉面相分析"]
+        IChing["IChingApp - 周易六爻"]
+        Tarot["TarotApp - 塔罗牌矩阵"]
     end
 
-    subgraph ContextPipeline [上下文控制管道 - Prompt Scaffolding]
-        SysPrompt[System Prompt & Role Directives]
-        KnowledgeBase[Astrological & I-Ching Knowledge Scaffolding]
-        Sanitizer[Output Structuring & Constraint Guard]
+    subgraph ContextPipeline["上下文控制管道 - Prompt Scaffolding"]
+        SysPrompt["System Prompt & Role Directives"]
+        KnowledgeBase["Astrological & I-Ching Knowledge Scaffolding"]
+        Sanitizer["Output Structuring & Constraint Guard"]
     end
 
-    subgraph GeminiEngine [Google Gemini AI 引擎]
-        StreamAPI[Gemini Stream API]
-        VisionAPI[Gemini Multimodal Vision API]
+    subgraph GeminiEngine["Google Gemini AI 引擎"]
+        StreamAPI["Gemini Stream API"]
+        VisionAPI["Gemini Multimodal Vision API"]
     end
 
-    subgraph FirebaseSync [云端持久化与共享]
-        Firestore[(Firebase Firestore - 灵感共鸣镜)]
+    subgraph FirebaseSync["云端持久化与共享"]
+        Firestore[("Firebase Firestore - 灵感共鸣镜")]
     end
 
     ClientLayer --> ContextPipeline
     ContextPipeline --> GeminiEngine
-    GeminiEngine -- SSE Real-time Streaming --> ClientLayer
+    GeminiEngine -- "SSE Real-time Streaming" --> ClientLayer
     ClientLayer --> FirebaseSync
 ```
 
@@ -65,7 +74,7 @@ graph TD
     - [app/components/AstrologyApp.tsx (西方占星计算与 Gemini 交互引擎)](app/components/AstrologyApp.tsx)
     - [app/components/BaziApp.tsx (东方八字干支推算与 Gemini 解读引擎)](app/components/BaziApp.tsx)
     - [app/components/FaceReadingApp.tsx (Gemini Multimodal Vision 面相图像分析)](app/components/FaceReadingApp.tsx)
-    - [app/components/IChingApp.tsx (周易六爻摇卦与变卦推算引擎)](app/components/IChingApp.tsx)
+    - [app/components/IChingApp.tsx (周易六爻摇卦与变卦推演引擎)](app/components/IChingApp.tsx)
     - [app/components/TarotApp.tsx (塔罗牌阵与 AI 牌意联想分析组件)](app/components/TarotApp.tsx)
 
 ---
@@ -88,16 +97,16 @@ graph TD
 ```mermaid
 sequenceDiagram
     actor User as 用户
-    participant App as IChingApp 界面
-    participant Engine as 六爻算法模拟器
-    participant Gemini as Gemini Stream API Provider
+    participant App as "IChingApp 界面"
+    participant Engine as "六爻算法模拟器"
+    participant Gemini as "Gemini Stream API Provider"
 
     User->>App: 点击摇卦 (掷铜钱 6 次)
     App->>Engine: 计算阴爻/阳爻及老阴/老阳变爻
-    Engine-->>App: 生成本卦 (Main Hexagram) 与变卦 (Transformed Hexagram)
+    Engine-->>App: "生成本卦 Main Hexagram<br/>与变卦 Transformed Hexagram"
     App->>Gemini: 注入卦名、爻变位置及上下文 System Prompt
-    Gemini-->>App: SSE 增量流式返回卦辞白话解读与人生启示
-    App-->>User: 逐字打字机渲染解读文本 + 关联词泡 (AssociationBubble)
+    Gemini-->>App: "SSE 增量流式返回卦辞白话解读<br/>+ 人生启示"
+    App-->>User: "逐字打字机渲染解读文本<br/>+ 关联词泡 AssociationBubble"
 ```
 
 *   **📂 核心源码直链**：
@@ -150,7 +159,7 @@ mystic/
 
 ### 1. 环境准备
 - **Node.js**: 18.0 或更高版本
-- **Gemini API Key**: 获取 API Key
+- **Gemini API Key**: 前往 [Google AI Studio](https://aistudio.google.com/) 获取 API Key
 
 ### 2. 安装依赖
 ```bash
@@ -169,10 +178,56 @@ GEMINI_API_KEY="your-google-gemini-api-key"
 ```bash
 npm run dev
 ```
-打开浏览器访问 `http://localhost:3000` 即可预览完整系统。
+
+打开浏览器访问 `http://localhost:3000`，即可预览完整系统。
+
+**预期输出**：
+```bash
+▲ Next.js 14.x.x
+- Local:        http://localhost:3000
+- Environments: .env.local
+✓ Ready in XXX ms
+```
+
+---
+
+## 🤝 参与贡献
+
+欢迎贡献代码。简要流程：
+
+```bash
+# 1. Fork → Clone → 切分支
+git checkout -b feat/your-feature
+
+# 2. 本地构建通过
+npm run build
+
+# 3. Commit 并提 PR
+git commit -m "feat: your change"
+git push origin feat/your-feature
+```
+
+**欢迎贡献的方向**：
+- 🌐 新增智慧模态（如梅花易数、星盘比对等）
+- 🧪 补充 Server Action 与组件单元测试
+- 🎨 视觉细节打磨或新主题样式
+- 📱 PWA 离线体验增强
+
+---
+
+## 🔒 安全说明
+
+| 风险场景 | 防护措施 |
+|---------|---------|
+| **Gemini API Key 泄露** | `.env.local` 已加入 `.gitignore`；Server Action 作为唯一 API 代理出口，Key 仅在服务端使用，从不暴露给浏览器 |
+| **Firestore 越权读写** | `firestore.rules` 严格控制读写权限；匿名共鸣镜仅允许写入匿名字段，读权限基于文档 ID |
+| **Prompt 注入攻击** | Context Control Pipeline 多层 System Prompt 约束；输出 Sanitizer 护栏校验结构化格式 |
+| **PWA Service Worker 缓存污染** | 生产构建时哈希化静态资源；Service Worker 更新策略采用 `skipWaiting` + `clientsClaim` 渐进替换 |
+
+**漏洞上报**：发现安全问题请直接发邮件至 **`mystic-security [at] googlegroups [dot] com`**，不要公开在 Issue 里。承诺 **24 小时内首次响应**。
 
 ---
 
 ## 📜 许可证 (License)
 
-基于 [MIT License](LICENSE) 开源协议。
+基于 **MIT License** 开源协议。详见 [LICENSE](LICENSE) 文件。

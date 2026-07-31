@@ -1,11 +1,17 @@
 # 🔮 Mystic - Gemini Multimodal AI Wisdom & Astrology Suite
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
-[![Next.js](https://img.shields.io/badge/Next.js-14_App_Router-black.svg?style=for-the-badge)](README_EN.md)
-[![Google Gemini](https://img.shields.io/badge/AI_Engine-Gemini_Stream_%26_Vision_API-8E44AD.svg?style=for-the-badge)](README_EN.md)
-[![Firebase](https://img.shields.io/badge/Database-Firebase_Firestore-FFCA28.svg?style=for-the-badge)](README_EN.md)
+[![Next.js](https://img.shields.io/badge/Next.js-14_App_Router-black.svg?style=for-the-badge)](https://nextjs.org/)
+[![Google Gemini](https://img.shields.io/badge/AI_Engine-Gemini_Stream_%26_Vision_API-8E44AD.svg?style=for-the-badge)](https://ai.google.dev/)
+[![Firebase](https://img.shields.io/badge/Database-Firebase_Firestore-FFCA28.svg?style=for-the-badge)](https://firebase.google.com/)
 
 [🇨🇳 中文](README.md) | [🇺🇸 English](README_EN.md)
+
+---
+
+## 🎬 Screenshots
+
+Placeholder screenshot path
 
 ---
 
@@ -30,33 +36,33 @@ All architectural components below are fully implemented in this repository. Cli
 
 ```mermaid
 graph TD
-    subgraph ClientLayer [Client Interaction Layer - Next.js 14 PWA]
-        UI[App Entry - DiscoveryView]
-        Astrology[AstrologyApp - Western Chart]
-        Bazi[BaziApp - BaZi Four Pillars]
-        Face[FaceReadingApp - Vision Face Reading]
-        IChing[IChingApp - I-Ching Hexagrams]
-        Tarot[TarotApp - AI Tarot Spreads]
+    subgraph ClientLayer["Client Interaction Layer - Next.js 14 PWA"]
+        UI["App Entry - DiscoveryView"]
+        Astrology["AstrologyApp - Western Chart"]
+        Bazi["BaziApp - BaZi Four Pillars"]
+        Face["FaceReadingApp - Vision Face Reading"]
+        IChing["IChingApp - I-Ching Hexagrams"]
+        Tarot["TarotApp - AI Tarot Spreads"]
     end
 
-    subgraph ContextPipeline [Context Control Pipeline - Prompt Scaffolding]
-        SysPrompt[System Prompt & Role Directives]
-        KnowledgeBase[Astrological & I-Ching Knowledge Scaffolding]
-        Sanitizer[Output Structuring & Constraint Guard]
+    subgraph ContextPipeline["Context Control Pipeline - Prompt Scaffolding"]
+        SysPrompt["System Prompt & Role Directives"]
+        KnowledgeBase["Astrological & I-Ching Knowledge Scaffolding"]
+        Sanitizer["Output Structuring & Constraint Guard"]
     end
 
-    subgraph GeminiEngine [Google Gemini AI Engine]
-        StreamAPI[Gemini Stream API]
-        VisionAPI[Gemini Multimodal Vision API]
+    subgraph GeminiEngine["Google Gemini AI Engine"]
+        StreamAPI["Gemini Stream API"]
+        VisionAPI["Gemini Multimodal Vision API"]
     end
 
-    subgraph FirebaseSync [Cloud Persistence & Broadcasting]
-        Firestore[(Firebase Firestore - Collective Mirror)]
+    subgraph FirebaseSync["Cloud Persistence & Broadcasting"]
+        Firestore[("Firebase Firestore - Collective Mirror")]
     end
 
     ClientLayer --> ContextPipeline
     ContextPipeline --> GeminiEngine
-    GeminiEngine -- SSE Real-time Streaming --> ClientLayer
+    GeminiEngine -- "SSE Real-time Streaming" --> ClientLayer
     ClientLayer --> FirebaseSync
 ```
 
@@ -88,16 +94,16 @@ The system harmonizes ancient Eastern & Western traditions with modern AI:
 ```mermaid
 sequenceDiagram
     actor User as User
-    participant App as IChingApp UI
-    participant Engine as Coin Toss Simulator
-    participant Gemini as Gemini Stream API Provider
+    participant App as "IChingApp UI"
+    participant Engine as "Coin Toss Simulator"
+    participant Gemini as "Gemini Stream API Provider"
 
     User->>App: Click to toss coins (6 iterations)
     App->>Engine: Calculate Yin/Yang lines & Old Yin/Old Yang transforms
-    Engine-->>App: Generate Main & Transformed Hexagrams
+    Engine-->>App: "Generate Main & Transformed Hexagrams"
     App->>Gemini: Inject hexagram names, line transforms & System Prompts
-    Gemini-->>App: Stream SSE incremental interpretation text
-    App-->>User: Typewriter effect text rendering + AssociationBubble
+    Gemini-->>App: "Stream SSE incremental interpretation text"
+    App-->>User: "Typewriter effect text rendering + AssociationBubble"
 ```
 
 *   **📂 Direct Source Code Links**:
@@ -170,6 +176,43 @@ GEMINI_API_KEY="your-google-gemini-api-key"
 npm run dev
 ```
 Open `http://localhost:3000` in your browser.
+
+---
+
+## 🤝 Contributing
+
+Contributions welcome. Quick flow:
+
+```bash
+# 1. Fork → Clone → Branch
+git checkout -b feat/your-feature
+
+# 2. Local build passes
+npm run build
+
+# 3. Commit and open a PR
+git commit -m "feat: your change"
+git push origin feat/your-feature
+```
+
+**Welcome contribution directions**:
+- 🌐 Add new wisdom modules (e.g., Plum Blossom Numerology, synastry comparison, etc.)
+- 🧪 Add Server Action and component unit tests
+- 🎨 Polish visual details or new theme styles
+- 📱 Enhance PWA offline experience
+
+---
+
+## 🔒 Security
+
+| Risk Scenario | Mitigation |
+|---------|---------|
+| **Gemini API Key Leak** | `.env.local` is in `.gitignore`; Server Action acts as the sole API proxy exit; the key is only used server-side and never exposed to the browser |
+| **Firestore Unauthorized R/W** | `firestore.rules` strictly controls read/write permissions; anonymous collective mirror only allows writing anonymous fields, read permissions based on document ID |
+| **Prompt Injection Attack** | Context Control Pipeline multi-layer System Prompt constraints; Output Sanitizer guardrail validates structured format |
+| **PWA Service Worker Cache Poisoning** | Production build hashes static assets; Service Worker update strategy uses `skipWaiting` + `clientsClaim` for gradual replacement |
+
+**Vulnerability disclosure**: Report security issues directly to **`mystic-security [at] googlegroups [dot] com`** — do not file a public issue. We commit to a **first response within 24 hours**.
 
 ---
 
