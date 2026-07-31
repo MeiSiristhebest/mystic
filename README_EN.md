@@ -215,7 +215,7 @@ git push origin feat/your-feature
 | **Prompt Injection Attack** | Context Control Pipeline multi-layer System Prompt constraints; Output Sanitizer guardrail validates structured format |
 | **PWA Service Worker Cache Poisoning** | Production build hashes static assets; Service Worker update strategy uses `skipWaiting` + `clientsClaim` for gradual replacement |
 
-**Vulnerability disclosure**: Report security issues directly to **`mystic-security [at] googlegroups [dot] com`** — do not file a public issue. We commit to a **first response within 24 hours**.
+**Vulnerability disclosure**: Report security issues directly to **`maox_neta@foxmail.com`** — do not file a public issue. We commit to a **first response within 24 hours**.
 
 ---
 

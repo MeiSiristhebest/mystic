@@ -225,7 +225,7 @@ git push origin feat/your-feature
 | **Prompt 注入攻击** | Context Control Pipeline 多层 System Prompt 约束；输出 Sanitizer 护栏校验结构化格式 |
 | **PWA Service Worker 缓存污染** | 生产构建时哈希化静态资源；Service Worker 更新策略采用 `skipWaiting` + `clientsClaim` 渐进替换 |
 
-**漏洞上报**：发现安全问题请直接发邮件至 **`mystic-security [at] googlegroups [dot] com`**，不要公开在 Issue 里。承诺 **24 小时内首次响应**。
+**漏洞上报**：发现安全问题请直接发邮件至 **`maox_neta@foxmail.com`**，不要公开在 Issue 里。承诺 **24 小时内首次响应**。
 
 ---
 
