@@ -13,6 +13,10 @@
 
 ---
 
+<p align="center">
+    <strong>Gemini 多模态 AI 玄学与星象智慧平台 · 八大推理模态 · 零幻觉上下文约束管道</strong>
+</p>
+
 ## 🎬 产品截图
 
 <p align="center">

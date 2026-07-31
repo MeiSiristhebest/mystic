@@ -1,351 +1,232 @@
-# ✨ Mystic
+# 🔮 Mystic - Gemini Multimodal AI Wisdom & Astrology Suite
 
 <p align="center">
-  <strong>A Python-based AI framework for building autonomous agents with LLM-powered decision-making</strong>
+  [![License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
+  [![Next.js](https://img.shields.io/badge/Next.js-14_App_Router-black.svg?style=for-the-badge)](https://nextjs.org/)
+  [![Google Gemini](https://img.shields.io/badge/AI_Engine-Gemini_Stream_%26_Vision_API-8E44AD.svg?style=for-the-badge)](https://ai.google.dev/)
+  [![Firebase](https://img.shields.io/badge/Database-Firebase_Firestore-FFCA28.svg?style=for-the-badge)](https://firebase.google.com/)
 </p>
 
 <p align="center">
-  <a href="https://github.com/MeiSiristhebest/mystic/actions/workflows/ci.yml"><img src="https://github.com/MeiSiristhebest/mystic/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI Status" /></a>
-  <a href="https://github.com/MeiSiristhebest/mystic/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-brightgreen?style=flat-square" alt="License" /></a>
-  <img src="https://img.shields.io/badge/Python-3.12+-3776AB?style=flat-square&logo=python" alt="Python" />
-  <img src="https://img.shields.io/badge/AI-LLM-4A90E2?style=flat-square&logo=ai" alt="AI" />
-  <img src="https://img.shields.io/badge/Docker-Ready-2496ED?style=flat-square&logo=docker" alt="Docker" />
-  <img src="https://img.shields.io/badge/Async-Supported-success?style=flat-square" alt="Async" />
+  <a href="README.md">🇨🇳 中文</a> &nbsp;|&nbsp; <a href="README_EN.md">🇺🇸 English</a>
 </p>
 
 ---
 
 <p align="center">
-  <a href="README.md">🇨🇳 中文</a> &nbsp;·&nbsp; <a href="README_EN.md">🇺🇸 English</a>
+    <strong>Gemini Multimodal AI Wisdom & Astrology Suite · 8 Inference Modalities · Zero-Hallucination Context Pipeline</strong>
 </p>
 
+## 🎬 Screenshots
+
+<p align="center">
+
+  <img width="1262" height="694" alt="image" src="https://github.com/user-attachments/assets/64f63a5e-c24d-414b-ac60-d86552c7c563" />
+
+</p>
 ---
 
-## 🌟 Overview
+## 📖 Introduction
 
-**Mystic** is a Python-based AI framework for building autonomous agents with LLM-powered decision-making. It enables agents to understand complex instructions, plan execution steps, call external tools, and make intelligent judgments in uncertain environments.
+**Mystic** is a modern, high-performance multimodal AI-powered Eastern wisdom, astrology, and spiritual exploration platform built with **Next.js 14 App Router**.
 
-The core philosophy of Mystic is **"Think Before You Act"**. Each agent engages in internal reasoning before executing tasks, evaluates multiple action plans, selects the optimal strategy, and learns from execution results.
+Integrating the **Gemini Stream API** and **Gemini Vision API**, Mystic orchestrates eight wisdom domain engines—including Western Astrology, Eastern BaZi (Four Pillars), Vision-based Face Reading, I-Ching Hexagram divination, ZiWei DouShu, AI Tarot readings, Dream Analysis, and a Firebase-backed Collective Mirror—guarded by a zero-hallucination **Prompt Context Pipeline**.
 
----
-
-## 🛠️ Core Features
-
-| Feature | Description |
-|---------|-------------|
-| 🧠 **LLM-Powered Reasoning** | Chain-of-Thought reasoning based on mainstream LLMs |
-| 🎯 **Autonomous Decision-Making** | Agents independently assess environment state and select optimal actions |
-| 🔧 **Tool Invocation** | Support for calling external APIs, databases, file systems, etc. |
-| 🔄 **Memory System** | Short-term + Long-term memory; agents remember history and learn from it |
-| 🛡️ **Action Validation** | Safety checks before actions to prevent dangerous operations |
-| 📊 **Observability** | Complete execution logs and traces for debugging and optimization |
-| ⚡ **Async Support** | Fully async architecture supporting concurrent execution |
-| 🧩 **Plugin System** | Extensible plugin system for easy capability additions |
+Key highlights include **Prompt Context Pipeline Control**, **Real-Time SSE Streaming Response Rendering**, **Multimodal Image Feature Extraction**, and complete **Progressive Web App (PWA)** mobile install support.
 
 ---
 
-## 🏗️ Architecture
+## 🛠️ Microservice Core Architecture & Engineering Design
 
-### Overall Architecture
+All architectural components below are fully implemented in this repository. Click any source code link to inspect exact implementation details:
+
+### 1. Multimodal AI & Context Control Pipeline 🌌
+
+*   **Architectural Evolution**: Addressing LLM hallucinations in complex reasoning tasks, Mystic features a backend Context Control Pipeline. Each request dynamically concatenates structured System Instructions, domain knowledge rules, and user-supplied spatio-temporal/facial parameters before calling Gemini, ensuring deterministic, structured output.
+*   **Multimodal Reasoning Topology Diagram**：
 
 ```mermaid
 graph TD
-    User[User] --> |"Natural Language"| Interface[Interface Layer]
-    Interface --> |"Parse Intent"| Orchestrator[Orchestrator]
-    Orchestrator --> |"Decompose Task"| Planner[Task Planner]
-    Planner --> |"Generate Plan"| Reasoner[Reasoning Engine]
-    Reasoner --> |"Reasoning"| LLM[LLM Core]
-    LLM --> |"Decision"| Executor[Executor]
-    Executor --> |"Call Tools"| ToolManager[Tool Manager]
-    ToolManager --> |"Execute"| APITools[API Tools]
-    ToolManager --> |"Execute"| DBTools[Database Tools]
-    ToolManager --> |"Execute"| FileTools[File System Tools]
-    ToolManager --> |"Execute"| CustomTools[Custom Tools]
-    Executor --> |"Results"| Memory[Memory System]
-    Memory --> |"Store"| ShortTerm[Short-term Memory]
-    Memory --> |"Store"| LongTerm[Long-term Memory]
-    Memory --> |"Feedback"| Reasoner
-    Executor --> |"Verify"| SafetyCheck[Safety Layer]
-    SafetyCheck --> |"Validate"| Validator[Validator]
-    SafetyCheck --> |"Sandbox"| Sandbox[Sandbox Environment]
-    SafetyCheck --> |"Log"| AuditLog[Audit Log]
-    Executor --> |"Output"| Interface
+    subgraph ClientLayer["Client Interaction Layer - Next.js 14 PWA"]
+        UI["App Entry - DiscoveryView"]
+        Astrology["AstrologyApp - Western Chart"]
+        Bazi["BaziApp - BaZi Four Pillars"]
+        Face["FaceReadingApp - Vision Face Reading"]
+        IChing["IChingApp - I-Ching Hexagrams"]
+        Tarot["TarotApp - AI Tarot Spreads"]
+    end
 
-    classDef core fill:#e3f2fd,stroke:#1565c0,color:#000
-    classDef agent fill:#f3e5f5,stroke:#6a1b9a,color:#000
-    classDef tool fill:#e8f5e9,stroke:#2e7d32,color:#000
-    classDef safety fill:#ffebee,stroke:#c62828,color:#000
-    classDef memory fill:#fff3e0,stroke:#e65100,color:#000
+    subgraph ContextPipeline["Context Control Pipeline - Prompt Scaffolding"]
+        SysPrompt["System Prompt & Role Directives"]
+        KnowledgeBase["Astrological & I-Ching Knowledge Scaffolding"]
+        Sanitizer["Output Structuring & Constraint Guard"]
+    end
 
-    class Interface,Orchestrator core
-    class Planner,Reasoner,LLM,Executor agent
-    class ToolManager,APITools,DBTools,FileTools,CustomTools tool
-    class SafetyCheck,Validator,Sandbox,AuditLog safety
-    class Memory,ShortTerm,LongTerm memory
+    subgraph GeminiEngine["Google Gemini AI 引擎"]
+        StreamAPI["Gemini Stream API"]
+        VisionAPI["Gemini Multimodal Vision API"]
+    end
+
+    subgraph FirebaseSync["Cloud Persistence & Broadcasting"]
+        Firestore[("Firebase Firestore - Collective Mirror")]
+    end
+
+    ClientLayer --> ContextPipeline
+    ContextPipeline --> GeminiEngine
+    GeminiEngine -- "SSE Real-time Streaming" --> ClientLayer
+    ClientLayer --> FirebaseSync
 ```
 
-### Agent Execution Flow
+*   **📂 Direct Source Code Links**：
+    - [app/components/DiscoveryView.tsx (Multimodal Navigation & Module Router)](app/components/DiscoveryView.tsx)
+    - [app/components/AstrologyApp.tsx (Astrology Calculations & Gemini Engine)](app/components/AstrologyApp.tsx)
+    - [app/components/BaziApp.tsx (Four Pillars Calculation & Gemini Engine)](app/components/BaziApp.tsx)
+    - [app/components/FaceReadingApp.tsx (Gemini Multimodal Vision Face Analysis)](app/components/FaceReadingApp.tsx)
+    - [app/components/IChingApp.tsx (I-Ching Coin Tossing & Hexagram Transforms)](app/components/IChingApp.tsx)
+    - [app/components/TarotApp.tsx (Tarot Spread & Dynamic Idea Bubbles)](app/components/TarotApp.tsx)
+
+---
+
+### 2. Eight Core Wisdom Modules & Execution Sequences ☯️
+
+The system harmonizes ancient Eastern & Western traditions with modern AI:
+
+1.  **🌌 Western Astrology (AstrologyApp)**: Calculates planetary aspects, house positions, and birth charts using birth date/time and geographic coordinates for synastry and forecast readings.
+2.  **🎋 Eastern BaZi (BaziApp)**: Computes Year, Month, Day, and Hour Pillars (GanZhi) with Five Elements strength evaluation.
+3.  **👁️ Vision Face Reading (FaceReadingApp)**: Uses Gemini Vision API to analyze face photos, identifying three divisions, five features, and facial marks.
+4.  **☯️ I-Ching Divination (IChingApp)**: Simulates 6 coin tosses to compute Main and Transformed Hexagrams with line transform interpretations.
+5.  **🎴 AI Tarot (TarotApp)**: Features single-card and 3-card spreads with card flip animations and real-time idea bubbles.
+6.  **🌙 Dream Analysis (DreamApp)**: Parses dream narratives to construct psychological metaphor maps based on symbol libraries.
+7.  **✨ Zi Wei Dou Shu (ZiWeiApp)**: Plots 12 palaces and star positions for birth charts.
+8.  **🪞 Collective Mirror (CollectiveMirrorApp)**: Connects to Firebase Firestore for real-time global user insight sharing and word cloud resonance.
+
+*   **I-Ching Sequence Flow Diagram**：
 
 ```mermaid
 sequenceDiagram
     actor User as User
-    participant Orchestrator as Orchestrator
-    participant Planner as Planner
-    participant Reasoner as Reasoner
-    participant Executor as Executor
-    participant SafetyCheck as Safety
-    participant Tools as Tools
+    participant App as "IChingApp UI"
+    participant Engine as "Coin Toss Simulator"
+    participant Gemini as "Gemini Stream API Provider"
 
-    User->>Orchestrator: Natural Language Input
-    Orchestrator->>Planner: Parse and Decompose Task
-    Planner->>Planner: Generate Execution Plan
-    Planner-->>Orchestrator: Return Task List
-    loop For Each Task
-        Orchestrator->>Reasoner: Request Reasoning
-        Reasoner->>Reasoner: Chain-of-Thought
-        Reasoner-->>Orchestrator: Return Decision
-        Orchestrator->>Executor: Execute Decision
-        Executor->>SafetyCheck: Safety Check
-        alt Check Passes
-            SafetyCheck-->>Executor: Allow Execution
-            Executor->>Tools: Invoke Tool
-            Tools-->>Executor: Return Results
-            Executor-->>Orchestrator: Return Results
-        else Check Fails
-            SafetyCheck-->>Executor: Block Execution
-            Executor-->>Orchestrator: Return Safety Error
-        end
-    end
-    Orchestrator-->>User: Return Final Result
+    User->>App: Click to toss coins (6 iterations)
+    App->>Engine: Calculate Yin/Yang lines & Old Yin/Old Yang transforms
+    Engine-->>App: "Generate Main & Transformed Hexagrams"
+    App->>Gemini: Inject hexagram names, line transforms & System Prompts
+    Gemini-->>App: "Stream SSE incremental interpretation text"
+    App-->>User: "Typewriter effect text rendering + AssociationBubble"
 ```
+
+*   **📂 Direct Source Code Links**：
+    - [app/components/CollectiveMirrorApp.tsx (Firebase Collective Mirror Component)](app/components/CollectiveMirrorApp.tsx)
+    - [app/components/AssociationBubble.tsx (Real-time SSE Streaming Bubble Component)](app/components/AssociationBubble.tsx)
+    - [firestore.rules (Firebase Security Rules Policy)](firestore.rules)
 
 ---
 
-## 📦 Project Structure
+## 📂 Project Structure
 
 ```text
 mystic/
-├── mystic/                         # Core Package
-│   ├── __init__.py
-│   ├── agent/                      # Agent Core
-│   │   ├── base_agent.py           # Base Agent Class
-│   │   ├── planner.py              # Task Planner
-│   │   ├── reasoner.py             # Reasoning Engine
-│   │   └── executor.py             # Executor
-│   ├── memory/                     # Memory System
-│   │   ├── short_term.py           # Short-term Memory
-│   │   ├── long_term.py            # Long-term Memory
-│   │   └── manager.py              # Memory Manager
-│   ├── tools/                      # Tools
-│   │   ├── api_tools.py            # API Tools
-│   │   ├── db_tools.py             # Database Tools
-│   │   ├── file_tools.py           # File System Tools
-│   │   └── custom.py               # Custom Tools Base
-│   ├── safety/                     # Safety
-│   │   ├── validator.py            # Action Validator
-│   │   ├── sandbox.py              # Sandbox Environment
-│   │   └── audit.py                # Audit Logger
-│   ├── llm/                        # LLM Integration
-│   │   ├── base_provider.py        # Base LLM Provider
-│   │   ├── openai_provider.py      # OpenAI Provider
-│   │   └── config.py               # LLM Config
-│   └── utils/                      # Utilities
-│       ├── logging.py              # Logging
-│       └── helpers.py              # Helpers
-├── examples/                       # Examples
-│   ├── simple_agent.py             # Simple Agent Example
-│   ├── tool_use.py                 # Tool Use Example
-│   └── custom_agent.py             # Custom Agent Example
-├── tests/                          # Tests
-├── docs/                           # Documentation
-├── pyproject.toml                  # Project Config
-└── README.md
+├── app/                            # Next.js 14 App Router Pages & Components
+│   ├── actions/                    # Next.js Server Actions (AI API Proxies)
+│   ├── api/                        # SSE Streaming Endpoints
+│   ├── components/                 # Core Module Components
+│   │   ├── AstrologyApp.tsx        # Astrology Module
+│   │   ├── BaziApp.tsx             # BaZi Module
+│   │   ├── FaceReadingApp.tsx      # Vision Face Reading Module
+│   │   ├── IChingApp.tsx           # I-Ching Module
+│   │   ├── TarotApp.tsx            # Tarot Module
+│   │   ├── CollectiveMirrorApp.tsx # Collective Mirror Module
+│   │   ├── AssociationBubble.tsx   # Streaming Idea Bubbles
+│   │   └── DiscoveryView.tsx       # Home Navigation Router
+│   ├── globals.css                 # Glassmorphism & Gradient Styles
+│   ├── layout.tsx                  # PWA Manifest & Root Layout
+│   └── page.tsx                    # View Entry Point
+├── firebase-applet-config.json     # Firebase Realtime Cloud Config
+├── firestore.rules                 # Firestore Security Rules
+├── GEMINI.md                       # Architecture & Prompt Specs
+└── README.md                       # Main Documentation
 ```
 
 ---
 
-## 🚀 Quick Start
+## 📊 Technology Stack Matrix
 
-### Installation
+| Layer | Core Technology | Role |
+|:------|:-----------|:--------|
+| **Frontend Framework** | Next.js 14 (App Router) + React 18 | Modern React Fullstack Framework |
+| **Core AI Engine** | Google Gemini API (Stream & Vision) | SSE Real-time Streaming & Multimodal Vision |
+| **Realtime Cloud DB** | Firebase Firestore | Anonymous Collective Insight Sync |
+| **Styling & UI** | TailwindCSS + Glassmorphism UI | Futuristic Dark Crystal Visual System |
+| **PWA Experience** | Service Worker + PwaInstallPrompt | Add to Home Screen Native Mobile Support |
 
+---
+
+## 🏃 Local Quick Start Guide
+
+### 1. Prerequisites
+- **Node.js**: 18.0 or higher
+- **Gemini API Key**: Obtain API Key
+
+### 2. Installation
 ```bash
-# Install from PyPI (recommended)
-pip install mystic-framework
-
-# Or install from source
 git clone https://github.com/MeiSiristhebest/mystic.git
 cd mystic
-pip install -e .
+npm install
 ```
 
-### Basic Usage
-
-```python
-import asyncio
-from mystic import Agent
-from mystic.llm import LLMConfig
-
-# Configure LLM
-llm_config = LLMConfig(
-    provider="openai",
-    model="gpt-4o",
-    api_key="your-api-key"
-)
-
-# Create Agent
-agent = Agent(
-    name="my-agent",
-    llm_config=llm_config,
-    tools=["file", "api", "database"]
-)
-
-async def main():
-    # Run Agent
-    result = await agent.run(
-        "Read data/input.csv, analyze data, generate a summary report, save as output/summary.txt"
-    )
-    print(result)
-
-asyncio.run(main())
+### 3. Environment Setup
+Create a `.env.local` file in the root directory:
+```env
+GEMINI_API_KEY="your-google-gemini-api-key"
 ```
 
-### Using Custom Tools
-
-```python
-from mystic.tools import CustomTool
-
-class WeatherTool(CustomTool):
-    name = "weather"
-    description = "Get weather for a specified city"
-    parameters = {
-        "city": {"type": "string", "description": "City name"}
-    }
-
-    async def execute(self, city: str) -> dict:
-        # Implement weather query logic
-        response = await self.http_client.get(
-            f"https://api.weather.com/{city}"
-        )
-        return {"city": city, "temperature": response["temp"]}
-
-# Register custom tool
-agent.register_tool(WeatherTool())
-
-# Use
-result = await agent.run("Query today's weather in Beijing")
+### 4. Start Local Development Server
+```bash
+npm run dev
 ```
-
-### Multi-Agent Collaboration
-
-```python
-from mystic import Agent, Orchestrator
-
-# Create multiple agents
-researcher = Agent(name="researcher", tools=["web", "database"])
-writer = Agent(name="writer", tools=["file"])
-critic = Agent(name="critic", tools=["file"])
-
-# Create orchestrator
-orchestrator = Orchestrator(
-    agents=[researcher, writer, critic],
-    collaboration_mode="sequential"  # or "parallel"
-)
-
-# Run multi-agent collaboration
-result = await orchestrator.run(
-    "Research latest progress in quantum computing, write a science article, then perform critical review"
-)
-```
+Open `http://localhost:3000` in your browser.
 
 ---
 
-## ⚙️ Configuration
+## 🤝 Contributing
 
-### LLM Provider Configuration
+Contributions welcome. Quick flow:
 
-```python
-from mystic.llm import LLMConfig
+```bash
+# 1. Fork → Clone → Branch
+git checkout -b feat/your-feature
 
-# OpenAI
-config = LLMConfig(
-    provider="openai",
-    model="gpt-4o",
-    api_key="your-api-key",
-    temperature=0.7,
-    max_tokens=4096
-)
+# 2. Local build passes
+npm run build
 
-# Other providers
-config = LLMConfig(
-    provider="anthropic",
-    model="claude-sonnet-4-20250514",
-    api_key="your-api-key"
-)
+# 3. Commit and open a PR
+git commit -m "feat: your change"
+git push origin feat/your-feature
 ```
 
-### Safety Configuration
-
-```python
-from mystic.safety import SafetyConfig
-
-safety_config = SafetyConfig(
-    enable_sandbox=True,
-    max_api_calls=10,
-    blocked_patterns=["rm -rf /", "DROP TABLE"],
-    require_human_approval=True,
-    audit_all_actions=True
-)
-
-agent = Agent(
-    llm_config=llm_config,
-    safety_config=safety_config
-)
-```
-
-### Memory Configuration
-
-```python
-from mystic.memory import MemoryConfig
-
-memory_config = MemoryConfig(
-    short_term_capacity=100,
-    long_term_enabled=True,
-    embedding_model="text-embedding-3-small",
-    max_history_days=90
-)
-
-agent = Agent(
-    llm_config=llm_config,
-    memory_config=memory_config
-)
-```
+**Welcome contribution directions**：
+- 🌐 Add new wisdom modules (e.g., Plum Blossom Numerology, synastry comparison, etc.)
+- 🧪 Add Server Action and component unit tests
+- 🎨 Polish visual details or new theme styles
+- 📱 Enhance PWA offline experience
 
 ---
 
 ## 🔒 Security
 
-### Usage Guidelines
+| Risk Scenario | Mitigation |
+|---------|---------|
+| **Gemini API Key Leak** | `.env.local` is in `.gitignore`; Server Action acts as the sole API proxy exit; the key is only used server-side and never exposed to the browser |
+| **Firestore Unauthorized R/W** | `firestore.rules` strictly controls read/write permissions; anonymous collective mirror only allows writing anonymous fields, read permissions based on document ID |
+| **Prompt Injection Attack** | Context Control Pipeline multi-layer System Prompt constraints; Output Sanitizer guardrail validates structured format |
+| **PWA Service Worker Cache Poisoning** | Production build hashes static assets; Service Worker update strategy uses `skipWaiting` + `clientsClaim` for gradual replacement |
 
-- **API Key Security**: Never hardcode API keys; use environment variables or secrets management services.
-- **Permission Control**: In production, configure agents with the principle of least privilege; only open necessary tools.
-- **Sandbox Execution**: Execute dangerous operations in sandbox environments to avoid impacting production systems.
-- **Audit Logs**: Enable audit logging to record all agent action traces.
-- **Human Review**: Enable human review mode at key decision points.
-
-### Vulnerability Disclosure
-
-Send suspected issues **by email** to: **`maox_neta@foxmail.com`**. We commit to first response within 48 hours, with critical bugs receiving a hotfix and public thanks within 72 hours.
+**Vulnerability disclosure**: Report security issues directly to **`maox_neta@foxmail.com`** — do not file a public issue. We commit to a **first response within 24 hours**.
 
 ---
 
-## 📄 License
+## 📜 License
 
-**Mystic** is released under the **MIT License**. This means:
-
-- ✅ You may freely modify, use commercially, or re-distribute this project
-- ✅ A copy of the MIT license text plus the copyright notice must be preserved in derivative works
-- ❌ The authors accept no liability for any direct or indirect damages arising from use
-
-**Copyright:** Copyright (c) 2025-2026 MeiSiristhebest. All Rights Reserved.
-
-Full license text: [`LICENSE`](LICENSE).
+Licensed under the [MIT License](LICENSE).
