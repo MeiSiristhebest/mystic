@@ -11,8 +11,11 @@
 
 ## 🎬 Screenshots
 
-Placeholder screenshot path
+<p align="center">
 
+  <img width="1262" height="694" alt="image" src="https://github.com/user-attachments/assets/64f63a5e-c24d-414b-ac60-d86552c7c563" />
+
+</p>
 ---
 
 ## 📖 Introduction
