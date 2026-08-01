@@ -1,10 +1,10 @@
 # 🔮 Mystic - Gemini Multimodal AI Wisdom & Astrology Suite
 
 <p align="center">
-  [![License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
-  [![Next.js](https://img.shields.io/badge/Next.js-14_App_Router-black.svg?style=for-the-badge)](https://nextjs.org/)
-  [![Google Gemini](https://img.shields.io/badge/AI_Engine-Gemini_Stream_%26_Vision_API-8E44AD.svg?style=for-the-badge)](https://ai.google.dev/)
-  [![Firebase](https://img.shields.io/badge/Database-Firebase_Firestore-FFCA28.svg?style=for-the-badge)](https://firebase.google.com/)
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge" alt="License: MIT" /></a>
+  <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-14_App_Router-black.svg?style=for-the-badge" alt="Next.js 14 App Router" /></a>
+  <a href="https://ai.google.dev/"><img src="https://img.shields.io/badge/AI_Engine-Gemini_Stream_%26_Vision_API-8E44AD.svg?style=for-the-badge" alt="Gemini Stream and Vision API" /></a>
+  <a href="https://firebase.google.com/"><img src="https://img.shields.io/badge/Database-Firebase_Firestore-FFCA28.svg?style=for-the-badge" alt="Firebase Firestore" /></a>
 </p>
 
 <p align="center">
@@ -14,19 +14,33 @@
 ---
 
 <p align="center">
-    <strong>Gemini Multimodal AI Wisdom & Astrology Suite · 8 Inference Modalities · Zero-Hallucination Context Pipeline</strong>
+  <strong>Gemini Multimodal AI Wisdom & Astrology Suite · 8 Inference Modalities · Zero-Hallucination Context Pipeline</strong>
 </p>
-
-## 🎬 Screenshots
 
 <p align="center">
-
-  <img width="1262" height="694" alt="image" src="https://github.com/user-attachments/assets/64f63a5e-c24d-414b-ac60-d86552c7c563" />
-
+  <img width="1262" height="694" alt="Mystic product interface preview" src="https://github.com/user-attachments/assets/64f63a5e-c24d-414b-ac60-d86552c7c563" />
 </p>
+
 ---
 
-## 📖 Introduction
+## Table of Contents
+
+- [About](#about)
+- [Features](#features)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Configuration](#configuration)
+- [Architecture](#architecture)
+- [Project Structure](#project-structure)
+- [Tech Stack](#tech-stack)
+- [Contributing](#contributing)
+- [Security](#security)
+- [License](#license)
+
+---
+
+## About
 
 **Mystic** is a modern, high-performance multimodal AI-powered Eastern wisdom, astrology, and spiritual exploration platform built with **Next.js 14 App Router**.
 
@@ -36,14 +50,101 @@ Key highlights include **Prompt Context Pipeline Control**, **Real-Time SSE Stre
 
 ---
 
-## 🛠️ Microservice Core Architecture & Engineering Design
+## Features
 
-All architectural components below are fully implemented in this repository. Click any source code link to inspect exact implementation details:
+### Eight Core Wisdom Modules
 
-### 1. Multimodal AI & Context Control Pipeline 🌌
+The system harmonizes ancient Eastern and Western traditions with modern AI:
 
-*   **Architectural Evolution**: Addressing LLM hallucinations in complex reasoning tasks, Mystic features a backend Context Control Pipeline. Each request dynamically concatenates structured System Instructions, domain knowledge rules, and user-supplied spatio-temporal/facial parameters before calling Gemini, ensuring deterministic, structured output.
-*   **Multimodal Reasoning Topology Diagram**：
+| # | Modality | Component | Capability |
+|:--|:---------|:----------|:-----------|
+| 1 | 🌌 Western Astrology | `AstrologyApp` | Calculates planetary aspects, house positions, and birth charts using birth date/time and geographic coordinates for synastry and forecast readings |
+| 2 | 🎋 Eastern BaZi | `BaziApp` | Computes Year, Month, Day, and Hour Pillars (GanZhi) with Five Elements strength evaluation |
+| 3 | 👁️ Vision Face Reading | `FaceReadingApp` | Uses Gemini Vision API to analyze face photos, identifying three divisions, five features, and facial marks |
+| 4 | ☯️ I-Ching Divination | `IChingApp` | Simulates 6 coin tosses to compute Main and Transformed Hexagrams with line transform interpretations |
+| 5 | 🎴 AI Tarot | `TarotApp` | Features single-card and 3-card spreads with card flip animations and real-time idea bubbles |
+| 6 | 🌙 Dream Analysis | `DreamApp` | Parses dream narratives to construct psychological metaphor maps based on symbol libraries |
+| 7 | ✨ Zi Wei Dou Shu | `ZiWeiApp` | Plots 12 palaces and star positions for birth charts |
+| 8 | 🪞 Collective Mirror | `CollectiveMirrorApp` | Connects to Firebase Firestore for real-time global user insight sharing and word cloud resonance |
+
+### Platform-Level Capabilities
+
+- **Zero-Hallucination Context Pipeline**: multi-layer System Prompts and domain knowledge constraints keep structured output stable and controllable.
+- **Real-Time SSE Streaming**: Gemini Stream API returns incrementally; the frontend renders interpretations with a typewriter effect.
+- **Multimodal Vision Reasoning**: Gemini Vision API reads image features directly, with no extra CV preprocessing pipeline.
+- **Progressive Web App**: Service Worker plus install prompt, supporting one-tap Add to Home Screen on mobile.
+
+---
+
+## Requirements
+
+| Dependency | Version | Notes |
+|:-----------|:--------|:------|
+| **Node.js** | 18.0 or higher | Runtime baseline for Next.js 14 App Router |
+| **npm** | Bundled with Node.js | Package manager |
+| **Gemini API Key** | Required | Obtain one from [Google AI Studio](https://aistudio.google.com/) |
+| **Firebase Project** | Optional | Only required by the Collective Mirror module (Firestore instance) |
+
+---
+
+## Installation
+
+```bash
+git clone https://github.com/MeiSiristhebest/mystic.git
+cd mystic
+npm install
+```
+
+---
+
+## Quick Start
+
+### 1. Configure Environment Variables
+
+Create a `.env.local` file in the project root and set your Gemini API Key:
+
+```bash
+GEMINI_API_KEY="your-google-gemini-api-key"
+```
+
+### 2. Start the Local Development Server
+
+```bash
+npm run dev
+```
+
+### 3. Expected Output
+
+```text
+▲ Next.js 14.x.x
+- Local:        http://localhost:3000
+- Environments: .env.local
+✓ Ready in XXX ms
+```
+
+Open `http://localhost:3000` in your browser to preview the full system.
+
+---
+
+## Configuration
+
+| Variable | Required | Description |
+|:---------|:---------|:------------|
+| `GEMINI_API_KEY` | Yes | Google Gemini API key. Used server-side only through Server Actions and never exposed to the browser |
+
+Additional cloud configuration lives in `firebase-applet-config.json` (Firebase realtime cloud config) and `firestore.rules` (Firestore read/write security rules) at the repository root.
+
+---
+
+## Architecture
+
+All architectural components below are fully implemented in this repository. Click any source code link to inspect exact implementation details.
+
+### Context Control Pipeline
+
+Addressing LLM hallucinations in complex reasoning tasks, Mystic features a backend Context Control Pipeline. Each request dynamically concatenates structured System Instructions, domain knowledge rules, and user-supplied spatio-temporal/facial parameters before calling Gemini, ensuring deterministic, structured output.
+
+### Multimodal Reasoning Topology Diagram
 
 ```mermaid
 graph TD
@@ -62,7 +163,7 @@ graph TD
         Sanitizer["Output Structuring & Constraint Guard"]
     end
 
-    subgraph GeminiEngine["Google Gemini AI 引擎"]
+    subgraph GeminiEngine["Google Gemini AI Engine"]
         StreamAPI["Gemini Stream API"]
         VisionAPI["Gemini Multimodal Vision API"]
     end
@@ -77,30 +178,7 @@ graph TD
     ClientLayer --> FirebaseSync
 ```
 
-*   **📂 Direct Source Code Links**：
-    - [app/components/DiscoveryView.tsx (Multimodal Navigation & Module Router)](app/components/DiscoveryView.tsx)
-    - [app/components/AstrologyApp.tsx (Astrology Calculations & Gemini Engine)](app/components/AstrologyApp.tsx)
-    - [app/components/BaziApp.tsx (Four Pillars Calculation & Gemini Engine)](app/components/BaziApp.tsx)
-    - [app/components/FaceReadingApp.tsx (Gemini Multimodal Vision Face Analysis)](app/components/FaceReadingApp.tsx)
-    - [app/components/IChingApp.tsx (I-Ching Coin Tossing & Hexagram Transforms)](app/components/IChingApp.tsx)
-    - [app/components/TarotApp.tsx (Tarot Spread & Dynamic Idea Bubbles)](app/components/TarotApp.tsx)
-
----
-
-### 2. Eight Core Wisdom Modules & Execution Sequences ☯️
-
-The system harmonizes ancient Eastern & Western traditions with modern AI:
-
-1.  **🌌 Western Astrology (AstrologyApp)**: Calculates planetary aspects, house positions, and birth charts using birth date/time and geographic coordinates for synastry and forecast readings.
-2.  **🎋 Eastern BaZi (BaziApp)**: Computes Year, Month, Day, and Hour Pillars (GanZhi) with Five Elements strength evaluation.
-3.  **👁️ Vision Face Reading (FaceReadingApp)**: Uses Gemini Vision API to analyze face photos, identifying three divisions, five features, and facial marks.
-4.  **☯️ I-Ching Divination (IChingApp)**: Simulates 6 coin tosses to compute Main and Transformed Hexagrams with line transform interpretations.
-5.  **🎴 AI Tarot (TarotApp)**: Features single-card and 3-card spreads with card flip animations and real-time idea bubbles.
-6.  **🌙 Dream Analysis (DreamApp)**: Parses dream narratives to construct psychological metaphor maps based on symbol libraries.
-7.  **✨ Zi Wei Dou Shu (ZiWeiApp)**: Plots 12 palaces and star positions for birth charts.
-8.  **🪞 Collective Mirror (CollectiveMirrorApp)**: Connects to Firebase Firestore for real-time global user insight sharing and word cloud resonance.
-
-*   **I-Ching Sequence Flow Diagram**：
+### I-Ching Sequence Flow Diagram
 
 ```mermaid
 sequenceDiagram
@@ -117,14 +195,23 @@ sequenceDiagram
     App-->>User: "Typewriter effect text rendering + AssociationBubble"
 ```
 
-*   **📂 Direct Source Code Links**：
-    - [app/components/CollectiveMirrorApp.tsx (Firebase Collective Mirror Component)](app/components/CollectiveMirrorApp.tsx)
-    - [app/components/AssociationBubble.tsx (Real-time SSE Streaming Bubble Component)](app/components/AssociationBubble.tsx)
-    - [firestore.rules (Firebase Security Rules Policy)](firestore.rules)
+### Direct Source Code Links
+
+| Module | Source Path | Responsibility |
+|:-------|:------------|:---------------|
+| Discovery Navigation | [`app/components/DiscoveryView.tsx`](app/components/DiscoveryView.tsx) | Multimodal navigation and module router |
+| Western Astrology | [`app/components/AstrologyApp.tsx`](app/components/AstrologyApp.tsx) | Astrology calculations and Gemini engine |
+| Eastern BaZi | [`app/components/BaziApp.tsx`](app/components/BaziApp.tsx) | Four Pillars calculation and Gemini engine |
+| Vision Face Reading | [`app/components/FaceReadingApp.tsx`](app/components/FaceReadingApp.tsx) | Gemini Multimodal Vision face analysis |
+| I-Ching Divination | [`app/components/IChingApp.tsx`](app/components/IChingApp.tsx) | I-Ching coin tossing and hexagram transforms |
+| AI Tarot | [`app/components/TarotApp.tsx`](app/components/TarotApp.tsx) | Tarot spread and dynamic idea bubbles |
+| Collective Mirror | [`app/components/CollectiveMirrorApp.tsx`](app/components/CollectiveMirrorApp.tsx) | Firebase-backed Collective Mirror component |
+| Association Bubbles | [`app/components/AssociationBubble.tsx`](app/components/AssociationBubble.tsx) | Real-time SSE streaming bubble component |
+| Security Rules | [`firestore.rules`](firestore.rules) | Firebase security rules policy |
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```text
 mystic/
@@ -151,46 +238,19 @@ mystic/
 
 ---
 
-## 📊 Technology Stack Matrix
+## Tech Stack
 
 | Layer | Core Technology | Role |
-|:------|:-----------|:--------|
-| **Frontend Framework** | Next.js 14 (App Router) + React 18 | Modern React Fullstack Framework |
-| **Core AI Engine** | Google Gemini API (Stream & Vision) | SSE Real-time Streaming & Multimodal Vision |
-| **Realtime Cloud DB** | Firebase Firestore | Anonymous Collective Insight Sync |
-| **Styling & UI** | TailwindCSS + Glassmorphism UI | Futuristic Dark Crystal Visual System |
-| **PWA Experience** | Service Worker + PwaInstallPrompt | Add to Home Screen Native Mobile Support |
+|:------|:----------------|:-----|
+| **Frontend Framework** | Next.js 14 (App Router) + React 18 | Modern React fullstack framework |
+| **Core AI Engine** | Google Gemini API (Stream & Vision) | SSE real-time streaming and multimodal vision |
+| **Realtime Cloud DB** | Firebase Firestore | Anonymous collective insight sync |
+| **Styling & UI** | TailwindCSS + Glassmorphism UI | Futuristic dark crystal visual system |
+| **PWA Experience** | Service Worker + PwaInstallPrompt | Add to Home Screen native mobile support |
 
 ---
 
-## 🏃 Local Quick Start Guide
-
-### 1. Prerequisites
-- **Node.js**: 18.0 or higher
-- **Gemini API Key**: Obtain API Key
-
-### 2. Installation
-```bash
-git clone https://github.com/MeiSiristhebest/mystic.git
-cd mystic
-npm install
-```
-
-### 3. Environment Setup
-Create a `.env.local` file in the root directory:
-```env
-GEMINI_API_KEY="your-google-gemini-api-key"
-```
-
-### 4. Start Local Development Server
-```bash
-npm run dev
-```
-Open `http://localhost:3000` in your browser.
-
----
-
-## 🤝 Contributing
+## Contributing
 
 Contributions welcome. Quick flow:
 
@@ -206,7 +266,8 @@ git commit -m "feat: your change"
 git push origin feat/your-feature
 ```
 
-**Welcome contribution directions**：
+Welcome contribution directions:
+
 - 🌐 Add new wisdom modules (e.g., Plum Blossom Numerology, synastry comparison, etc.)
 - 🧪 Add Server Action and component unit tests
 - 🎨 Polish visual details or new theme styles
@@ -214,19 +275,19 @@ git push origin feat/your-feature
 
 ---
 
-## 🔒 Security
+## Security
 
 | Risk Scenario | Mitigation |
-|---------|---------|
+|:--------------|:-----------|
 | **Gemini API Key Leak** | `.env.local` is in `.gitignore`; Server Action acts as the sole API proxy exit; the key is only used server-side and never exposed to the browser |
 | **Firestore Unauthorized R/W** | `firestore.rules` strictly controls read/write permissions; anonymous collective mirror only allows writing anonymous fields, read permissions based on document ID |
 | **Prompt Injection Attack** | Context Control Pipeline multi-layer System Prompt constraints; Output Sanitizer guardrail validates structured format |
 | **PWA Service Worker Cache Poisoning** | Production build hashes static assets; Service Worker update strategy uses `skipWaiting` + `clientsClaim` for gradual replacement |
 
-**Vulnerability disclosure**: Report security issues directly to **`maox_neta@foxmail.com`** — do not file a public issue. We commit to a **first response within 24 hours**.
+**Vulnerability disclosure**: Report security issues directly to `maox_neta@foxmail.com` — do not file a public issue. We commit to a **first response within 24 hours**.
 
 ---
 
-## 📜 License
+## License
 
-Licensed under the [MIT License](LICENSE).
+This project is released under the **MIT License**. See the [LICENSE](LICENSE) file for details.
