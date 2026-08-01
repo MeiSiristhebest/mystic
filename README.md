@@ -1,10 +1,10 @@
 # 🔮 Mystic - Gemini Multimodal AI Wisdom & Astrology Suite
 
 <p align="center">
-  [![License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
-  [![Next.js](https://img.shields.io/badge/Next.js-14_App_Router-black.svg?style=for-the-badge)](https://nextjs.org/)
-  [![Google Gemini](https://img.shields.io/badge/AI_Engine-Gemini_Stream_%26_Vision_API-8E44AD.svg?style=for-the-badge)](https://ai.google.dev/)
-  [![Firebase](https://img.shields.io/badge/Database-Firebase_Firestore-FFCA28.svg?style=for-the-badge)](https://firebase.google.com/)
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge" alt="License: MIT" /></a>
+  <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-14_App_Router-black.svg?style=for-the-badge" alt="Next.js 14 App Router" /></a>
+  <a href="https://ai.google.dev/"><img src="https://img.shields.io/badge/AI_Engine-Gemini_Stream_%26_Vision_API-8E44AD.svg?style=for-the-badge" alt="Gemini Stream and Vision API" /></a>
+  <a href="https://firebase.google.com/"><img src="https://img.shields.io/badge/Database-Firebase_Firestore-FFCA28.svg?style=for-the-badge" alt="Firebase Firestore" /></a>
 </p>
 
 <p align="center">
@@ -14,37 +14,137 @@
 ---
 
 <p align="center">
-    <strong>Gemini 多模态 AI 玄学与星象智慧平台 · 八大推理模态 · 零幻觉上下文约束管道</strong>
+  <strong>Gemini 多模态 AI 玄学与星象智慧平台 · 八大推理模态 · 零幻觉上下文约束管道</strong>
 </p>
 
-## 🎬 产品截图
-
 <p align="center">
-
-  <img width="1262" height="694" alt="image" src="https://github.com/user-attachments/assets/64f63a5e-c24d-414b-ac60-d86552c7c563" />
-
+  <img width="1262" height="694" alt="Mystic 产品界面预览" src="https://github.com/user-attachments/assets/64f63a5e-c24d-414b-ac60-d86552c7c563" />
 </p>
 
 ---
 
-## 📖 项目简介
+## 目录 (Table of Contents)
+
+- [项目简介 (About)](#项目简介-about)
+- [核心功能 (Features)](#核心功能-features)
+- [环境要求 (Requirements)](#环境要求-requirements)
+- [安装 (Installation)](#安装-installation)
+- [快速开始 (Quick Start)](#快速开始-quick-start)
+- [配置 (Configuration)](#配置-configuration)
+- [架构设计 (Architecture)](#架构设计-architecture)
+- [项目结构 (Project Structure)](#项目结构-project-structure)
+- [技术栈 (Tech Stack)](#技术栈-tech-stack)
+- [参与贡献 (Contributing)](#参与贡献-contributing)
+- [安全说明 (Security)](#安全说明-security)
+- [许可证 (License)](#许可证-license)
+
+---
+
+## 项目简介 (About)
 
 **Mystic** 是一款基于 **Next.js 14 App Router** 架构构建的高性能多模态 AI 东方玄学与西方星象智慧探索平台。
 
-系统深度集成了 **Gemini Stream API** 与 **Gemini Vision API**，结合自定义的"Prompt Context Pipeline（上下文约束管道）"，构建了包含西方占星排盘、东方八字命盘、视觉相学面相分析、周易六十四卦卜筮、紫微斗数、AI 塔罗牌占卜、梦境解析以及集体意识共鸣镜（Collective Mirror）在内的八大智慧推理模态。
+系统深度集成了 **Gemini Stream API** 与 **Gemini Vision API**，结合自定义的「Prompt Context Pipeline（上下文约束管道）」，构建了包含西方占星排盘、东方八字命盘、视觉相学面相分析、周易六十四卦卜筮、紫微斗数、AI 塔罗牌占卜、梦境解析以及集体意识共鸣镜（Collective Mirror）在内的八大智慧推理模态。
 
 系统的核心亮点在于**零幻觉 Prompt Context 管道控制**、**实时 SSE 流式响应渲染**、**视觉图像多模态推理**以及完整的 **PWA 渐进式 Web 应用架构支持**。
 
 ---
 
-## 🛠️ 核心架构设计与工程实践 (Architecture & Design)
+## 核心功能 (Features)
 
-以下架构模块均在本项目中进行了完整的实现与落地，点击对应模块中的源码直链，即可查阅底层的核心代码实现细节：
+### 八大智慧分析模态
 
-### 1. 多模态 AI 推理与上下文约束管道 (Multimodal AI & Context Control Pipeline) 🌌
+系统将东西方传统推演智慧与现代 AI 进行了深度融合，各子模块具体实现如下：
 
-*   **架构演进与思考**：针对传统 LLM 在复杂推演场景下容易产生的逻辑混乱与幻觉问题，系统设计了上下文约束管道（Context Control Pipeline）。每次推理请求均会在后台拼接结构化的系统指令（System Instructions）、领域知识库约束以及用户输入的时空/面相参数，确保大模型输出具备极高专业度与一致性的结构化解读。
-*   **多模态推理架构图**：
+| # | 模态 | 组件 | 能力说明 |
+|:--|:-----|:-----|:---------|
+| 1 | 🌌 占星排盘 | `AstrologyApp` | 输入出生年月日时与经纬度，动态计算行星相位与宫位落点，调用 Gemini 进行双人合盘与运势预测 |
+| 2 | 🎋 东方八字 | `BaziApp` | 精确推算年柱、月柱、日柱、时柱天干地支，结合五行旺衰进行格局分析 |
+| 3 | 👁️ 视觉面相 | `FaceReadingApp` | 通过 Gemini Vision API 直接解析用户上传的面部照片，识别面部三庭五眼特征与气色印记 |
+| 4 | ☯️ 周易卜筮 | `IChingApp` | 模拟三枚铜钱摇卦过程，生成本卦与变卦，结合《易经》卦辞进行变爻解析 |
+| 5 | 🎴 塔罗占卜 | `TarotApp` | 包含单牌解读与经典三牌牌阵，实时渲染卡牌翻转动画与灵感词泡 |
+| 6 | 🌙 梦境解析 | `DreamApp` | 基于精神分析与意象符码库，输入梦境文本生成心理隐喻映射图 |
+| 7 | ✨ 紫微斗数 | `ZiWeiApp` | 推算十二宫位主星落点与四化飞星 |
+| 8 | 🪞 灵感共鸣镜 | `CollectiveMirrorApp` | 连接 Firebase Firestore，实现全球用户顿悟感悟的实时匿名投射与词云共鸣 |
+
+### 平台级能力
+
+- **零幻觉上下文约束管道**：多层 System Prompt 与领域知识约束，保证结构化输出稳定可控。
+- **实时 SSE 流式渲染**：Gemini Stream API 增量返回，前端逐字打字机式呈现解读文本。
+- **多模态视觉推理**：Gemini Vision API 直接读取图像特征，无需额外的 CV 预处理链路。
+- **PWA 渐进式体验**：Service Worker + 安装引导，支持移动端一键添加到主屏幕。
+
+---
+
+## 环境要求 (Requirements)
+
+| 依赖项 | 版本要求 | 说明 |
+|:-------|:---------|:-----|
+| **Node.js** | 18.0 或更高版本 | Next.js 14 App Router 运行时基础 |
+| **npm** | 随 Node.js 分发 | 包管理器 |
+| **Gemini API Key** | 必填 | 前往 [Google AI Studio](https://aistudio.google.com/) 获取 |
+| **Firebase 项目** | 可选 | 仅「灵感共鸣镜」模态需要 Firestore 实例 |
+
+---
+
+## 安装 (Installation)
+
+```bash
+git clone https://github.com/MeiSiristhebest/mystic.git
+cd mystic
+npm install
+```
+
+---
+
+## 快速开始 (Quick Start)
+
+### 1. 配置环境变量
+
+在项目根目录下新建 `.env.local` 文件，配置 Gemini API Key：
+
+```bash
+GEMINI_API_KEY="your-google-gemini-api-key"
+```
+
+### 2. 启动本地开发服务器
+
+```bash
+npm run dev
+```
+
+### 3. 预期输出
+
+```text
+▲ Next.js 14.x.x
+- Local:        http://localhost:3000
+- Environments: .env.local
+✓ Ready in XXX ms
+```
+
+打开浏览器访问 `http://localhost:3000`，即可预览完整系统。
+
+---
+
+## 配置 (Configuration)
+
+| 变量名 | 是否必填 | 说明 |
+|:-------|:---------|:-----|
+| `GEMINI_API_KEY` | 是 | Google Gemini API 密钥，仅在服务端通过 Server Action 使用，不会暴露给浏览器 |
+
+其余云端配置见根目录的 `firebase-applet-config.json`（Firebase 实时云端配置）与 `firestore.rules`（Firestore 读写安全规则）。
+
+---
+
+## 架构设计 (Architecture)
+
+以下架构模块均在本项目中进行了完整的实现与落地，点击对应模块中的源码直链，即可查阅底层的核心代码实现细节。
+
+### 上下文约束管道 (Context Control Pipeline)
+
+针对传统 LLM 在复杂推演场景下容易产生的逻辑混乱与幻觉问题，系统设计了上下文约束管道（Context Control Pipeline）。每次推理请求均会在后台拼接结构化的系统指令（System Instructions）、领域知识库约束以及用户输入的时空/面相参数，确保大模型输出具备极高专业度与一致性的结构化解读。
+
+### 多模态推理架构图
 
 ```mermaid
 graph TD
@@ -78,30 +178,7 @@ graph TD
     ClientLayer --> FirebaseSync
 ```
 
-*   **📂 核心源码直链**：
-    - [app/components/DiscoveryView.tsx (多模态探索导航与模块路由主控)](app/components/DiscoveryView.tsx)
-    - [app/components/AstrologyApp.tsx (西方占星计算与 Gemini 交互引擎)](app/components/AstrologyApp.tsx)
-    - [app/components/BaziApp.tsx (东方八字干支推算与 Gemini 解读引擎)](app/components/BaziApp.tsx)
-    - [app/components/FaceReadingApp.tsx (Gemini Multimodal Vision 面相图像分析)](app/components/FaceReadingApp.tsx)
-    - [app/components/IChingApp.tsx (周易六爻摇卦与变卦推演引擎)](app/components/IChingApp.tsx)
-    - [app/components/TarotApp.tsx (塔罗牌阵与 AI 牌意联想分析组件)](app/components/TarotApp.tsx)
-
----
-
-### 2. 八大智慧分析模态与处理时序 (Wisdom Engine Subsystems) ☯️
-
-系统将东西方传统推演智慧与现代 AI 进行了深度融合，各子模块具体实现如下：
-
-1.  **🌌 占星排盘 (AstrologyApp)**：输入出生年月日时与经纬度，动态计算行星相位与宫位落点，调用 Gemini 进行双人合盘与运势预测。
-2.  **🎋 东方八字 (BaziApp)**：精确推算年柱、月柱、日柱、时柱天干地支，结合五行旺衰进行格局分析。
-3.  **👁️ 视觉面相 (FaceReadingApp)**：通过 Gemini Vision API 直接解析用户上传的面部照片，识别面部三庭五眼特征与气色印记。
-4.  **☯️ 周易卜筮 (IChingApp)**：模拟三枚铜钱摇卦过程，生成本卦与变卦，结合《易经》卦辞进行变爻解析。
-5.  **🎴 塔罗占卜 (TarotApp)**：包含单牌解读与经典三牌牌阵，实时渲染卡牌翻转动画与灵感词泡。
-6.  **🌙 梦境解析 (DreamApp)**：基于精神分析与意象符码库，输入梦境文本生成心理隐喻映射图。
-7.  **✨ 紫微斗数 (ZiWeiApp)**：推算十二宫位主星落点与四化飞星。
-8.  **🪞 灵感共鸣镜 (CollectiveMirrorApp)**：连接 Firebase Firestore，实现全球用户顿悟感悟的实时匿名投射与词云共鸣。
-
-*   **摇卦与变卦推演时序图 (I-Ching Sequence Flow)**：
+### 摇卦与变卦推演时序图 (I-Ching Sequence Flow)
 
 ```mermaid
 sequenceDiagram
@@ -118,14 +195,23 @@ sequenceDiagram
     App-->>User: "逐字打字机渲染解读文本<br/>+ 关联词泡 AssociationBubble"
 ```
 
-*   **📂 核心源码直链**：
-    - [app/components/CollectiveMirrorApp.tsx (基于 Firebase 的集体共鸣镜实现)](app/components/CollectiveMirrorApp.tsx)
-    - [app/components/AssociationBubble.tsx (实时流式响应联想词泡组件)](app/components/AssociationBubble.tsx)
-    - [firestore.rules (Firebase 安全规则策略文件)](firestore.rules)
+### 核心源码直链
+
+| 模块 | 源码路径 | 职责说明 |
+|:-----|:---------|:---------|
+| 探索导航 | [`app/components/DiscoveryView.tsx`](app/components/DiscoveryView.tsx) | 多模态探索导航与模块路由主控 |
+| 西方占星 | [`app/components/AstrologyApp.tsx`](app/components/AstrologyApp.tsx) | 西方占星计算与 Gemini 交互引擎 |
+| 东方八字 | [`app/components/BaziApp.tsx`](app/components/BaziApp.tsx) | 东方八字干支推算与 Gemini 解读引擎 |
+| 视觉面相 | [`app/components/FaceReadingApp.tsx`](app/components/FaceReadingApp.tsx) | Gemini Multimodal Vision 面相图像分析 |
+| 周易卜筮 | [`app/components/IChingApp.tsx`](app/components/IChingApp.tsx) | 周易六爻摇卦与变卦推演引擎 |
+| 塔罗占卜 | [`app/components/TarotApp.tsx`](app/components/TarotApp.tsx) | 塔罗牌阵与 AI 牌意联想分析组件 |
+| 共鸣镜 | [`app/components/CollectiveMirrorApp.tsx`](app/components/CollectiveMirrorApp.tsx) | 基于 Firebase 的集体共鸣镜实现 |
+| 联想词泡 | [`app/components/AssociationBubble.tsx`](app/components/AssociationBubble.tsx) | 实时流式响应联想词泡组件 |
+| 安全规则 | [`firestore.rules`](firestore.rules) | Firebase 安全规则策略文件 |
 
 ---
 
-## 📂 项目结构 (Project Structure)
+## 项目结构 (Project Structure)
 
 ```text
 mystic/
@@ -152,55 +238,19 @@ mystic/
 
 ---
 
-## 📊 技术栈选型 (Technology Stack)
+## 技术栈 (Tech Stack)
 
 | 层级 | 核心技术 | 作用 |
 |:------|:-----------|:--------|
 | **前端应用框架** | Next.js 14 (App Router) + React 18 | 现代化 React 全栈应用框架 |
 | **核心 AI 引擎** | Google Gemini API (Stream & Vision) | 实时 SSE 流式推理与多模态图像识别 |
 | **实时云数据库** | Firebase Firestore | 匿名集体共鸣镜数据实时广播与同步 |
-| **样式与视觉设计**| TailwindCSS + Glassmorphism UI | 极具未来感的深色调水晶流体视觉设计 |
+| **样式与视觉设计** | TailwindCSS + Glassmorphism UI | 极具未来感的深色调水晶流体视觉设计 |
 | **PWA 跨端体验** | Service Worker + PwaInstallPrompt | 支持手机端一键添加到主屏幕体验 |
 
 ---
 
-## 🏃 本地开发与启动指南
-
-### 1. 环境准备
-- **Node.js**: 18.0 或更高版本
-- **Gemini API Key**: 前往 [Google AI Studio](https://aistudio.google.com/) 获取 API Key
-
-### 2. 安装依赖
-```bash
-git clone https://github.com/MeiSiristhebest/mystic.git
-cd mystic
-npm install
-```
-
-### 3. 配置环境变量
-在项目根目录下新建 `.env.local` 文件，配置 Gemini API Key：
-```env
-GEMINI_API_KEY="your-google-gemini-api-key"
-```
-
-### 4. 启动本地开发服务器
-```bash
-npm run dev
-```
-
-打开浏览器访问 `http://localhost:3000`，即可预览完整系统。
-
-**预期输出**：
-```bash
-▲ Next.js 14.x.x
-- Local:        http://localhost:3000
-- Environments: .env.local
-✓ Ready in XXX ms
-```
-
----
-
-## 🤝 参与贡献
+## 参与贡献 (Contributing)
 
 欢迎贡献代码。简要流程：
 
@@ -216,7 +266,8 @@ git commit -m "feat: your change"
 git push origin feat/your-feature
 ```
 
-**欢迎贡献的方向**：
+欢迎贡献的方向：
+
 - 🌐 新增智慧模态（如梅花易数、星盘比对等）
 - 🧪 补充 Server Action 与组件单元测试
 - 🎨 视觉细节打磨或新主题样式
@@ -224,19 +275,19 @@ git push origin feat/your-feature
 
 ---
 
-## 🔒 安全说明
+## 安全说明 (Security)
 
 | 风险场景 | 防护措施 |
-|---------|---------|
+|:---------|:---------|
 | **Gemini API Key 泄露** | `.env.local` 已加入 `.gitignore`；Server Action 作为唯一 API 代理出口，Key 仅在服务端使用，从不暴露给浏览器 |
 | **Firestore 越权读写** | `firestore.rules` 严格控制读写权限；匿名共鸣镜仅允许写入匿名字段，读权限基于文档 ID |
 | **Prompt 注入攻击** | Context Control Pipeline 多层 System Prompt 约束；输出 Sanitizer 护栏校验结构化格式 |
 | **PWA Service Worker 缓存污染** | 生产构建时哈希化静态资源；Service Worker 更新策略采用 `skipWaiting` + `clientsClaim` 渐进替换 |
 
-**漏洞上报**：发现安全问题请直接发邮件至 **`maox_neta@foxmail.com`**，不要公开在 Issue 里。承诺 **24 小时内首次响应**。
+**漏洞上报**：发现安全问题请直接发邮件至 `maox_neta@foxmail.com`，不要公开在 Issue 里。承诺 **24 小时内首次响应**。
 
 ---
 
-## 📜 许可证 (License)
+## 许可证 (License)
 
-基于 **MIT License** 开源协议。详见 [LICENSE](LICENSE) 文件。
+本项目基于 **MIT License** 开源协议发布，详见 [LICENSE](LICENSE) 文件。
