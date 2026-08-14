@@ -86,6 +86,8 @@ export function useBaziPresenter(props: UseBaziPresenterProps = {}) {
       question,
       profileContext: getProfileContext(),
       ziweiData: data.ziwei,
+      detectedPatterns: data.detectedPatterns,
+      evidences: data.ziwei?.evidences,
       enabledModules: profile.enabledModules,
     });
 

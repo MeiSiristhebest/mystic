@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState, useRef, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import React, { useState, useRef, useCallback } from "react";
+import { motion } from "motion/react";
 import { 
-  Sparkles, Calendar, Clock, MapPin, Compass, Crown, Eye, 
-  Layers, Shield, Flame, BookOpen, Send, Award, Star
+  Sparkles, Calendar, Clock, Crown, 
+  Layers, ShieldCheck, Star, Activity, CheckCircle, AlertTriangle
 } from "lucide-react";
 import MysticMarkdown from "./MysticMarkdown";
 import BreathingLoading from "./BreathingLoading";
@@ -17,7 +17,7 @@ import { playMysticChime, triggerHapticVibration } from "@/lib/audio";
 import { VedicChart } from "@/lib/vedic/types";
 
 export default function VedicApp() {
-  const { profile, getProfileContext, updateProfile } = useUserProfile();
+  const { profile, getProfileContext } = useUserProfile();
   const [birthDate, setBirthDate] = useState(profile.birthDate || "1992-05-18");
   const [birthTime, setBirthTime] = useState(profile.birthTime || "08:45");
   const [question, setQuestion] = useState("");
@@ -38,19 +38,18 @@ export default function VedicApp() {
       const chart = await getVedicChartServerData(birthDate, birthTime);
       setVedicChart(chart);
 
-      const ak = chart.charaKarakas.find((k: any) => k.role === 'AK');
       const charaStr = chart.charaKarakas.map((k: any) => `${k.roleName}: ${k.planetCn}`).join(' | ');
-
 
       const prompt = getVedicPrompt({
         ascendantSign: `${chart.ascendant.signCn} (${chart.ascendant.nakshatraCn})`,
         moonNakshatraName: chart.moonNakshatra.cnName,
         moonNakshatraSummary: chart.moonNakshatra.summary,
-        dashaPeriod: `${chart.currentDasha.mahaDasha.planetCn}大运 (${chart.currentDasha.mahaDasha.startDate} ~ ${chart.currentDasha.mahaDasha.endDate})`,
+        dashaPeriod: chart.currentDasha.formattedDisplay,
         charaKarakas: charaStr,
-        chartSummary: `Ayanamsa: ${chart.ayanamsa.toFixed(2)}° | 核心标签: ${chart.summaryTags.join(', ')}`,
+        chartSummary: `Lahiri Ayanamsa: ${chart.ayanamsa.toFixed(2)}° | 核心标签: ${chart.summaryTags.join(', ')}`,
         question,
         profileContext: getProfileContext(),
+        evidences: chart.evidences,
       });
 
       await sendMessage(prompt, {
@@ -76,7 +75,7 @@ export default function VedicApp() {
           吠陀占星推演中心 (Jyotish Engine)
         </h1>
         <p className="text-purple-200/60 max-w-2xl mx-auto text-sm md:text-base font-serif">
-          基于古印度恒星黄道（True Citra / Lahiri Ayanamsa）与 KN Rao 体系，审计 27 月宿、D1/D9/D10 分盘与 120 年 Vimsottari 大运。
+          基于古印度恒星黄道（True Citra / Lahiri Ayanamsa）与 KN Rao 体系，审计 27 月宿、D1/D9/D10 分盘与 120 年 Vimsottari (MD→AD→PD) 大运。
         </p>
       </div>
 
@@ -163,14 +162,33 @@ export default function VedicApp() {
                 <div className="glass-panel p-5 rounded-2xl border border-purple-500/30 bg-purple-950/20 space-y-1">
                   <div className="flex items-center gap-2 text-xs text-purple-300 font-serif">
                     <Clock className="w-4 h-4 text-indigo-400" />
-                    <span>当前 Vimsottari 大运</span>
+                    <span>三级 Vimsottari 大运 (MD→AD→PD)</span>
                   </div>
-                  <div className="text-lg font-serif font-bold text-indigo-300">
-                    {vedicChart.currentDasha.mahaDasha.planetCn}
+                  <div className="text-sm font-serif font-bold text-indigo-300">
+                    {vedicChart.currentDasha.formattedDisplay}
                   </div>
                   <p className="text-[11px] text-purple-200/70 font-serif">
-                    周期: {vedicChart.currentDasha.mahaDasha.startDate} ~ {vedicChart.currentDasha.mahaDasha.endDate}
+                    当前中运区间: {vedicChart.currentDasha.antarDasha.startDate} ~ {vedicChart.currentDasha.antarDasha.endDate}
                   </p>
+                </div>
+              </div>
+
+              {/* Evidence Chain and Validation Bar */}
+              <div className="p-4 rounded-2xl bg-purple-900/20 border border-purple-500/20 flex flex-wrap items-center justify-between gap-3 text-xs font-serif">
+                <div className="flex items-center gap-2 text-purple-300">
+                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                  <span>确定性证据链已锁定 ({vedicChart.evidences?.length || 0} 个核心证据节点)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {vedicChart.validation?.isValid ? (
+                    <span className="flex items-center gap-1 text-emerald-400 bg-emerald-950/40 px-2.5 py-1 rounded-full border border-emerald-500/30">
+                      <CheckCircle className="w-3.5 h-3.5" /> 结构完整性校验通过 (16项基准)
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1 text-amber-400 bg-amber-950/40 px-2.5 py-1 rounded-full border border-amber-500/30">
+                      <AlertTriangle className="w-3.5 h-3.5" /> 存在退化警告
+                    </span>
+                  )}
                 </div>
               </div>
 

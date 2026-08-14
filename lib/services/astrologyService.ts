@@ -4,7 +4,8 @@ import {
   getSunSign, 
   getZodiacFromLongitude 
 } from "@/lib/astrology";
-import { buildVedicChart, calculateVedicSynastry } from "@/lib/vedic";
+import { buildVedicChart, calculateVedicSynastry, VedicChart } from "@/lib/vedic";
+import { DomainEvaluationResult } from "@/lib/contracts/types";
 
 export class AstrologyService {
   /**
@@ -69,7 +70,7 @@ export class AstrologyService {
   /**
    * Calculate Vedic astrology chart with sidereal ayanamsa & 27 nakshatras.
    */
-  static getVedicChart(birthDate: string, birthTime: string, lon = 116.40, lat = 39.90) {
+  static getVedicChart(birthDate: string, birthTime: string, lon = 116.40, lat = 39.90): VedicChart {
     const starChart = this.getStarChart(birthDate, birthTime, lon, lat);
     const tropicalPlanets = [
       { name: 'Sun', longitude: starChart.planets[0].longitude },
@@ -84,6 +85,21 @@ export class AstrologyService {
     ];
 
     return buildVedicChart(birthDate, birthTime, tropicalPlanets, starChart.ascendant.longitude);
+  }
+
+  /**
+   * Complete Domain Evaluation Package for Vedic Jyotish
+   */
+  static getVedicDomainEvaluation(birthDate: string, birthTime: string, lon = 116.40, lat = 39.90): DomainEvaluationResult<VedicChart> {
+    const chart = this.getVedicChart(birthDate, birthTime, lon, lat);
+    return {
+      domain: 'vedic',
+      chart,
+      validation: chart.validation,
+      evidences: chart.evidences,
+      summaryTags: chart.summaryTags,
+      calculatedAt: new Date().toISOString(),
+    };
   }
 
   /**

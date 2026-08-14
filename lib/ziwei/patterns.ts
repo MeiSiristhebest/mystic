@@ -15,23 +15,7 @@
  *  - 倪海厦《天纪》紫微斗数讲义
  */
 
-import type { ZiweiChart, Palace, Star } from './types';
-
-// ────────────────── 类型 ──────────────────
-export interface PatternCondition {
-  required: string[];   // 必须满足条件（已通过的）
-  bonus?: string[];     // 加分项（已触发）
-  breaking?: string[];  // 破格警示（已触发）
-}
-
-export interface Pattern {
-  name: string;
-  level: 'excellent' | 'good' | 'neutral' | 'caution';
-  description: string;
-  palaces: string[];                 // 涉及宫位
-  conditions?: PatternCondition;     // 成立条件分层（v2 新增）
-  source?: string;                   // 古籍出处（v2 新增）
-}
+import type { ZiweiChart, Palace, Star, Pattern, PatternCondition } from './types';
 
 // ────────────────── 常量 ──────────────────
 const SHA_NAMES = ['擎羊', '陀罗', '火星', '铃星', '地空', '地劫'];
@@ -1125,5 +1109,51 @@ export function getMingGongSummary(chart: ZiweiChart): {
   const nature = starNames.length > 0 ? (natureMap[starNames[0]] ?? '') : '空宫';
 
   return { stars: starNames, keywords, nature };
+}
+
+// ────────────────── 提取标准证据节点 ──────────────────
+export function extractZiweiEvidences(chart: ZiweiChart, patterns: Pattern[]): import('../contracts/types').CanonicalEvidenceNode[] {
+  return patterns.map((p, idx) => {
+    let dimension: 'career' | 'personality' | 'wealth' | 'relationship' | 'health' | 'spiritual' | 'timing' = 'personality';
+    const text = `${p.name} ${p.description} ${p.palaces.join(' ')}`;
+
+    if (/官禄|事业|化权|三奇|贵人|将帅|文昌|文曲|魁钺|科名|文星/.test(text)) {
+      dimension = 'career';
+    } else if (/财帛|化禄|禄存|天马|财库|武曲|太阴/.test(text)) {
+      dimension = 'wealth';
+    } else if (/夫妻|婚姻|桃花|红鸾|天喜|贪狼|廉贞/.test(text)) {
+      dimension = 'relationship';
+    } else if (/疾厄|身体|羊陀|火铃|空劫|煞星|化忌/.test(text)) {
+      dimension = 'health';
+    }
+
+    const polarity = p.level === 'excellent' || p.level === 'good' ? 'favorable'
+      : p.level === 'caution' ? 'transformative'
+      : 'neutral';
+
+    const evidenceLevel = p.level === 'excellent' ? 'core'
+      : p.level === 'caution' ? 'warning'
+      : 'support';
+
+    const confidence = p.level === 'excellent' ? 0.95 : p.level === 'caution' ? 0.90 : 0.82;
+
+    return {
+      id: `ziwei_pattern_${idx}_${p.name.replace(/\s+/g, '_')}`,
+      domain: 'ziwei',
+      ruleId: `ZIWEI_${p.name}`,
+      ruleName: `格局: ${p.name}`,
+      level: evidenceLevel,
+      dimension,
+      polarity,
+      confidence,
+      parameters: {
+        palaces: p.palaces,
+        level: p.level,
+        conditions: p.conditions,
+      },
+      classicalSource: p.source || '《紫微斗数全书》·《骨髓赋》',
+      canonicalInterpretation: p.description,
+    };
+  });
 }
 

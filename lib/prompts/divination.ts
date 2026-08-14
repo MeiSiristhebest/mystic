@@ -1,7 +1,4 @@
-/**
- * Divination, Astrology, Vedic, and Esoteric Prompts Registry
- * Upgraded with Evidence Firewall, 80+ Ziwei Pattern Scaffolding, and 6D Synastry Matrix
- */
+import { PromptPipeline, createProfilePlugin, createEvidenceFirewallPlugin, createCanonicalEvidencePlugin } from './pipeline';
 
 export interface IChingPromptData {
   type: 'liuyao' | 'meihua' | 'qimen';
@@ -125,6 +122,7 @@ export interface BaziPromptData {
   profileContext: string;
   ziweiData?: any;
   detectedPatterns?: Array<{ name: string; level: string; description: string; source?: string; conditions?: any }>;
+  evidences?: import('../contracts/types').CanonicalEvidenceNode[];
   enableSynergy?: boolean;
   enabledModules?: Record<string, boolean>;
 }
@@ -223,21 +221,14 @@ ${nameAnalysis}
 
   // --- Enhanced Ziwei with 80+ Patterns Scaffolding ---
   const patternsText = (data.detectedPatterns && data.detectedPatterns.length > 0)
-    ? data.detectedPatterns.map(p => `- 【${p.name}】(${p.level === 'excellent' ? '大吉格局' : p.level === 'good' ? '吉格' : p.level === 'caution' ? '凶格/破格' : '杂格'}): ${p.description} (出处: ${p.source || '倪海厦天纪 / 骨髓赋'})`).join('\n')
+    ? data.detectedPatterns.map((p: any) => `- 【${p.name}】(${p.level === 'excellent' ? '大吉格局' : p.level === 'good' ? '吉格' : p.level === 'caution' ? '凶格/破格' : '杂格'}): ${p.description} (出处: ${p.source || '倪海厦天纪 / 骨髓赋'})`).join('\n')
     : '此盘主星组合稳健，未见显著极端偏激之古籍特异格局，以主星三方四正会照为主。';
 
-  return `
+  const ziweiBasePrompt = `
 <instruction>
 这是一次基于倪海厦《天纪》正统体系与明代《骨髓赋》的紫微斗数精微解盘。
-你拥有排盘引擎检测出的全部客观星曜与格局事实，请依据正统天纪易理进行铁板断卦。
+你拥有排盘引擎检测出的全部客观星曜、四化与格局事实，请依据正统天纪易理进行铁板断卦。
 </instruction>
-
-<evidence_firewall>
-  【证据防火墙与反偏见法则】
-  1. 必须基于下方 [canonical_data] 中确凿的命盘与命中格局作答，严禁编造不存在的星曜或格局。
-  2. 针对命中的经典格局（如极向离明、杀破狼、三奇加会等），必须引用其经典断语与现实转化路径。
-  3. 即使命局格局高华，也必须指出其煞星冲照或命身弱点；即使逢凶格，也必须指出吉星解救之道。
-</evidence_firewall>
 
 <canonical_data>
   <birth_info>公历：${data.birthDate} ${data.birthTime} | 性别：${data.gender}</birth_info>
@@ -247,12 +238,11 @@ ${patternsText}
   <ziwei_raw_data>${JSON.stringify(data.ziweiData)}</ziwei_raw_data>
 </canonical_data>
 
-<user_profile>${data.profileContext}</user_profile>
 <user_question>${sanitizedQuestion}</user_question>
 
 <chain_of_thought>
 请在 <thinking> 标签内进行严密天纪推盘：
-1. 审视命宫主星与身宫落点，结合命中的格局（${data.detectedPatterns?.map(p => p.name).join('、') || '常规格局'}），锁定命主先天气量与格局层级。
+1. 审视命宫主星与身宫落点，结合命中的格局（${data.detectedPatterns?.map((p: any) => p.name).join('、') || '常规格局'}），锁定命主先天气量与格局层级。
 2. 审度三方四正（财帛、官禄、迁移）吉凶星交会、四化（禄权科忌）落点及煞星分布。
 3. 针对用户的提问，结合对应宫位与大限流动，给出直击要害、不落俗套的推演。
 </chain_of_thought>
@@ -268,6 +258,14 @@ ${patternsText}
 ### 🌟 大限气运走势与人生破局心法
 （约300字，指出当前大限的关键转折与趋吉避凶之道，给出不卑不亢的超然心法）
 </output_format>`;
+
+  const ziweiPipeline = new PromptPipeline(ziweiBasePrompt);
+  ziweiPipeline
+    .use(createProfilePlugin(data.profileContext))
+    .use(createEvidenceFirewallPlugin())
+    .use(createCanonicalEvidencePlugin(data.evidences || []));
+
+  return ziweiPipeline.build();
 };
 
 // --- Vedic Astrology Prompts ---
@@ -281,23 +279,17 @@ export interface VedicPromptData {
   charaKarakas: string;
   question: string;
   profileContext: string;
+  evidences?: import('../contracts/types').CanonicalEvidenceNode[];
 }
 
 export const getVedicPrompt = (data: VedicPromptData) => {
   const sanitizedQuestion = data.question || '请对我的吠陀星盘（D1本命、D9灵魂婚姻、D10事业、27月宿与Dasha大运）进行全维审计';
 
-  return `
+  const basePrompt = `
 <instruction>
 你是一位严谨深邃的印度吠陀占星（Vedic Astrology / Jyotish）宗师，宗承 KN Rao (Parashari) 体系，辅以 Jaimini 哲学。
 请依据真实的恒星黄道（Sidereal Lahiri Ayanamsa）排盘数据，执行严格的多阶段星盘审计。
 </instruction>
-
-<evidence_firewall>
-  【吠陀占星证据防火墙】
-  1. 严格以 [canonical_vedic_data] 中的月宿 (Nakshatra)、上升 (Lagna)、大运 (Dasha) 及 Chara Karakas 为不可篡改的客观基准。
-  2. 严禁使用西方占星的回归黄道概念；必须使用吠陀 Whole Sign 宫位与月宿特质。
-  3. 执行正反双审：必须指出 1 个核心天赋（Dharma）与 1 个根本性业力功课（Karmic Obstacle）。
-</evidence_firewall>
 
 <canonical_vedic_data>
   <ascendant>${data.ascendantSign}</ascendant>
@@ -307,7 +299,6 @@ export const getVedicPrompt = (data: VedicPromptData) => {
   <chart_summary>${data.chartSummary}</chart_summary>
 </canonical_vedic_data>
 
-<user_profile>${data.profileContext}</user_profile>
 <user_question>${sanitizedQuestion}</user_question>
 
 <chain_of_thought>
@@ -332,6 +323,14 @@ export const getVedicPrompt = (data: VedicPromptData) => {
 ## 🌟 吠陀开运建议与业力指引 (Karmic Remedies)
 （约200字，给出符合吠陀正法的现实生活与心境调整指南）
 </output_format>`;
+
+  const pipeline = new PromptPipeline(basePrompt);
+  pipeline
+    .use(createProfilePlugin(data.profileContext))
+    .use(createEvidenceFirewallPlugin())
+    .use(createCanonicalEvidencePlugin(data.evidences || []));
+
+  return pipeline.build();
 };
 
 // --- Western Astrology Prompts ---

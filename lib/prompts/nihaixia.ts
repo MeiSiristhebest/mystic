@@ -1,7 +1,12 @@
 /**
  * 倪海厦《人纪》经方中医与身心辨证专精 Prompt
  * 遵循倪师七步辨证法：辨阴阳 -> 定六经 -> 明表里 -> 察寒热 -> 辨虚实 -> 析病机 -> 给出经方食养与穴位
+ * 严格遵照四层解耦：确定性事实 -> 规则条文命中 -> 经典医案佐证 -> 启发式食养
  */
+
+import { DiagnosticResult } from '../nihaixia/rules';
+import { CanonicalEvidenceNode } from '../contracts/types';
+import { PromptPipeline, createEvidenceFirewallPlugin, createProfilePlugin, createCanonicalEvidencePlugin } from './pipeline';
 
 export const NIHAIXIA_PERSONA = `<system>
 <role>
@@ -32,6 +37,8 @@ export const NIHAIXIA_PERSONA = `<system>
 export interface NihaixiaPromptParams {
   healthScores?: any;
   wuyunLiuqiData?: any;
+  diagnosticResult?: DiagnosticResult;
+  evidences?: CanonicalEvidenceNode[];
   symptoms: string;
   question?: string;
   profileContext: string;
@@ -42,6 +49,8 @@ export interface NihaixiaPromptParams {
 export const getNihaixiaDiagnosticPrompt = ({
   healthScores,
   wuyunLiuqiData,
+  diagnosticResult,
+  evidences = [],
   symptoms,
   question,
   profileContext,
@@ -51,7 +60,7 @@ export const getNihaixiaDiagnosticPrompt = ({
   const sanitizedQuestion = (question || "").replace(/["'{}[\]]/g, "").substring(0, 300);
   const sanitizedSymptoms = (symptoms || "").replace(/["'{}[\]]/g, "").substring(0, 400);
 
-  // 跨学科联动插件指令（只有在用户在设置中开启了联动且勾选了相关模块时才注入）
+  // 跨学科联动插件指令
   let synergyBlock = "";
   if (enableSynergy) {
     const activeList: string[] = [];
@@ -69,9 +78,28 @@ export const getNihaixiaDiagnosticPrompt = ({
     }
   }
 
-  return `
+  // Format Matched Rules & Clinical Case Few-Shots
+  let caseEvidenceBlock = "";
+  if (diagnosticResult?.selectedCases && diagnosticResult.selectedCases.length > 0) {
+    const casesText = diagnosticResult.selectedCases.map(c => 
+      `### 案例参考: ${c.title}
+- 主诉: ${c.chiefComplaint}
+- 辨证病机: ${c.syndromeAnalysis}
+- 经方考证: ${c.prescribedFormula}
+- 经典引述: ${c.classicQuote}`
+    ).join('\n\n');
+
+    caseEvidenceBlock = `
+<matched_clinical_cases>
+【算法匹配的倪师经典临床病案佐证库 (Few-Shot Evidence)】
+${casesText}
+</matched_clinical_cases>
+`;
+  }
+
+  const basePrompt = `
 <instruction>
-请以倪海厦经方大师的视角，结合下方计算出的【八大健康金标准自测数据】与【出生年份五运六气先天体质】，对求问者的身心困扰展开正统六经辨证与经方病机剖析。
+请以倪海厦经方大师的视角，结合下方计算出的【八大健康金标准自测数据】、【出生年份五运六气先天体质】以及【确定性规则库匹配出的六经条文与医案证据】，对求问者的身心困扰展开正统六经辨证与经方病机剖析。
 </instruction>
 
 <health_standards_data>
@@ -82,9 +110,10 @@ ${JSON.stringify(healthScores || {}, null, 2)}
 ${JSON.stringify(wuyunLiuqiData || {}, null, 2)}
 </wuyun_liuqi_constitution>
 
+${caseEvidenceBlock}
+
 <user_symptoms>${sanitizedSymptoms || "日常身心疲劳与气血调和咨询"}</user_symptoms>
 <user_question>${sanitizedQuestion || "身心失调的深层病机与日常调养对策"}</user_question>
-<user_profile>${profileContext}</user_profile>
 
 ${synergyBlock}
 
@@ -93,7 +122,7 @@ ${synergyBlock}
 1. 【辨阴阳与表里】：邪在表还是在里？阴盛阳虚还是阴虚阳亢？
 2. 【定六经归属】：归入太阳、阳明、少阳、太阴、少阴还是厥阴？
 3. 【析水火气机】：心火是否下达？肾水是否冰寒？中焦脾胃运化是否受阻？
-4. 【对准经方机理】：找出最契合该病机的伤寒金匮经典经方（如理中汤、四逆汤、小柴胡汤、真武汤等），剖析其药对配伍的物理玄机。
+4. 【对准经方机理】：结合规则库中命中的经方与条文（如 ${diagnosticResult?.matchedRules?.map(r => r.primaryFormula).join(' / ') || '经典经方'}），剖析其药对配伍的物理玄机。
 5. 【拟定食养穴位】：提炼日常可行的药食同源（如生姜、陈皮、红枣、山药）与艾灸/按揉穴位。
 </chain_of_thought>
 
@@ -102,6 +131,9 @@ ${synergyBlock}
 
 ## 🌿 气血阴阳与六经病机总决
 （约250字，以倪师爽利透彻的口吻，一针见血点出当前身体最核心的失衡所在，如“水气凌心”、“中焦脾阳不运”、“少阴下焦虚寒”）
+
+## 📜 伤寒金匮条文与经典医案考证 (Canonical Grounding)
+（约250字，引用确凿的仲景经典条文与倪师临床经验，解释该证型的来龙去脉与误治禁忌）
 
 ## 🔍 经典经方解密与配伍玄机 (Classic Formula Insight)
 （约300字，介绍最对症的经典经方及其治病原理，解释为什么经方能拨动生机，绝不伤胃败阳）
@@ -115,4 +147,12 @@ ${synergyBlock}
 > ⚠️ **人纪健康守则**：本篇内容为经方中医经典理论与食疗养生科普，非临床诊断用药处方；若有明显器质性疾患，请务必及时咨询专业医师。
 </output_format>
 `;
+
+  const pipeline = new PromptPipeline(basePrompt);
+  pipeline
+    .use(createProfilePlugin(profileContext))
+    .use(createEvidenceFirewallPlugin())
+    .use(createCanonicalEvidencePlugin(evidences));
+
+  return pipeline.build();
 };

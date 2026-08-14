@@ -1,0 +1,50 @@
+[
+  {
+    "id": "ziwei_golden_001_shapolang",
+    "name": "杀破狼格局标准盘",
+    "input": {
+      "year": 1990,
+      "month": 5,
+      "day": 15,
+      "hour": 6,
+      "gender": "male"
+    },
+    "expected": {
+      "palacesCount": 12,
+      "mingGongBranch": 6,
+      "wuxingJu": 3,
+      "isValid": true,
+      "mustIncludeStarTypes": ["major", "lucky", "sha"]
+    }
+  },
+  {
+    "id": "ziwei_golden_002_ziwei_wuxing",
+    "name": "紫微天府格局基准盘",
+    "input": {
+      "year": 1988,
+      "month": 8,
+      "day": 8,
+      "hour": 10,
+      "gender": "female"
+    },
+    "expected": {
+      "palacesCount": 12,
+      "isValid": true
+    }
+  },
+  {
+    "id": "ziwei_golden_003_jiyue_tongliang",
+    "name": "机月同梁基准盘",
+    "input": {
+      "year": 1995,
+      "month": 11,
+      "day": 20,
+      "hour": 2,
+      "gender": "male"
+    },
+    "expected": {
+      "palacesCount": 12,
+      "isValid": true
+    }
+  }
+]

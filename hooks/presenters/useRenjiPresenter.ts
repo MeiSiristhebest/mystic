@@ -71,10 +71,13 @@ export function useRenjiPresenter() {
 
     const healthRes = TCMService.evaluateHealthCheck(answers);
     const wuyunRes = TCMService.getWuyunLiuqiData(birthYear);
+    const diagnosticRes = TCMService.diagnoseWithRules(symptoms, answers, wuyunRes);
 
     const prompt = getNihaixiaDiagnosticPrompt({
       healthScores: healthRes,
       wuyunLiuqiData: wuyunRes,
+      diagnosticResult: diagnosticRes,
+      evidences: diagnosticRes.evidences,
       symptoms,
       question,
       profileContext: getProfileContext(),
@@ -88,6 +91,7 @@ export function useRenjiPresenter() {
         type: 'renji',
         symptoms,
         healthScores: healthRes,
+        diagnostic: diagnosticRes,
       },
     });
   }, [symptoms, question, answers, birthYear, getProfileContext, profile, sendMessage, resetChat]);

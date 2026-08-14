@@ -6,7 +6,9 @@
     "dev": "next dev --port 3000",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test": "tsx scripts/run-all-tests.ts",
+    "test:all": "tsx scripts/run-all-tests.ts && tsx scripts/verify-suite.ts"
   },
   "dependencies": {
     "@google/genai": "^2.0.1",
@@ -46,6 +48,7 @@
     "firebase-tools": "^15.17.0",
     "tailwindcss": "4.3.0",
     "tailwindcss-animate": "^1.0.7",
+    "tsx": "^4.23.12",
     "typescript": "6.0.3"
   },
   "pnpm": {
@@ -55,7 +58,8 @@
       "@firebase/util",
       "protobufjs",
       "re2",
-      "unrs-resolver"
+      "unrs-resolver",
+      "esbuild"
     ],
     "allowBuilds": [
       "sharp",
@@ -63,7 +67,8 @@
       "@firebase/util",
       "protobufjs",
       "re2",
-      "unrs-resolver"
+      "unrs-resolver",
+      "esbuild"
     ]
   },
   "packageManager": "pnpm@11.1.2+sha512.415a1cc25974731e75455c1468371be74c5aa5fb7621b50d4056d222451609f11412f23fd602e6169f1e060466641f798597e1be961a10688836a67b16569499"

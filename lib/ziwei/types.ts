@@ -1,3 +1,5 @@
+import { CanonicalEvidenceNode, ValidationReport } from '../contracts/types';
+
 export interface BirthInfo {
   year: number;      // Gregorian year
   month: number;     // Gregorian month (1-12)
@@ -75,6 +77,24 @@ export interface DaXian {
   siHua?: DaXianSiHua;   // 该大限四化（基于宫干）
 }
 
+export interface PatternCondition {
+  required: string[];   // 必须满足条件（已通过的）
+  bonus?: string[];     // 加分项（已触发）
+  breaking?: string[];  // 破格警示（已触发）
+}
+
+export interface Pattern {
+  name: string;
+  level: 'excellent' | 'good' | 'neutral' | 'caution';
+  description: string;
+  palaces: string[];                 // 涉及宫位
+  conditions?: PatternCondition;     // 成立条件分层
+  source?: string;                   // 古籍出处
+  dimension?: 'career' | 'personality' | 'wealth' | 'relationship' | 'timing' | 'spiritual';
+  polarity?: 'favorable' | 'unfavorable' | 'transformative' | 'neutral';
+  confidence?: number;
+}
+
 export interface ZiweiChart {
   birthInfo: BirthInfo;
   lunarInfo: LunarInfo;
@@ -87,4 +107,7 @@ export interface ZiweiChart {
   daXians: DaXian[];
   currentAge: number;
   currentDaXianIndex: number;
+  patterns?: Pattern[];
+  evidences?: CanonicalEvidenceNode[];
+  validation?: ValidationReport;
 }

@@ -1,0 +1,44 @@
+[
+  {
+    "id": "tcm_golden_001_taiyang_zhongfeng",
+    "name": "太阳中风表虚证",
+    "symptoms": "恶风、自汗出、发热、头痛脉浮缓",
+    "healthScores": {
+      "sweat": 45,
+      "temperature": 50
+    },
+    "expected": {
+      "stage": "taiyang",
+      "ruleId": "RULE_TAIYANG_ZHONGFENG",
+      "formula": "桂枝汤",
+      "classicalClause": "《伤寒论》第12条"
+    }
+  },
+  {
+    "id": "tcm_golden_002_shaoyang_shuji",
+    "name": "少阳枢机不利证",
+    "symptoms": "胸胁苦满、口苦咽干、偏头痛、目眩心烦喜呕",
+    "healthScores": {},
+    "expected": {
+      "stage": "shaoyang",
+      "ruleId": "RULE_SHAOYANG_SHUJI",
+      "formula": "小柴胡汤",
+      "classicalClause": "《伤寒论》第96条"
+    }
+  },
+  {
+    "id": "tcm_golden_003_shaoyin_yangxu",
+    "name": "少阴心肾阳虚证",
+    "symptoms": "常年手足逆冷至肘膝、恶寒蜷卧、夜尿清长",
+    "healthScores": {
+      "temperature": 35,
+      "urine": 45,
+      "vitality": 40
+    },
+    "expected": {
+      "stage": "shaoyin",
+      "formula": "真武汤",
+      "classicalClause": "《伤寒论》第281条"
+    }
+  }
+]

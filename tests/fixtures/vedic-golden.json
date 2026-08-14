@@ -1,0 +1,31 @@
+[
+  {
+    "id": "vedic_golden_001_venus_dasha",
+    "name": "金星月宿出生盘 (Purva Phalguni)",
+    "birthDate": "1995-06-15",
+    "moonSiderealDegree": 145.5,
+    "expected": {
+      "nakshatraName": "Purva Phalguni",
+      "nakshatraRuler": "Venus",
+      "firstDashaPlanet": "Venus",
+      "totalMahaDashas": 9,
+      "totalAntarDashas": 81,
+      "totalPratyantarDashas": 729,
+      "target2026MahaLord": "Rahu"
+    }
+  },
+  {
+    "id": "vedic_golden_002_ketu_dasha",
+    "name": "计都月宿出生盘 (Ashwini 起点)",
+    "birthDate": "1992-05-18",
+    "moonSiderealDegree": 5.0,
+    "expected": {
+      "nakshatraName": "Ashwini",
+      "nakshatraRuler": "Ketu",
+      "firstDashaPlanet": "Ketu",
+      "totalMahaDashas": 9,
+      "totalAntarDashas": 81,
+      "totalPratyantarDashas": 729
+    }
+  }
+]

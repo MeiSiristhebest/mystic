@@ -4,6 +4,8 @@ import { AstrologyService } from "@/lib/services/astrologyService";
 import { EasternService } from "@/lib/services/easternService";
 import { TCMService } from "@/lib/services/tcmService";
 import { OracleService } from "@/lib/services/oracleService";
+import { CrossDomainConflictDetector } from "@/lib/reasoning/conflict-detector";
+import { CanonicalEvidenceNode } from "@/lib/contracts/types";
 
 /**
  * Server-side Western Star Chart calculation.
@@ -25,10 +27,17 @@ export async function getBaziData(birthDate: string, birthTime: string) {
 }
 
 /**
- * Server-side Ziwei Tianji calculation with 80+ patterns.
+ * Server-side Ziwei Tianji calculation with 80+ patterns and evidence graph.
  */
 export async function getZiweiServerData(birthDate: string, hour: number, gender: '男' | '女') {
   return EasternService.getZiwei(birthDate, hour, gender);
+}
+
+/**
+ * Server-side Ziwei Domain Evaluation Package.
+ */
+export async function getZiweiDomainEvaluationServerData(birthDate: string, hour: number, gender: '男' | '女') {
+  return EasternService.getZiweiDomainEvaluation(birthDate, hour, gender);
 }
 
 /**
@@ -39,7 +48,7 @@ export async function getQiMenServerData(date: Date) {
 }
 
 /**
- * Server-side Vedic Chart calculation.
+ * Server-side Vedic Chart calculation with 3-tier recursive Vimshottari Dasha and evidence graph.
  */
 export async function getVedicChartServerData(
   birthDate: string,
@@ -48,6 +57,18 @@ export async function getVedicChartServerData(
   lat = 39.90
 ) {
   return AstrologyService.getVedicChart(birthDate, birthTime, lon, lat);
+}
+
+/**
+ * Server-side Vedic Domain Evaluation Package.
+ */
+export async function getVedicDomainEvaluationServerData(
+  birthDate: string,
+  birthTime: string,
+  lon = 116.40,
+  lat = 39.90
+) {
+  return AstrologyService.getVedicDomainEvaluation(birthDate, birthTime, lon, lat);
 }
 
 /**
@@ -87,6 +108,35 @@ export async function getWuyunLiuqiServerData(birthYear: number) {
  */
 export async function getRenjiHealthCheckData(scores: Record<string, number>) {
   return TCMService.evaluateHealthCheck(scores);
+}
+
+/**
+ * Server-side deterministic Ni Haixia diagnostic rule matching.
+ */
+export async function getNihaixiaDiagnosticServerData(
+  symptoms: string,
+  healthScores?: Record<string, number>,
+  wuyunLiuqi?: any
+) {
+  return TCMService.diagnoseWithRules(symptoms, healthScores, wuyunLiuqi);
+}
+
+/**
+ * Server-side Ni Haixia Full Domain Evaluation Package.
+ */
+export async function getNihaixiaDomainEvaluationServerData(
+  birthYear: number,
+  symptoms: string,
+  healthScores: Record<string, number> = {}
+) {
+  return TCMService.getFullDomainEvaluation(birthYear, symptoms, healthScores);
+}
+
+/**
+ * Server-side Cross-Domain Conflict & Tension Evaluation.
+ */
+export async function getCrossDomainDialecticData(evidences: CanonicalEvidenceNode[]) {
+  return CrossDomainConflictDetector.detectConflicts(evidences);
 }
 
 /**

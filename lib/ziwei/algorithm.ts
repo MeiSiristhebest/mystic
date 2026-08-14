@@ -7,6 +7,8 @@ import { astro } from 'iztro';
 import { Solar } from 'lunar-javascript';
 import type { BirthInfo, LunarInfo, Star, Palace, DaXian, ZiweiChart } from './types';
 import { BRANCHES, STEMS } from './constants';
+import { detectPatterns, extractZiweiEvidences } from './patterns';
+import { validateZiweiChart } from './validation';
 
 // ─── 农历信息（兼容保留）────────────────────────────────────────
 export function getLunarInfo(year: number, month: number, day: number): LunarInfo {
@@ -164,7 +166,7 @@ export function generateChart(birthInfo: BirthInfo): ZiweiChart {
   // ── 农历信息 ──
   const lunarInfo = getLunarInfo(year, month, day);
 
-  return {
+  const baseChart: ZiweiChart = {
     birthInfo,
     lunarInfo,
     mingGongBranch: mingGongBranch >= 0 ? mingGongBranch : 0,
@@ -177,4 +179,17 @@ export function generateChart(birthInfo: BirthInfo): ZiweiChart {
     currentAge,
     currentDaXianIndex,
   };
+
+  // ── 规则与格局识别 ──
+  const patterns = detectPatterns(baseChart);
+  const evidences = extractZiweiEvidences(baseChart, patterns);
+  const validation = validateZiweiChart(baseChart);
+
+  return {
+    ...baseChart,
+    patterns,
+    evidences,
+    validation,
+  };
 }
+

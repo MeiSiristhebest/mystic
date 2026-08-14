@@ -1,3 +1,5 @@
+import { CanonicalEvidenceNode, ValidationReport } from '../contracts/types';
+
 export type VedicPlanetName = 
   | 'Sun' | 'Moon' | 'Mars' | 'Mercury' | 'Jupiter' | 'Venus' | 'Saturn' | 'Rahu' | 'Ketu' | 'Ascendant';
 
@@ -36,18 +38,29 @@ export interface NakshatraInfo {
   summary: string;
 }
 
+export interface SubDashaPeriod {
+  planet: VedicPlanetName;
+  planetCn: string;
+  startDate: string;
+  endDate: string;
+  durationYears: number;
+  subPeriods?: SubDashaPeriod[]; // PD list under AD
+}
+
 export interface DashaPeriod {
   planet: VedicPlanetName;
   planetCn: string;
   startDate: string;
   endDate: string;
   durationYears: number;
-  subPeriods?: Array<{
-    planet: VedicPlanetName;
-    planetCn: string;
-    startDate: string;
-    endDate: string;
-  }>;
+  subPeriods?: SubDashaPeriod[]; // 9 Antar Dashas
+}
+
+export interface CurrentDashaHierarchy {
+  mahaDasha: DashaPeriod;
+  antarDasha: SubDashaPeriod;
+  pratyantarDasha: SubDashaPeriod;
+  formattedDisplay: string; // e.g. "Saturn-Mercury-Venus (土星大运-水星中运-金星小运)"
 }
 
 export interface CharaKaraka {
@@ -70,10 +83,10 @@ export interface VedicChart {
   d10Chart: Record<number, { name: string; cnName: string; sign: string; signCn: string }[]>; // Dasamsa
   moonNakshatra: NakshatraInfo;
   charaKarakas: CharaKaraka[];
-  currentDasha: {
-    mahaDasha: DashaPeriod;
-    antarDasha: { planet: VedicPlanetName; planetCn: string; startDate: string; endDate: string };
-  };
+  currentDasha: CurrentDashaHierarchy;
+  dashaTimeline: DashaPeriod[]; // Full 120-year 9 MD -> 81 AD timeline
+  evidences: CanonicalEvidenceNode[];
+  validation: ValidationReport;
   summaryTags: string[];
 }
 
