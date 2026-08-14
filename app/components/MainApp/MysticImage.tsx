@@ -21,8 +21,8 @@ function hashString(str: string) {
 }
 
 // Fallback images for different prompt types to save quota and prevent "crashes"
-const getFallbackImageUrl = (prompt: string, aspectRatio: string) => {
-  const seed = hashString(prompt);
+const getFallbackImageUrl = (prompt: string, aspectRatio: string, seedStr = "mystic") => {
+  const seed = hashString(`${prompt}_${seedStr}`);
   const [w, h] = aspectRatio === "21:9" ? [2100, 900] :
                aspectRatio === "16:9" ? [1920, 1080] : 
                aspectRatio === "9:16" ? [1080, 1920] :
@@ -39,12 +39,16 @@ const getFallbackImageUrl = (prompt: string, aspectRatio: string) => {
     "photo-1419242902214-272b3f66ee7a", // Milky Way
     "photo-1516339901600-2e1a62dc0c45", // Blue Stars
     "photo-1475274047050-1d0c0975c63e", // Night Sky/Stars
+    "photo-1507499739999-097706ad8914", // Deep Starfield
+    "photo-1518709268805-4e9042af9f23", // Galaxy Spiral
+    "photo-1543722530-d2c3201371e7", // Cosmic Aurora
   ];
   
   const selectedId = cosmicUnsplashIds[parseInt(seed, 36) % cosmicUnsplashIds.length];
   
   return `https://images.unsplash.com/${selectedId}?auto=format&fit=crop&q=80&w=${w}&h=${h}`;
 };
+
 
 
 
@@ -91,14 +95,15 @@ export const MysticImage = ({
 
     timeoutRef.current = setTimeout(() => {
       if (isMountedRef.current && loadingRef.current && currentRequestRef.current === requestKey) {
-        const fb = getFallbackImageUrl(prompt, aspectRatio);
+        const fb = getFallbackImageUrl(prompt, aspectRatio, seed);
         imageUrlRef.current = fb;
         setImageUrl(fb);
         setIsFallback(true);
         setIsLoading(false);
         loadingRef.current = false;
       }
-    }, 15000);
+    }, 45000);
+
 
     try {
       // Use a strict YYYY-MM-DD format regardless of locale
@@ -143,7 +148,7 @@ export const MysticImage = ({
     } catch (err: any) {
       cleanTimeout();
       if (!isMountedRef.current || currentRequestRef.current !== requestKey) return;
-      const fb = getFallbackImageUrl(prompt, aspectRatio);
+      const fb = getFallbackImageUrl(prompt, aspectRatio, seed);
       imageUrlRef.current = fb;
       setImageUrl(fb);
       setIsFallback(true);

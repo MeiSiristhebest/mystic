@@ -186,11 +186,12 @@ export default function TimeWisdomApp() {
                 animate={{ opacity: 1, y: 0 }}
                 className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-center'}`}
               >
-                <div className={`max-w-[95%] md:max-w-[85%] rounded-2xl p-6 ${
+                <div className={`rounded-2xl p-6 ${
                   msg.role === 'user' 
-                    ? 'bg-blue-900/40 border border-blue-500/30 text-blue-100' 
-                    : 'bg-black/20 markdown-body w-full'
+                    ? 'max-w-[90%] md:max-w-[75%] bg-blue-900/40 border border-blue-500/30 text-blue-100 ml-auto' 
+                    : 'w-full bg-black/20 markdown-body'
                 }`}>
+
                   <MysticMarkdown content={msg.content} />
                 </div>
               </motion.div>

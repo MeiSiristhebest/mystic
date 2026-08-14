@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { motion } from 'motion/react';
+import { Sparkles } from 'lucide-react';
 
 interface BreathingLoadingProps {
   text?: string;
@@ -9,68 +10,78 @@ interface BreathingLoadingProps {
 
 export default function BreathingLoading({ text = "阿卡夏正在感应中..." }: BreathingLoadingProps) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 space-y-8 select-none">
-      <div className="relative w-32 h-32 flex items-center justify-center">
+    <div className="flex flex-col items-center justify-center py-16 space-y-8 select-none w-full">
+      <div className="relative w-36 h-36 flex items-center justify-center">
         
-        {/* Outer ring: Delicate dotted gold circle, counter-rotating */}
+        {/* Outer Sacred Geometry Ring */}
         <motion.div 
           animate={{ rotate: -360 }}
-          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-          style={{ willChange: "transform" }}
-          className="absolute inset-0 border border-[#C9A84C]/20 border-dashed rounded-full"
+          transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+          className="absolute inset-0 border border-[#C9A84C]/30 border-dashed rounded-full"
         />
 
-        {/* Mid ring: Soft purple-gold aura, rotating and breathing */}
+        {/* Dynamic Halo Glow */}
         <motion.div 
           animate={{ 
             rotate: 360,
-            scale: [0.95, 1.05, 0.95],
-            opacity: [0.3, 0.6, 0.3]
+            scale: [0.95, 1.08, 0.95],
+            opacity: [0.35, 0.7, 0.35]
           }}
           transition={{ 
-            rotate: { duration: 15, repeat: Infinity, ease: "linear" },
+            rotate: { duration: 18, repeat: Infinity, ease: "linear" },
             scale: { duration: 4, repeat: Infinity, ease: "easeInOut" },
             opacity: { duration: 4, repeat: Infinity, ease: "easeInOut" }
           }}
-          style={{ willChange: "transform, opacity" }}
-          className="absolute inset-3 border border-[#C9A84C]/10 rounded-full bg-gradient-to-tr from-[#C9A84C]/3 via-transparent to-[#9B7FD4]/3"
+          className="absolute inset-3 border border-[#C9A84C]/20 rounded-full bg-gradient-to-tr from-[#C9A84C]/10 via-[#2D1B4E]/30 to-[#C9A84C]/10 blur-[1px]"
         />
 
-        {/* Inner ring: Staggered pulse ring */}
+        {/* Inner Core Pulsing Ring */}
         <motion.div 
           animate={{ 
-            scale: [0.85, 1.15, 0.85],
-            opacity: [0.2, 0.45, 0.2]
+            scale: [0.88, 1.12, 0.88],
+            opacity: [0.3, 0.6, 0.3]
           }}
           transition={{ 
             duration: 3, 
             repeat: Infinity, 
             ease: "easeInOut",
-            delay: 0.5
+            delay: 0.3
           }}
-          style={{ willChange: "transform, opacity" }}
-          className="absolute inset-6 bg-[#C9A84C]/5 rounded-full filter blur-[2px]"
+          className="absolute inset-8 bg-[#C9A84C]/10 rounded-full blur-[4px]"
         />
 
-        {/* Inner Core: Deep glowing mystic core */}
+        {/* Central Alchemy Star */}
         <motion.div 
           animate={{ 
-            scale: [0.92, 1.08, 0.92],
-            opacity: [0.5, 0.85, 0.5]
+            scale: [0.95, 1.15, 0.95],
+            opacity: [0.7, 1, 0.7]
           }}
           transition={{ 
-            duration: 2, 
+            duration: 2.5, 
             repeat: Infinity, 
             ease: "easeInOut" 
           }}
-          style={{ willChange: "transform, opacity" }}
-          className="absolute inset-10 bg-gradient-to-tr from-[#C9A84C]/50 via-[#F5E6AD]/70 to-[#C9A84C]/50 rounded-full shadow-[0_0_20px_rgba(201,168,76,0.3)] filter blur-[1px]"
-        />
+          className="relative z-10 flex items-center justify-center"
+        >
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#F5E6AD] to-[#C9A84C] flex items-center justify-center shadow-[0_0_25px_rgba(201,168,76,0.6)]">
+            <span className="text-black font-serif text-sm font-bold">✦</span>
+          </div>
+        </motion.div>
       </div>
-      
-      <p className="text-[#E8DFB8]/75 font-serif italic tracking-[0.25em] animate-pulse text-base drop-shadow-[0_0_10px_rgba(232,223,184,0.15)]">
-        {text}
-      </p>
+
+      <motion.div 
+        initial={{ opacity: 0, y: 5 }}
+        animate={{ opacity: [0.6, 1, 0.6], y: 0 }}
+        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+        className="flex flex-col items-center gap-2"
+      >
+        <p className="font-serif text-[#E8DFB8] tracking-[0.35em] text-sm md:text-base font-light text-center drop-shadow-[0_0_15px_rgba(201,168,76,0.3)]">
+          {text}
+        </p>
+        <div className="flex items-center gap-2 text-[10px] text-[#C9A84C]/60 font-mono tracking-[0.5em] uppercase">
+          <span>SACRED HARMONY</span>
+        </div>
+      </motion.div>
     </div>
   );
 }

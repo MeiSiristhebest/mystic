@@ -15,6 +15,8 @@ export type DivinationType =
   | 'bazi' 
   | 'daily' 
   | 'astrology' 
+  | 'vedic'
+  | 'renji'
   | 'face_reading' 
   | 'palm_reading'
   | 'shadow_work' 
@@ -24,6 +26,7 @@ export type DivinationType =
   | 'mirror' 
   | 'collective_mirror' 
   | 'unified';
+
 
 // --- Specific Detail Schemas ---
 
@@ -125,14 +128,20 @@ export type JourneyDetails =
   | { type: 'unified'; text: string; bazi?: any; astrology?: any; tarot?: any; echo?: string; messages: Message[] }
   | GenericDetails;
 
+export type JourneyStatusTag = 'verified' | 'in_progress' | 'cautious' | 'none';
+
 export interface JourneyEntry {
   id: string;
   date: string;
   type: DivinationType;
   title: string;
   summary: string;
+  userNotes?: string;
+  statusTag?: JourneyStatusTag;
+  customTitle?: string;
   details?: JourneyDetails;
 }
+
 
 // --- App Navigation & Store Types ---
 

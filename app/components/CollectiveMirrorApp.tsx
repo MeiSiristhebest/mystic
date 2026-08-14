@@ -225,11 +225,12 @@ export default function CollectiveMirrorApp({ onReadingChange }: { onReadingChan
                 <div className="space-y-12 relative z-10">
                   {messages.map((msg, idx) => (
                     <div key={idx} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-center'}`}>
-                      <div className={`max-w-[95%] md:max-w-[85%] rounded-2xl p-8 ${
+                      <div className={`rounded-2xl p-8 ${
                         msg.role === 'user' 
-                          ? 'bg-emerald-900/30 border border-emerald-500/20 text-emerald-100' 
-                          : 'bg-black/20 markdown-body w-full'
+                          ? 'max-w-[90%] md:max-w-[75%] bg-emerald-900/30 border border-emerald-500/20 text-emerald-100 ml-auto' 
+                          : 'w-full bg-black/20 markdown-body'
                       }`}>
+
                         {msg.role === 'model' ? (
                           <MysticMarkdown content={msg.content} />
                         ) : (

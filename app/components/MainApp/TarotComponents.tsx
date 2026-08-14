@@ -25,15 +25,25 @@ export function processMysticMarkdownContent(rawText: string): { processedConten
     // Also catch variants where the markdown parser inserts spaces, e.g. [S OUL_MOTTO]
     .replace(/\[S\s*OUL_MOTTO\]/g, "")
     .replace(/\[\/S\s*OOL_MOTTO\]/g, "")
-    .replace(/<thinking>[\s\S]*?(?:<\/thinking>|$)/g, '')
-    .replace(/<execute>[\s\S]*?(?:<\/execute>|$)/g, '')
-    .replace(/<mystic_association>([\s\S]*?)(?:<\/mystic_association>|$)/g, (_, p1) => {
-      const parsed = safeParseAIJSON<any>(p1.trim(), null);
+    // Remove search results and AI internal thought tags
+    .replace(/<search_results>[\s\S]*?(?:<\/search_results>|$)/gi, '')
+    .replace(/<result>[\s\S]*?(?:<\/result>|$)/gi, '')
+    .replace(/<search>[\s\S]*?(?:<\/search>|$)/gi, '')
+    .replace(/<grounding>[\s\S]*?(?:<\/grounding>|$)/gi, '')
+    .replace(/<thinking>[\s\S]*?(?:<\/thinking>|$)/gi, '')
+    .replace(/<thought>[\s\S]*?(?:<\/thought>|$)/gi, '')
+    .replace(/<think>[\s\S]*?(?:<\/think>|$)/gi, '')
+    .replace(/<execute>[\s\S]*?(?:<\/execute>|$)/gi, '')
+    .replace(/<details>[\s\S]*?(?:<\/details>|$)/gi, '')
+    .replace(/<mystic_association>([\s\S]*?)(?:<\/mystic_association>|$)/gi, (_, p1) => {
+      const parsed = safeParseAIJSON<any>(p1.trim(), {});
       if (parsed && (parsed.target || parsed.reason || parsed.system)) {
         association = parsed;
       }
       return "";
     });
+
+
 
   // ── Phase 1: Normalize malformed markdown syntax ──────────────────────────
   content = content
@@ -41,6 +51,16 @@ export function processMysticMarkdownContent(rawText: string): { processedConten
     .replace(/\*{4,}([^\n*]*?)\*{4,}/g, '**$1**')  // 4+ stars → 2
     .replace(/^(#+)\s+#+\s+/gm, '$1 ')              // "## ## Title" → "## Title"
     .replace(/^(#+)\s+([#*]+)\s+/gm, '$1 ');        // "## ** Title" → "## Title"
+
+  // ── Phase 1.5: Normalize Markdown tables ──────────────────────────────────
+  content = content
+    // Convert inline double pipes into row newlines (e.g. "... | ||------|------|| 情绪处理 | ...")
+    .replace(/\|\s*\|\s*/g, '|\n| ')
+    // Ensure table separator rows like |---|---| have newlines around them
+    .replace(/(\|[-:\s]{2,})+\|/g, (match) => `\n${match.trim()}\n`)
+    // Ensure empty line before table header
+    .replace(/([^\n])\n?(\|.+?\|.+?\|\n\|[-:\s|]+\|)/g, '$1\n\n$2');
+
 
   // ── Phase 2: Fix orphaned ** markers (line-by-line) ──────────────────────
   // An ODD count of ** tokens on a line = the last one is unclosed/unopened.

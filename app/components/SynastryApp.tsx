@@ -1,40 +1,81 @@
+'use client';
+
 import { useState } from "react";
-import { motion } from "motion/react";
-import { Sparkles, AlertCircle, Send } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import { Sparkles, AlertCircle, Send, Users, Compass, HeartHandshake, ShieldCheck, Flame, Scale, Clock } from "lucide-react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useAIChat } from "@/hooks/useAIChat";
 import { generateDeck } from "@/lib/tarot-data";
 import { useJourney } from "@/hooks/useJourney";
 import BreathingLoading from "./BreathingLoading";
 import MysticMarkdown from "./MysticMarkdown";
-import { getSynastryPrompt } from '@/lib/prompts';
+import { getSynastryPrompt, getVedicSynastryPrompt } from '@/lib/prompts';
 import { SYNASTRY_PERSONA } from "@/lib/ai";
 import { cryptoShuffle, getCryptoRandom } from "@/lib/random";
+import { getVedicSynastryServerData } from "@/app/actions/aiActions";
 
 export default function SynastryApp() {
   const { profile, getProfileContext } = useUserProfile();
-  const { addEntry, updateEntry } = useJourney();
-  const [question, setQuestion] = useState("");
-  const [reading, setReading] = useState("");
-  const [drawnCards, setDrawnCards] = useState<any[]>([]);
-  const [messages, setMessages] = useState<{ role: 'user' | 'model'; content: string }[]>([]);
-  const [inputMessage, setInputMessage] = useState("");
-  const [currentEntryId, setCurrentEntryId] = useState<string | null>(null);
-  const [isAskingFollowUp, setIsAskingFollowUp] = useState(false);
+  const [tab, setTab] = useState<'two_person' | 'tri_system'>('two_person');
+  
+  // Two person inputs
+  const [nameA, setNameA] = useState(profile.name || "我");
+  const [birthDateA, setBirthDateA] = useState(profile.birthDate || "1995-06-15");
+  const [birthTimeA, setBirthTimeA] = useState(profile.birthTime || "10:30");
 
-  const { sendMessage, isLoading, error } = useAIChat({
+  const [nameB, setNameB] = useState("对方 / 合作伙伴");
+  const [birthDateB, setBirthDateB] = useState("1996-08-20");
+  const [birthTimeB, setBirthTimeB] = useState("14:00");
+  const [twoPersonQuestion, setTwoPersonQuestion] = useState("");
+
+  const [synastryMatrix, setSynastryMatrix] = useState<any>(null);
+
+  // Tri-system inputs
+  const [question, setQuestion] = useState("");
+  const [drawnCards, setDrawnCards] = useState<any[]>([]);
+
+  const { messages, sendMessage, isLoading, resetChat } = useAIChat({
     type: 'synastry',
     systemInstruction: SYNASTRY_PERSONA,
   });
 
-  const hasRequiredInfo = profile.birthDate && profile.birthTime;
+  const handleTwoPersonSynastry = async () => {
+    if (!birthDateA || !birthDateB) return;
+    resetChat();
+    setSynastryMatrix(null);
 
-  const handleSynastry = async () => {
+    try {
+      const synastryResult = await getVedicSynastryServerData(
+        birthDateA, birthTimeA, nameA,
+        birthDateB, birthTimeB, nameB
+      );
+      setSynastryMatrix(synastryResult.matrix);
+
+      const prompt = getVedicSynastryPrompt({
+        matrixData: synastryResult.matrix,
+        nameA,
+        nameB,
+        question: twoPersonQuestion || "我们双方在性格相处、情感承载力与未来运势发展上的深层契合度与暗礁",
+        profileContext: getProfileContext(),
+      });
+
+      await sendMessage(prompt, {
+        title: `双人六维合盘：${nameA} & ${nameB}`,
+        details: {
+          type: 'synastry',
+          nameA,
+          nameB,
+          matrix: synastryResult.matrix
+        }
+      });
+    } catch (e) {
+      console.error("Vedic synastry calculation failed:", e);
+    }
+  };
+
+  const handleTriSystem = async () => {
     if (!question.trim()) return;
-    
-    setMessages([]);
-    setReading("");
-    setCurrentEntryId(null);
+    resetChat();
 
     const deck = generateDeck();
     const shuffled = cryptoShuffle(deck);
@@ -66,146 +107,224 @@ export default function SynastryApp() {
     }
   };
 
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputMessage.trim() || isLoading || !currentEntryId) return;
-
-    const userMsg = inputMessage;
-    setInputMessage("");
-    setIsAskingFollowUp(true);
-
-    try {
-      const contextPin = `[系统提醒：当前正在进行命运三才合参的追问。请结合用户的八字、星象与所抽取的塔罗牌回答。]`;
-      await sendMessage(`${contextPin}\n\n${userMsg}`, undefined, undefined, userMsg);
-    } catch (error) {
-      console.error("Chat error:", error);
-    } finally {
-      setIsAskingFollowUp(false);
-    }
-  };
-
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="text-center mb-12">
-        <h1 className="text-3xl md:text-4xl font-serif font-bold text-amber-500 tracking-widest mb-4 drop-shadow-[0_0_15px_rgba(245,158,11,0.3)]">
-          命运合盘 (Destiny Synastry)
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10 pb-20">
+      <div className="text-center space-y-3">
+        <h1 className="text-3xl md:text-4xl font-serif font-bold text-amber-500 tracking-widest drop-shadow-[0_0_15px_rgba(245,158,11,0.3)]">
+          命运合盘 · 六维共振矩阵
         </h1>
-        <p className="text-amber-200/60 max-w-2xl mx-auto text-sm md:text-base">
-          打破孤岛，融合东方八字、西方星象与塔罗潜意识，为你提供统一的高维度解读。
+        <p className="text-amber-200/60 max-w-2xl mx-auto text-sm md:text-base font-serif">
+          基于古印度吠陀合盘 (Ashtakoota) 与天纪合命法，从引力火花、相处承载力、价值观共振到大运时机全维透析。
         </p>
+
+        {/* Tab Switcher */}
+        <div className="flex justify-center gap-3 pt-4">
+          <button
+            onClick={() => { setTab('two_person'); resetChat(); setSynastryMatrix(null); }}
+            className={`px-6 py-2.5 rounded-full text-xs font-serif tracking-widest transition-all cursor-pointer ${
+              tab === 'two_person' 
+                ? 'bg-amber-600 text-black font-bold shadow-[0_0_15px_rgba(245,158,11,0.5)]' 
+                : 'bg-white/5 border border-white/10 text-amber-200/50 hover:text-amber-200'
+            }`}
+          >
+            👥 双人六维合盘 (Synastry Matrix)
+          </button>
+          <button
+            onClick={() => { setTab('tri_system'); resetChat(); }}
+            className={`px-6 py-2.5 rounded-full text-xs font-serif tracking-widest transition-all cursor-pointer ${
+              tab === 'tri_system' 
+                ? 'bg-amber-600 text-black font-bold shadow-[0_0_15px_rgba(245,158,11,0.5)]' 
+                : 'bg-white/5 border border-white/10 text-amber-200/50 hover:text-amber-200'
+            }`}
+          >
+            🔮 单人天人地三才合参
+          </button>
+        </div>
       </div>
 
-      {!hasRequiredInfo ? (
-        <div className="bg-amber-900/20 border border-amber-500/30 rounded-2xl p-6 text-center">
-          <AlertCircle className="w-8 h-8 text-amber-500 mx-auto mb-3" />
-          <h3 className="text-lg font-serif text-amber-300 mb-2">需要完善灵魂档案</h3>
-          <p className="text-amber-100/70 text-sm mb-4">
-            命运合盘需要您的出生日期和时间来进行精准的八字与星象推演。请在右上角「档案」中完善信息。
-          </p>
-        </div>
-      ) : (
+      {tab === 'two_person' ? (
         <div className="space-y-8">
-          {messages.length === 0 && !isLoading ? (
-            <div className="bg-black/40 border border-amber-500/20 rounded-2xl p-6 backdrop-blur-sm">
-              <label className="block text-sm font-medium text-amber-200/80 mb-2">
-                你现在站在哪里？你想问什么？
-              </label>
-              <div className="relative">
-                <textarea
-                  value={question}
-                  onChange={(e) => setQuestion(e.target.value)}
-                  placeholder="描述你当下的处境、困惑或选择..."
-                  className="w-full bg-black/50 border border-amber-500/30 rounded-xl pl-4 pr-12 py-3 text-amber-100 placeholder-amber-100/30 focus:outline-none focus:border-amber-500/60 transition-colors min-h-[100px] resize-none"
-                />
-                <button
-                  onClick={handleSynastry}
-                  disabled={isLoading || !question.trim()}
-                  className="absolute right-3 bottom-3 p-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Send className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-8 pb-20">
-              <div className="bg-black/40 border border-amber-500/20 rounded-3xl p-8 md:p-12 backdrop-blur-sm">
-                <div className="flex flex-col space-y-12">
-                  {drawnCards.length > 0 && (
-                    <div className="flex flex-col items-center">
-                      <h3 className="text-lg font-serif text-amber-300 mb-4 text-center">潜意识投射 (塔罗)</h3>
-                      <div className="flex justify-center gap-4">
-                        {drawnCards.map((card, idx) => (
-                          <div key={idx} className="text-center">
-                            <div className="text-xs text-amber-200/60 mb-1">{['过去', '现在', '未来'][idx]}</div>
-                            <div className="w-20 h-32 md:w-24 md:h-40 bg-zinc-800 border border-amber-500/30 rounded-lg flex items-center justify-center p-2 text-center">
-                              <span className="text-amber-100 text-xs md:text-sm font-serif leading-tight">
-                                {card.name}<br/>
-                                <span className="text-[10px] md:text-xs text-amber-500/80">{card.isReversed ? '(逆位)' : '(正位)'}</span>
-                              </span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+          {messages.length === 0 ? (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="glass-panel p-8 md:p-12 rounded-3xl space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Person A */}
+                <div className="p-6 rounded-2xl bg-black/40 border border-amber-500/20 space-y-4">
+                  <div className="flex items-center gap-2 text-amber-400 font-serif text-sm font-bold">
+                    <Users className="w-4 h-4" />
+                    <span>主体方信息 (Person A)</span>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="姓名 / 称呼"
+                    value={nameA}
+                    onChange={(e) => setNameA(e.target.value)}
+                    className="w-full bg-black/50 border border-amber-500/20 rounded-xl px-4 py-2.5 text-amber-100 text-sm font-serif"
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="date"
+                      value={birthDateA}
+                      onChange={(e) => setBirthDateA(e.target.value)}
+                      className="bg-black/50 border border-amber-500/20 rounded-xl px-3 py-2.5 text-amber-100 text-xs font-serif"
+                    />
+                    <input
+                      type="time"
+                      value={birthTimeA}
+                      onChange={(e) => setBirthTimeA(e.target.value)}
+                      className="bg-black/50 border border-amber-500/20 rounded-xl px-3 py-2.5 text-amber-100 text-xs font-serif"
+                    />
+                  </div>
+                </div>
 
-                  <div className="space-y-8">
-                    {messages.map((msg, idx) => (
-                      <div key={idx} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-center'}`}>
-                        <div className={`max-w-[95%] md:max-w-[85%] rounded-2xl p-6 ${
-                          msg.role === 'user' 
-                            ? 'bg-amber-900/40 border border-amber-500/30 text-amber-100' 
-                            : 'bg-black/20 markdown-body w-full'
-                        }`}>
-                          {msg.role === 'model' ? (
-                            <MysticMarkdown content={msg.content.replace(/<thinking>[\s\S]*?<\/thinking>/g, '').trim()} />
-                          ) : (
-                            <p className="font-serif text-lg">{msg.content}</p>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                    {isAskingFollowUp && (
-                      <div className="flex justify-center">
-                        <BreathingLoading text="阿卡夏正在为您深入推演..." />
-                      </div>
-                    )}
+                {/* Person B */}
+                <div className="p-6 rounded-2xl bg-black/40 border border-amber-500/20 space-y-4">
+                  <div className="flex items-center gap-2 text-amber-400 font-serif text-sm font-bold">
+                    <HeartHandshake className="w-4 h-4" />
+                    <span>合盘对方信息 (Person B)</span>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="对方姓名 / 称呼"
+                    value={nameB}
+                    onChange={(e) => setNameB(e.target.value)}
+                    className="w-full bg-black/50 border border-amber-500/20 rounded-xl px-4 py-2.5 text-amber-100 text-sm font-serif"
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="date"
+                      value={birthDateB}
+                      onChange={(e) => setBirthDateB(e.target.value)}
+                      className="bg-black/50 border border-amber-500/20 rounded-xl px-3 py-2.5 text-amber-100 text-xs font-serif"
+                    />
+                    <input
+                      type="time"
+                      value={birthTimeB}
+                      onChange={(e) => setBirthTimeB(e.target.value)}
+                      className="bg-black/50 border border-amber-500/20 rounded-xl px-3 py-2.5 text-amber-100 text-xs font-serif"
+                    />
                   </div>
                 </div>
               </div>
 
-              {!isLoading && (
-                <div className="fixed bottom-24 left-1/2 -translate-x-1/2 w-full max-w-2xl px-6 z-40">
-                  <form onSubmit={handleSendMessage} className="relative">
-                    <input
-                      type="text"
-                      value={inputMessage}
-                      onChange={(e) => setInputMessage(e.target.value)}
-                      placeholder="继续探索这份合盘的深意..."
-                      className="w-full bg-black/60 border border-amber-500/40 rounded-full py-4 pl-6 pr-16 text-amber-100 placeholder-amber-100/30 focus:outline-none focus:border-amber-500 transition-all backdrop-blur-xl shadow-[0_0_30px_rgba(0,0,0,0.5)]"
-                    />
-                    <button
-                      type="submit"
-                      disabled={!inputMessage.trim() || isAskingFollowUp}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 p-3 bg-amber-600 hover:bg-amber-500 text-white rounded-full transition-colors disabled:opacity-50"
-                    >
-                      <Send size={18} />
-                    </button>
-                  </form>
+              <div className="space-y-3">
+                <label className="block text-xs font-serif tracking-widest text-amber-500/60 uppercase">你最关切的合盘困惑 (如合作前景/情感波折)</label>
+                <textarea
+                  value={twoPersonQuestion}
+                  onChange={(e) => setTwoPersonQuestion(e.target.value)}
+                  placeholder="例如：我们彼此性格最大的雷区是什么？未来 3 年大运是否互补？"
+                  rows={3}
+                  className="w-full bg-black/40 border border-amber-500/20 rounded-xl p-4 text-amber-100 font-serif text-sm"
+                />
+              </div>
+
+              <button
+                onClick={handleTwoPersonSynastry}
+                disabled={isLoading}
+                className="w-full py-4 bg-amber-600 hover:bg-amber-500 text-black font-bold rounded-full font-serif text-base tracking-[0.3em] transition-all shadow-[0_0_20px_rgba(245,158,11,0.4)] disabled:opacity-40 cursor-pointer"
+              >
+                生成双人六维合盘矩阵
+              </button>
+            </motion.div>
+          ) : (
+            <div className="space-y-8">
+              {/* Synastry 4-Dimension Metric Cards */}
+              {synastryMatrix && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="glass-panel p-5 rounded-2xl border border-amber-500/20 bg-black/40 space-y-2">
+                    <div className="flex items-center justify-between text-xs text-amber-400 font-serif">
+                      <span className="flex items-center gap-1.5"><Flame className="w-4 h-4 text-rose-400" /> 外在吸引火花</span>
+                      <span className="font-bold text-amber-300">{synastryMatrix.attractionDynamics.level}</span>
+                    </div>
+                    <p className="text-xs text-amber-100/70 leading-relaxed font-serif">{synastryMatrix.attractionDynamics.analysis}</p>
+                  </div>
+
+                  <div className="glass-panel p-5 rounded-2xl border border-amber-500/20 bg-black/40 space-y-2">
+                    <div className="flex items-center justify-between text-xs text-amber-400 font-serif">
+                      <span className="flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-emerald-400" /> 相处承载力</span>
+                      <span className="font-bold text-amber-300">{synastryMatrix.containmentCapacity.frictionLevel}</span>
+                    </div>
+                    <p className="text-xs text-amber-100/70 leading-relaxed font-serif">{synastryMatrix.containmentCapacity.analysis}</p>
+                  </div>
+
+                  <div className="glass-panel p-5 rounded-2xl border border-amber-500/20 bg-black/40 space-y-2">
+                    <div className="flex items-center justify-between text-xs text-amber-400 font-serif">
+                      <span className="flex items-center gap-1.5"><Scale className="w-4 h-4 text-cyan-400" /> 价值观同频</span>
+                      <span className="font-bold text-amber-300">{synastryMatrix.valueAlignment.direction}</span>
+                    </div>
+                    <p className="text-xs text-amber-100/70 leading-relaxed font-serif">{synastryMatrix.valueAlignment.analysis}</p>
+                  </div>
+
+                  <div className="glass-panel p-5 rounded-2xl border border-amber-500/20 bg-black/40 space-y-2">
+                    <div className="flex items-center justify-between text-xs text-amber-400 font-serif">
+                      <span className="flex items-center gap-1.5"><Clock className="w-4 h-4 text-amber-400" /> 大运时机共振</span>
+                      <span className="font-bold text-amber-300">{synastryMatrix.dashaTimingResonance.resonance}</span>
+                    </div>
+                    <p className="text-xs text-amber-100/70 leading-relaxed font-serif">{synastryMatrix.dashaTimingResonance.analysis}</p>
+                  </div>
                 </div>
               )}
+
+              <div className="glass-panel p-8 md:p-12 rounded-3xl">
+                {isLoading && !messages.length ? (
+                  <BreathingLoading text="正在计算双方恒星黄道星位、月宿配准与大运交叠..." />
+                ) : (
+                  <MysticMarkdown content={messages[0]?.content || ""} />
+                )}
+              </div>
+
+              <div className="flex justify-center">
+                <button
+                  onClick={() => { resetChat(); setSynastryMatrix(null); }}
+                  className="px-8 py-3 border border-amber-500/30 text-amber-400 rounded-full font-serif text-sm hover:bg-amber-500/10 transition-all cursor-pointer"
+                >
+                  重新进行合盘推演
+                </button>
+              </div>
             </div>
           )}
+        </div>
+      ) : (
+        /* Tri-System Single Person Analysis */
+        <div className="space-y-8">
+          {messages.length === 0 ? (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="glass-panel p-8 md:p-12 rounded-3xl space-y-6">
+              <div className="space-y-3">
+                <label className="block text-xs font-serif tracking-widest text-amber-500/60 uppercase">心中的求问事项</label>
+                <textarea
+                  value={question}
+                  onChange={(e) => setQuestion(e.target.value)}
+                  placeholder="描述你当下面临的人生瓶颈、关键抉择或困惑..."
+                  rows={4}
+                  className="w-full bg-black/40 border border-amber-500/20 rounded-xl p-4 text-amber-100 font-serif text-sm"
+                />
+              </div>
 
-          {isLoading && messages.length === 0 && (
-            <div className="py-12">
-              <BreathingLoading text="正在对齐星辰、八字与潜意识..." />
-            </div>
-          )}
+              <button
+                onClick={handleTriSystem}
+                disabled={isLoading || !question.trim()}
+                className="w-full py-4 bg-amber-600 hover:bg-amber-500 text-black font-bold rounded-full font-serif text-base tracking-[0.3em] transition-all shadow-[0_0_20px_rgba(245,158,11,0.4)] disabled:opacity-40 cursor-pointer"
+              >
+                抽取命运塔罗 · 开启三才合参
+              </button>
+            </motion.div>
+          ) : (
+            <div className="space-y-8">
+              <div className="glass-panel p-8 md:p-12 rounded-3xl">
+                {isLoading && !messages.length ? (
+                  <BreathingLoading text="正在融合八字五行、星盘与塔罗原型..." />
+                ) : (
+                  <MysticMarkdown content={messages[0]?.content || ""} />
+                )}
+              </div>
 
-          {error && (
-            <div className="bg-red-900/20 border border-red-500/30 rounded-xl p-4 text-red-200 text-sm">
-              {error}
+              <div className="flex justify-center">
+                <button
+                  onClick={() => resetChat()}
+                  className="px-8 py-3 border border-amber-500/30 text-amber-400 rounded-full font-serif text-sm hover:bg-amber-500/10 transition-all cursor-pointer"
+                >
+                  重新进行三才合参
+                </button>
+              </div>
             </div>
           )}
         </div>

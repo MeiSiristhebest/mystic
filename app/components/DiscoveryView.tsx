@@ -20,7 +20,9 @@ import {
   RefreshCw
 } from "lucide-react";
 import { useUserProfile } from "@/hooks/useUserProfile";
-import { calculateBazi, getZodiac, getSunSign } from "@/lib/metaphysics";
+import { EasternService } from "@/lib/services/easternService";
+import { AstrologyService } from "@/lib/services/astrologyService";
+
 import BreathingLoading from "./BreathingLoading";
 import MysticMarkdown from "./MysticMarkdown";
 import { DISCOVERY_PERSONA } from "@/lib/ai";
@@ -140,8 +142,9 @@ export default function DiscoveryView({ onComplete }: { onComplete?: () => void 
 
     try {
       const { res: mbti, identity } = calculateMBTI();
-      const bazi = calculateBazi(formData.birthDate, formData.birthTime);
-      const sunSign = getSunSign(new Date(formData.birthDate));
+      const bazi = EasternService.getBazi(formData.birthDate, formData.birthTime).baziString;
+      const sunSign = AstrologyService.getSunSign(new Date(formData.birthDate));
+
       
       const promptText = getDiscoveryPrompt({
         mbtiAnswer: `${mbti}${identity}`,
@@ -190,8 +193,9 @@ export default function DiscoveryView({ onComplete }: { onComplete?: () => void 
 
   const handleComplete = () => {
     const { res: mbti, identity: mbtiIdentity } = calculateMBTI();
-    const bazi = calculateBazi(formData.birthDate, formData.birthTime);
-    const zodiac = formData.birthDate ? getZodiac(new Date(formData.birthDate).getFullYear()) : "";
+    const bazi = EasternService.getBazi(formData.birthDate, formData.birthTime).baziString;
+    const zodiac = formData.birthDate ? EasternService.getZodiac(new Date(formData.birthDate).getFullYear()) : "";
+
     
     updateProfile({
       ...formData,
@@ -536,7 +540,8 @@ export default function DiscoveryView({ onComplete }: { onComplete?: () => void 
                   { l: "MBTI", v: `${mbtiResult}${mbtiIdentity}`, i: Brain },
                   { l: "九型", v: enneagramAnswer, i: Target },
                   { l: "原型", v: selectedArchetype.split(" ")[0], i: Crown },
-                  { l: "太阳", v: formData.birthDate ? getSunSign(new Date(formData.birthDate)) : "未知", i: Star }
+                  { l: "太阳", v: formData.birthDate ? AstrologyService.getSunSign(new Date(formData.birthDate)) : "未知", i: Star }
+
                 ].map((item, i) => (
                   <div key={i} className="p-6 bg-white/5 border border-white/10 rounded-3xl space-y-2">
                     <item.i className="w-5 h-5 text-amber-500/40 mx-auto" />

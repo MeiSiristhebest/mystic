@@ -18,12 +18,11 @@ export default function EntryDetailRenderer({ entry }: EntryDetailRendererProps)
   const modelMsg = details.messages && Array.isArray(details.messages) ? details.messages.find((m: any) => m.role === 'model') : null;
   let initialText = modelMsg?.content || details.text || entry.summary || "";
 
-  // If initialText contains legacy concatenated follow-ups, strip everything after the first question mark / separator
-  if (initialText.includes('**问**：')) {
-    initialText = initialText.split('**问**：')[0].trim();
-  }
-  if (initialText.includes('\n\n---\n\n')) {
-    initialText = initialText.split('\n\n---\n\n')[0].trim();
+  // Only strip legacy appended follow-up questions from ancient versions, NEVER strip valid markdown dividers (---)
+  if (initialText.includes('\n\n---\n\n**问**：')) {
+    initialText = initialText.split('\n\n---\n\n**问**：')[0].trim();
+  } else if (initialText.includes('**问**：\n')) {
+    initialText = initialText.split('**问**：\n')[0].trim();
   }
 
   switch (details.type) {

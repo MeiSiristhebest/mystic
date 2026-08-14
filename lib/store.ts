@@ -2,6 +2,9 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { zustandStorage } from '@/lib/storage';
 import { DivinationHandoff, JourneyEntry } from '@/app/types/divination';
+import { getDefaultEnabledModules } from '@/lib/registry/systems';
+
+
 
 export interface LifeEvent {
   id: string;
@@ -31,6 +34,16 @@ export interface UserProfile {
   coreIssues?: string[];
   lifeEvents?: LifeEvent[];
   emotionalBaseline?: EmotionalState[];
+  enabledModules?: {
+    tarot?: boolean;
+    eastern?: boolean;
+    vedic?: boolean;
+    astrology?: boolean;
+    renji?: boolean;
+    soul?: boolean;
+  };
+  enableCrossSystemSynergy?: boolean;
+  oracleTone?: 'grounded' | 'classical' | 'poetic' | 'direct';
 }
 
 const DEFAULT_PROFILE: UserProfile = {
@@ -49,7 +62,13 @@ const DEFAULT_PROFILE: UserProfile = {
   coreIssues: [],
   lifeEvents: [],
   emotionalBaseline: [],
+  enabledModules: getDefaultEnabledModules(),
+  enableCrossSystemSynergy: false,
+  oracleTone: 'grounded',
 };
+
+
+
 
 interface AppState {
   activeTab: string;

@@ -7,6 +7,8 @@ import { useAppStore } from "@/lib/store";
 import { Compass, Sparkles, ArrowRight } from "lucide-react";
 import { AssociationBubble } from "./AssociationBubble";
 import { CardMeaningModal, processMysticMarkdownContent } from "./MainApp/TarotComponents";
+import { TarotCardFace } from "./MainApp/TarotCardFace";
+
 
 
 const StreamingParticles = React.memo(() => {
@@ -230,26 +232,39 @@ const MemoPre = React.memo(({ children }: { children?: React.ReactNode }) => (
 ));
 MemoPre.displayName = "MemoPre";
 
+import remarkGfm from "remark-gfm";
+
 const MemoTable = React.memo(({ children }: { children?: React.ReactNode }) => (
-  <div className="w-full overflow-x-auto my-12 rounded-[2.5rem] obsidian-glass border border-[#C9A84C]/30 shadow-[0_30px_70px_rgba(0,0,0,0.8)]">
-    <table className="w-full text-left border-collapse">{children}</table>
+  <div className="w-full overflow-x-auto my-10 rounded-[2rem] bg-[#0c0617]/90 border border-[#C9A84C]/35 shadow-[0_20px_60px_rgba(0,0,0,0.85)] custom-scrollbar">
+    <table className="w-full text-left border-collapse font-serif text-sm md:text-base my-0 min-w-[550px]">{children}</table>
   </div>
 ));
 MemoTable.displayName = "MemoTable";
 
+const MemoThead = React.memo(({ children }: { children?: React.ReactNode }) => (
+  <thead className="bg-gradient-to-r from-[#C9A84C]/25 via-[#C9A84C]/15 to-[#C9A84C]/5 border-b border-[#C9A84C]/40">{children}</thead>
+));
+MemoThead.displayName = "MemoThead";
+
+const MemoTr = React.memo(({ children }: { children?: React.ReactNode }) => (
+  <tr className="border-b border-white/5 hover:bg-[#C9A84C]/5 transition-colors">{children}</tr>
+));
+MemoTr.displayName = "MemoTr";
+
 const MemoTh = React.memo(({ children }: { children?: React.ReactNode }) => (
-  <th className="p-6 md:p-8 bg-gradient-to-r from-[#C9A84C]/25 via-[#C9A84C]/10 to-transparent border-b border-[#C9A84C]/40 text-[#E8DFB8] font-serif text-sm md:text-base tracking-widest font-medium uppercase drop-shadow-sm">
+  <th className="px-6 py-4 font-serif text-xs md:text-sm tracking-[0.2em] font-bold text-[#F5E6AD] uppercase border-r border-[#C9A84C]/20 last:border-r-0 whitespace-nowrap drop-shadow-sm">
     {children}
   </th>
 ));
 MemoTh.displayName = "MemoTh";
 
 const MemoTd = React.memo(({ children }: { children?: React.ReactNode }) => (
-  <td className="p-6 md:p-8 border-b border-white/5 text-[#E8DFB8]/80 font-serif leading-[2.2] text-sm md:text-base hover:bg-white/5 transition-colors">
+  <td className="px-6 py-4 text-[#E8DFB8]/90 font-serif leading-relaxed border-r border-white/5 last:border-r-0 text-xs md:text-sm">
     {children}
   </td>
 ));
 MemoTd.displayName = "MemoTd";
+
 
 
 interface MysticMarkdownProps {
@@ -300,6 +315,8 @@ const MysticMarkdown = React.memo(({ content, cards, hideCards, isLoading, cente
     code: ({ inline, children }: any) => <MemoCode inline={inline}>{children}</MemoCode>,
     pre: ({ children }: any) => <MemoPre>{children}</MemoPre>,
     table: ({ children }: any) => <MemoTable>{children}</MemoTable>,
+    thead: ({ children }: any) => <MemoThead>{children}</MemoThead>,
+    tr: ({ children }: any) => <MemoTr>{children}</MemoTr>,
     th: ({ children }: any) => <MemoTh>{children}</MemoTh>,
     td: ({ children }: any) => <MemoTd>{children}</MemoTd>,
   }), []);
@@ -309,33 +326,22 @@ const MysticMarkdown = React.memo(({ content, cards, hideCards, isLoading, cente
       {isLoading && <StreamingParticles />}
       {!hideCards && cards && cards.length > 0 && (
         <div className="flex flex-wrap justify-center gap-4 md:gap-6 mb-12 mt-4 relative z-10">
-          {cards.map((card, idx) => {
-            const imageUrl = card.image || `https://www.trustedtarot.com/img/cards/${card.englishName.toLowerCase().replace(/ /g, "-")}.png`;
-            return (
-              <div 
-                key={idx} 
-                onClick={() => setSelectedCard(card)}
-                className="relative w-24 h-40 md:w-32 md:h-52 rounded-2xl overflow-hidden border border-[#C9A84C]/40 shadow-[0_15px_40px_rgba(0,0,0,0.9)] hover:scale-105 hover:border-[#C9A84C] cursor-pointer transition-all duration-500 group"
-              >
-                <img
-                  src={imageUrl}
-                  alt={card.name}
-                  className={`w-full h-full object-cover ${card.isReversed ? 'rotate-180' : ''}`}
-                  crossOrigin="anonymous"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#080510]/95 via-transparent to-transparent opacity-70 group-hover:opacity-40 transition-opacity"></div>
-                <div className="absolute bottom-3 left-0 right-0 text-center px-2 pointer-events-none">
-                  <span className="text-[11px] md:text-sm text-[#E8DFB8] font-serif tracking-widest drop-shadow-md">{card.name}</span>
-                  <div className="text-[9px] text-[#C9A84C]/80 font-serif mt-1 tracking-widest">{card.isReversed ? '逆位' : '正位'}</div>
-                </div>
-              </div>
-            );
-          })}
+          {cards.map((card, idx) => (
+            <div 
+              key={idx} 
+              onClick={() => setSelectedCard(card)}
+              className="relative w-24 h-40 md:w-32 md:h-52 rounded-2xl overflow-hidden border border-[#C9A84C]/40 shadow-[0_15px_40px_rgba(0,0,0,0.9)] hover:scale-105 hover:border-[#C9A84C] cursor-pointer transition-all duration-500 group"
+            >
+              <TarotCardFace card={card} />
+            </div>
+          ))}
         </div>
+
       )}
-      <ReactMarkdown components={componentsMap}>
+      <ReactMarkdown remarkPlugins={[remarkGfm]} components={componentsMap}>
         {processedContent}
       </ReactMarkdown>
+
       {soulMotto && (
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 20 }}

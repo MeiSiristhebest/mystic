@@ -1,7 +1,7 @@
 export const MODELS = {
-  PRO: process.env.GEMINI_MODEL_PRO || "gemini-3.1-pro-preview",       // 25 RPM / 2M TPM / 250 RPD
-  FLASH: process.env.GEMINI_MODEL_FLASH || "gemini-3-flash-preview",   // 1K RPM / 2M TPM / 10K RPD
-  LITE: process.env.GEMINI_MODEL_LITE || "gemini-3.1-flash-lite",     // 4K RPM / 4M TPM / 150K RPD
+  PRO: process.env.GEMINI_MODEL_PRO || "gemini-3.1-pro-preview",
+  FLASH: process.env.GEMINI_MODEL_FLASH || "gemini-3-flash-preview",
+  LITE: process.env.GEMINI_MODEL_LITE || "gemini-3.1-flash-lite",
 } as const;
 
 export const FALLBACK_CHAIN = [
@@ -11,8 +11,8 @@ export const FALLBACK_CHAIN = [
 ];
 
 export const AGNES_MODELS = {
-  FLASH: process.env.AGNES_MODEL_FLASH || "agnes-2.0-flash",
-  IMAGE: process.env.AGNES_MODEL_IMAGE || "agnes-image-2.0-flash",
+  FLASH: process.env.AGNES_MODEL_FLASH || "agnes-2.5-flash",
+  IMAGE: process.env.AGNES_MODEL_IMAGE || "agnes-image-2.1-flash",
 } as const;
 
 export const DEFAULT_MODEL = AGNES_MODELS.FLASH;
@@ -33,85 +33,73 @@ export * from './prompts/personas';
 import { AKASHA_PERSONA } from './prompts/personas';
 
 /**
- * Unified non-streaming content generation using the secure /api/ai route.
- * Replaces the insecure direct client SDK usage.
+ * Unified streaming content generation using the secure /api/ai route.
+ * Intelligently handles both (prompt, systemInstruction, signal, config) and (prompt, systemInstruction, config, signal).
  */
-export async function generateContent(
+export async function* generateContentStream(
   prompt: string | any[],
   systemInstruction: string = AKASHA_PERSONA,
-  config: any = {},
-  signal?: AbortSignal
-): Promise<string> {
+  arg3?: AbortSignal | any,
+  arg4?: any
+): AsyncIterable<string> {
+  let signal: AbortSignal | undefined;
+  let config: any = {};
+
+  if (arg3 instanceof AbortSignal || (arg3 && typeof arg3 === 'object' && 'aborted' in arg3)) {
+    signal = arg3;
+    config = arg4 || {};
+  } else {
+    config = arg3 || {};
+    if (arg4 instanceof AbortSignal || (arg4 && typeof arg4 === 'object' && 'aborted' in arg4)) {
+      signal = arg4;
+    }
+  }
+
   const response = await fetch('/api/ai', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ prompt, systemInstruction, config, provider: config.provider }),
+    body: JSON.stringify({ 
+      prompt, 
+      systemInstruction, 
+      config: {
+        model: AGNES_MODELS.FLASH,
+        ...config,
+      }, 
+      provider: config.provider || "agnes" 
+    }),
     signal
   });
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(errorText || 'Failed to generate content');
+    throw new Error(errorText || 'Failed to stream content');
   }
 
   const reader = response.body?.getReader();
   if (!reader) throw new Error('No reader available');
   
   const decoder = new TextDecoder();
-  let result = '';
+
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;
-    result += decoder.decode(value, { stream: true });
+    const chunk = decoder.decode(value, { stream: true });
+    if (chunk) yield chunk;
   }
-  return result;
 }
 
-export async function* generateContentStream(
+/**
+ * Unified non-streaming content generation.
+ */
+export async function generateContent(
   prompt: string | any[],
   systemInstruction: string = AKASHA_PERSONA,
-  signal?: AbortSignal,
-  config: any = {}
-) {
-  const maxRetries = 2;
-  let lastError: any = null;
-
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    try {
-      const response = await fetch('/api/ai', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, systemInstruction, config, provider: config.provider }),
-        signal
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || 'Failed to generate content');
-      }
-
-      const reader = response.body?.getReader();
-      if (!reader) throw new Error('No reader available');
-      
-      const decoder = new TextDecoder();
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        yield decoder.decode(value, { stream: true });
-      }
-      return;
-    } catch (err: any) {
-      lastError = err;
-      if (err.name === 'AbortError') throw err;
-      
-      console.warn(`[AI Stream Attempt ${attempt + 1}] failed:`, err);
-      if (attempt < maxRetries) {
-        const delay = Math.pow(2, attempt) * 1000;
-        await new Promise(resolve => setTimeout(resolve, delay));
-        continue;
-      }
-    }
+  arg3?: AbortSignal | any,
+  arg4?: any
+): Promise<string> {
+  let full = "";
+  for await (const chunk of generateContentStream(prompt, systemInstruction, arg3, arg4)) {
+    full += chunk;
   }
-
-  throw lastError;
+  return full.trim();
 }

@@ -4,8 +4,9 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { useAIStream } from './useAIStream';
 import { useJourney } from './useJourney';
 import { Message, DivinationType } from '@/app/types/divination';
-import { AKASHA_PERSONA } from '@/lib/prompts';
+import { AKASHA_PERSONA, getAkashaPersona } from '@/lib/prompts';
 import { AIProvider } from '@/lib/ai';
+import { useUserProfile } from './useUserProfile';
 
 interface UseAIChatOptions {
   type: DivinationType;
@@ -26,6 +27,12 @@ export function useAIChat({
   const [currentEntryId, setCurrentEntryId] = useState<string | null>(null);
   const { stream, isLoading, error, abort } = useAIStream({ model, provider });
   const { addEntry, updateEntry } = useJourney();
+  const { profile } = useUserProfile();
+
+  const effectivePersona = systemInstruction === AKASHA_PERSONA 
+    ? getAkashaPersona(profile.oracleTone || 'grounded') 
+    : systemInstruction;
+
 
   const resetChat = useCallback(() => {
     setMessages([]);
@@ -55,7 +62,8 @@ export function useAIChat({
 
     try {
       let fullResponse = "";
-      const si = customSystemInstruction || systemInstruction;
+      const si = customSystemInstruction || effectivePersona;
+
       
       // If it's a follow-up, we pass the history to the model, but for the LAST user message, we pass the raw content (with context pins)
       let streamInput: any;

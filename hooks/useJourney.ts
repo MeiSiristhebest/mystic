@@ -110,6 +110,19 @@ export function useJourney() {
     await deleteFromStore('journey-entries', id);
   };
 
+  const deleteMultipleEntries = async (ids: string[]) => {
+    for (const id of ids) {
+      deleteStoreEntry(id);
+      await deleteFromStore('journey-entries', id);
+    }
+  };
+
+  const updateMultipleEntries = async (ids: string[], updates: Partial<JourneyEntry>) => {
+    for (const id of ids) {
+      await updateEntry(id, updates);
+    }
+  };
+
   const clearJourney = async () => {
     clearStoreJourney();
     await clearStore('journey-entries');
@@ -120,8 +133,11 @@ export function useJourney() {
     addEntry, 
     updateEntry, 
     deleteEntry, 
+    deleteMultipleEntries,
+    updateMultipleEntries,
     clearJourney, 
     isLoaded,
     refreshJourney: loadJourney 
   };
 }
+

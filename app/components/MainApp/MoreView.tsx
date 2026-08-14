@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Users, Clock, Globe, Smile } from "lucide-react";
+import Image from "next/image";
 import dynamic from "next/dynamic";
-import { MysticImage } from "./MysticImage";
 import BreathingLoading from "../BreathingLoading";
+import { getAdvancedSystems } from "@/lib/registry/systems";
 
 const SynastryApp = dynamic(() => import("../SynastryApp"), { 
   loading: () => <BreathingLoading text="正在推演因果连结..." /> 
@@ -22,37 +22,7 @@ const FaceReadingApp = dynamic(() => import("../FaceReadingApp"), {
 
 export function MoreView() {
   const [subTab, setSubTab] = useState("");
-
-  const systems = [
-    { 
-      id: "synastry", 
-      name: "三才合参", 
-      icon: Users, 
-      desc: "多维度的关系合盘。探索两人之间的业力纠缠与灵魂契约。", 
-      prompt: "Two glowing souls connected by cosmic threads, sacred geometry, esoteric art"
-    },
-    { 
-      id: "time", 
-      name: "时空智慧", 
-      icon: Clock, 
-      desc: "穿越过去与未来，解析特定时间节点的能量轨迹。", 
-      prompt: "Giant golden clock gears in space, cosmic timeline, ancient esoteric hourglass"
-    },
-    { 
-      id: "collective", 
-      name: "集体镜像", 
-      icon: Globe, 
-      desc: "探索你与世界、社会趋势之间的潜意识连结。", 
-      prompt: "A giant eye reflecting humanity, interconnected glowing minds, ethereal network"
-    },
-    { 
-      id: "face", 
-      name: "灵气面相", 
-      icon: Smile, 
-      desc: "融合传统相术与能量场感应，洞察你的隐藏特质。", 
-      prompt: "A mystical glowing face profile, aura colors around a person, esoteric portrait"
-    },
-  ];
+  const systems = useMemo(() => getAdvancedSystems(), []);
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-12 md:py-20 space-y-16">
@@ -78,24 +48,34 @@ export function MoreView() {
                 }, 300);
               }}
               className={`luxury-card p-10 text-left transition-all duration-700 group relative overflow-hidden min-h-[320px] flex flex-col justify-end cursor-pointer ${
-                isActive ? "border-[#C9A84C]/60 bg-[#C9A84C]/10" : "hover:bg-white/5"
+                isActive ? "border-[#C9A84C]/60 bg-[#C9A84C]/10 shadow-[0_0_50px_rgba(201,168,76,0.2)]" : "hover:border-[#C9A84C]/30 hover:bg-white/5"
               }`}
             >
-              <div className="absolute inset-0 z-0">
-                <MysticImage 
-                  prompt={system.prompt} 
-                  className={`w-full h-full transition-all duration-1000 ${isActive ? "opacity-60 scale-105" : "opacity-20 group-hover:opacity-40"}`}
-                  aspectRatio="3:4"
+              <div className="absolute inset-0 z-0 overflow-hidden">
+                <Image 
+                  src={system.bgImage}
+                  alt={system.name}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 25vw"
+                  className={`object-cover transition-all duration-1000 ${
+                    isActive ? "opacity-60 scale-105" : "opacity-25 group-hover:opacity-45 group-hover:scale-105"
+                  }`}
+                  priority
                 />
               </div>
-              <div className="relative z-10">
-                <Icon className={`w-10 h-10 mb-6 transition-all duration-700 ${
-                  isActive ? "text-[#C9A84C] scale-110" : "text-[#E8DFB8]/20 group-hover:text-[#E8DFB8]/40"
-                }`} />
-                <h3 className={`text-2xl font-serif mb-3 transition-colors ${isActive ? "gold-gradient-text" : ""}`}>
+
+              <div className="absolute inset-0 bg-gradient-to-t from-[#080510] via-[#080510]/60 to-transparent z-10" />
+
+              <div className="relative z-20">
+                <div className="w-14 h-14 rounded-2xl border border-[#C9A84C]/20 flex items-center justify-center bg-[#C9A84C]/5 mb-6 group-hover:bg-[#C9A84C]/15 group-hover:scale-110 transition-all duration-700">
+                  <Icon className={`w-7 h-7 transition-all duration-700 ${
+                    isActive ? "text-[#C9A84C]" : "text-[#C9A84C]/50 group-hover:text-[#C9A84C]"
+                  }`} />
+                </div>
+                <h3 className={`text-2xl font-serif mb-3 transition-colors ${isActive ? "gold-gradient-text" : "text-[#E8DFB8] group-hover:text-white"}`}>
                   {system.name}
                 </h3>
-                <p className="text-[#E8DFB8]/40 text-sm leading-relaxed">{system.desc}</p>
+                <p className="text-[#E8DFB8]/60 text-sm font-serif leading-relaxed line-clamp-3">{system.desc}</p>
               </div>
             </div>
           );
@@ -109,7 +89,7 @@ export function MoreView() {
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.98 }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.4 }}
           >
             {subTab === "synastry" && <SynastryApp />}
             {subTab === "time" && <TimeWisdomApp />}

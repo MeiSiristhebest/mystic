@@ -168,10 +168,11 @@ export default function FaceReadingApp({
     <div className="w-full flex flex-col items-center">
       {messages.length === 0 && !isStreaming ? (
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="w-full max-w-5xl glass-panel p-6 md:p-8 rounded-2xl flex flex-col items-center"
+          className="w-full max-w-4xl mx-auto glass-panel p-8 md:p-12 rounded-3xl flex flex-col items-center shadow-2xl"
         >
+
           <div className="w-full flex flex-col gap-8 mb-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Type Selection */}
@@ -351,10 +352,10 @@ export default function FaceReadingApp({
                       className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-center"}`}
                     >
                       <div
-                        className={`max-w-[95%] md:max-w-[85%] rounded-2xl p-6 ${
+                        className={`rounded-2xl p-6 ${
                           msg.role === "user"
-                            ? "bg-amber-900/40 border border-amber-500/30 text-amber-100"
-                            : "bg-black/20 markdown-body w-full"
+                            ? "max-w-[90%] md:max-w-[75%] bg-amber-900/40 border border-amber-500/30 text-amber-100 ml-auto"
+                            : "w-full bg-black/20 markdown-body"
                         }`}
                       >
                         {msg.role === "model" ? (
@@ -363,6 +364,7 @@ export default function FaceReadingApp({
                           <p className="text-lg">{msg.content}</p>
                         )}
                       </div>
+
                     </div>
                   ))}
                   {isStreaming && messages.length > 0 && (

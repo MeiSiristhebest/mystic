@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { getBaziData } from '@/app/actions/aiActions';
+import { getBaziData, getZiweiServerData } from '@/app/actions/aiActions';
 
 export function useBaziEngine() {
   const [birthDate, setBirthDate] = useState('');
@@ -10,23 +10,41 @@ export function useBaziEngine() {
   const [fullName, setFullName] = useState('');
   const [birthPlace, setBirthPlace] = useState('');
   const [baziData, setBaziData] = useState<any>(null);
+  const [ziweiChart, setZiweiChart] = useState<any>(null);
+  const [detectedPatterns, setDetectedPatterns] = useState<any[]>([]);
 
   const resetEngine = useCallback(() => {
     setBaziData(null);
+    setZiweiChart(null);
+    setDetectedPatterns([]);
   }, []);
 
   const calculateBazi = useCallback(async () => {
     if (!birthDate || !birthTime) return null;
     
     try {
-      const data = await getBaziData(birthDate, birthTime);
-      setBaziData(data);
-      return data;
+      const bazi = await getBaziData(birthDate, birthTime);
+      
+      // Also calculate Ziwei & detect 80+ patterns
+      const [hours] = birthTime.split(':').map(Number);
+      const ziwei = await getZiweiServerData(birthDate, hours, (gender === '女' ? '女' : '男'));
+      
+      setBaziData(bazi);
+      if (ziwei) {
+        setZiweiChart(ziwei.chart);
+        setDetectedPatterns(ziwei.detectedPatterns || []);
+      }
+
+      return {
+        ...bazi,
+        ziwei: ziwei?.chart,
+        detectedPatterns: ziwei?.detectedPatterns || [],
+      };
     } catch (err) {
-      console.error('Bazi calculation failed:', err);
+      console.error('Bazi & Ziwei calculation failed:', err);
       throw err;
     }
-  }, [birthDate, birthTime]);
+  }, [birthDate, birthTime, gender]);
 
   return {
     birthDate, setBirthDate,
@@ -35,6 +53,8 @@ export function useBaziEngine() {
     fullName, setFullName,
     birthPlace, setBirthPlace,
     baziData, setBaziData,
+    ziweiChart,
+    detectedPatterns,
     calculateBazi,
     resetEngine
   };

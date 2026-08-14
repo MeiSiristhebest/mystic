@@ -1,7 +1,9 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion } from "motion/react";
-import { User, Star, Compass, Wand2, Sparkles, Book, Layers } from "lucide-react";
+import { User, Star, Compass, Wand2, Sparkles, Book, Layers, Volume2, VolumeX } from "lucide-react";
+import { isSoundEnabled, toggleSound } from "@/lib/audio";
 
 export const navItems = [
   { id: "today", name: "今日", icon: Star, label: "Today" },
@@ -95,6 +97,38 @@ export const CelestialLogo = ({ className = "" }: { className?: string }) => (
   </motion.svg>
 );
 
+export function SoundToggleBtn({ className = "" }: { className?: string }) {
+  const [enabled, setEnabled] = useState(true);
+
+  useEffect(() => {
+    setEnabled(isSoundEnabled());
+    const handler = (e: any) => {
+      setEnabled(e.detail.enabled);
+    };
+    window.addEventListener('mystic-sound-change', handler);
+    return () => window.removeEventListener('mystic-sound-change', handler);
+  }, []);
+
+  const handleToggle = () => {
+    const next = toggleSound();
+    setEnabled(next);
+  };
+
+  return (
+    <button
+      onClick={handleToggle}
+      className={`w-10 h-10 rounded-full border border-white/10 flex items-center justify-center hover:border-[#C9A84C]/40 hover:bg-[#C9A84C]/5 transition-all duration-500 cursor-pointer select-none ${className}`}
+      title={enabled ? "金石音律：已开启（点击静音）" : "金石音律：已静音（点击开启）"}
+    >
+      {enabled ? (
+        <Volume2 className="w-4 h-4 text-[#C9A84C]" />
+      ) : (
+        <VolumeX className="w-4 h-4 text-[#E8DFB8]/40" />
+      )}
+    </button>
+  );
+}
+
 interface NavigationProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
@@ -123,7 +157,7 @@ export function DesktopNavigation({ activeTab, setActiveTab, setIsProfileModalOp
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`relative px-1 py-2 text-sm font-serif tracking-[0.2em] transition-all duration-500 group ${
+                  className={`relative px-1 py-2 text-sm font-serif tracking-[0.2em] transition-all duration-500 group cursor-pointer ${
                     activeTab === item.id
                       ? "text-[#C9A84C]"
                       : "text-[#E8DFB8]/40 hover:text-[#E8DFB8]/80"
@@ -133,7 +167,7 @@ export function DesktopNavigation({ activeTab, setActiveTab, setIsProfileModalOp
                   {activeTab === item.id && (
                     <motion.div
                       layoutId="nav-underline"
-                      className="absolute -bottom-1 left-0 right-0 h-px bg-gradient-to-right from-transparent via-[#C9A84C] to-transparent"
+                      className="absolute -bottom-1 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#C9A84C] to-transparent"
                     />
                   )}
                 </button>
@@ -141,10 +175,12 @@ export function DesktopNavigation({ activeTab, setActiveTab, setIsProfileModalOp
             </div>
           </div>
 
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
+            <SoundToggleBtn />
             <button
               onClick={() => setIsProfileModalOpen(true)}
-              className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center hover:border-[#C9A84C]/40 hover:bg-[#C9A84C]/5 transition-all duration-500 group"
+              className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center hover:border-[#C9A84C]/40 hover:bg-[#C9A84C]/5 transition-all duration-500 group cursor-pointer"
+              title="探索者档案"
             >
               <User className="w-5 h-5 text-[#E8DFB8]/60 group-hover:text-[#C9A84C] transition-colors" />
             </button>
@@ -166,7 +202,7 @@ export function MobileNavigation({ activeTab, setActiveTab }: Omit<NavigationPro
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className="flex flex-col items-center justify-center gap-1.5 relative"
+              className="flex flex-col items-center justify-center gap-1.5 relative cursor-pointer"
             >
               <div className={`p-2 rounded-2xl transition-all duration-500 ${
                 isActive ? "bg-[#C9A84C]/10 text-[#C9A84C]" : "text-[#E8DFB8]/40"
@@ -205,12 +241,15 @@ export function MobileHeader({ setActiveTab, setIsProfileModalOpen }: Omit<Navig
           <span className="text-[6px] tracking-[0.4em] text-[#E8DFB8]/30 uppercase mt-0.5">Eye of Akasha</span>
         </div>
       </div>
-      <button
-        onClick={() => setIsProfileModalOpen(true)}
-        className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center active:scale-95 transition-transform"
-      >
-        <User className="w-5 h-5 text-[#E8DFB8]/60" />
-      </button>
+      <div className="flex items-center gap-3">
+        <SoundToggleBtn />
+        <button
+          onClick={() => setIsProfileModalOpen(true)}
+          className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center active:scale-95 transition-transform cursor-pointer"
+        >
+          <User className="w-5 h-5 text-[#E8DFB8]/60" />
+        </button>
+      </div>
     </header>
   );
 }

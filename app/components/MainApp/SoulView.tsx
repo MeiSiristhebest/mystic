@@ -14,7 +14,8 @@ import {
   getDescendant, 
   getRulingPlanet 
 } from "@/lib/astrology";
-import { MysticImage } from "./MysticImage";
+import Image from "next/image";
+
 import BreathingLoading from "../BreathingLoading";
 import { useAppStore } from "@/lib/store";
 import { MoodCheckIn } from "./MoodCheckIn";
@@ -203,13 +204,17 @@ const moods = [
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
           <section className="luxury-card p-10 relative overflow-hidden min-h-[400px] flex flex-col justify-center">
-            <div className="absolute inset-0 z-0">
-              <MysticImage 
-                prompt={`A glowing ethereal soul essence for ${archetype || 'Seeker'}, nebula heart, cosmic energy flow, sacred geometry`} 
-                className="w-full h-full opacity-30"
-                aspectRatio="16:9"
+            <div className="absolute inset-0 z-0 overflow-hidden">
+              <Image 
+                src="/systems/soul_banner.jpg"
+                alt="Soul Essence Banner"
+                fill
+                sizes="(max-width: 1200px) 100vw, 66vw"
+                className="object-cover opacity-35"
+                priority
               />
             </div>
+
             <div className="relative z-10 space-y-8">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full border border-[#C9A84C]/40 flex items-center justify-center">
@@ -313,11 +318,14 @@ const moods = [
                 <div className="text-center py-8 space-y-4">
                   <div className="relative w-32 h-32 mx-auto">
                     <div className="absolute inset-0 bg-[#C9A84C]/10 blur-3xl rounded-full animate-pulse" />
-                    <MysticImage 
-                      prompt="A quiet serene landscape, misty mountains, zen atmosphere" 
-                      className="w-full h-full rounded-full border-2 border-[#C9A84C]/20"
-                      aspectRatio="1:1"
+                    <Image 
+                      src="/systems/renji.jpg" 
+                      alt="Serene Landscape"
+                      fill
+                      sizes="128px"
+                      className="object-cover rounded-full border-2 border-[#C9A84C]/20"
                     />
+
                   </div>
                   <p className="text-sm text-[#E8DFB8]/40 italic">暂无重大生命节点记录</p>
                 </div>

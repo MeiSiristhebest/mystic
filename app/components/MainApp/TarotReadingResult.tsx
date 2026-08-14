@@ -1,11 +1,22 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { motion } from "motion/react";
-import { MessageSquare, Send, RefreshCw, Download, Sparkles } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import { 
+  MessageSquare, 
+  Send, 
+  RefreshCw, 
+  Download, 
+  Sparkles, 
+  ThumbsUp, 
+  Compass, 
+  RotateCcw,
+  CheckCircle2
+} from "lucide-react";
 import MysticMarkdown from "../MysticMarkdown";
 import { usePosterGenerator } from "@/hooks/usePosterGenerator";
 import BreathingLoading from "../BreathingLoading";
+import { HandoffBanner } from "./HandoffBanner";
 
 interface TarotReadingResultProps {
   question: string;
@@ -27,6 +38,7 @@ export default function TarotReadingResult({
   onReset
 }: TarotReadingResultProps) {
   const [inputMessage, setInputMessage] = useState("");
+  const [feedbackGiven, setFeedbackGiven] = useState<string | null>(null);
   const posterRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { isGeneratingPoster, handleGeneratePoster } = usePosterGenerator();
@@ -38,6 +50,18 @@ export default function TarotReadingResult({
     setInputMessage("");
   };
 
+  const handleRegenerate = () => {
+    if (isLoading) return;
+    onSendMessage("请以阿卡夏守护者的宏观视角，结合当前牌面进行更深刻、更直击灵魂本质的重新推演。");
+  };
+
+  const handleQuickFeedback = (type: 'accurate' | 'realign') => {
+    setFeedbackGiven(type);
+    if (type === 'realign') {
+      setInputMessage("请针对当下的现实困局，给出更加具体、可落地的破局行动策略。");
+    }
+  };
+
   useEffect(() => {
     if (messages.length > 2) {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -46,6 +70,8 @@ export default function TarotReadingResult({
 
   return (
     <div className="space-y-12 pb-20 max-w-5xl mx-auto md:px-4">
+      <HandoffBanner />
+
       <div 
         ref={posterRef}
         className="glass-panel p-8 md:p-16 rounded-[40px] relative overflow-hidden shadow-[0_0_50px_rgba(180,110,20,0.1)]"
@@ -62,6 +88,44 @@ export default function TarotReadingResult({
         <div className="relative z-10 space-y-12">
           {/* Initial Reading */}
           <MysticMarkdown content={reading} cards={cards} centered isLoading={isLoading && messages.length <= 1} />
+
+          {/* AI 神谕反馈与重新推演交互栏 */}
+          <div className="flex flex-wrap items-center justify-between gap-4 pt-8 pb-4 border-t border-[#C9A84C]/20 mt-8">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handleQuickFeedback('accurate')}
+                className={`px-4 py-2 rounded-full text-xs font-serif transition-all flex items-center gap-1.5 cursor-pointer ${
+                  feedbackGiven === 'accurate'
+                    ? "bg-[#C9A84C] text-[#080510] font-bold shadow-[0_0_15px_rgba(201,168,76,0.3)]"
+                    : "bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10"
+                }`}
+              >
+                <Sparkles size={12} />
+                <span>{feedbackGiven === 'accurate' ? "已领悟感应" : "✨ 心领神会"}</span>
+              </button>
+
+              <button
+                onClick={() => handleQuickFeedback('realign')}
+                className={`px-4 py-2 rounded-full text-xs font-serif transition-all flex items-center gap-1.5 cursor-pointer ${
+                  feedbackGiven === 'realign'
+                    ? "bg-amber-500/20 border border-amber-500/40 text-amber-300"
+                    : "bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10"
+                }`}
+              >
+                <Compass size={12} />
+                <span>🕊️ 寻求更落地指引</span>
+              </button>
+            </div>
+
+            <button
+              onClick={handleRegenerate}
+              disabled={isLoading}
+              className="px-4 py-2 rounded-full bg-[#C9A84C]/15 border border-[#C9A84C]/40 text-[#F5E6AD] hover:bg-[#C9A84C] hover:text-[#080510] text-xs font-serif transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-30 font-medium"
+            >
+              <RotateCcw size={12} />
+              <span>🔄 深度重新推演</span>
+            </button>
+          </div>
 
           {/* Follow-up Messages */}
           {messages.slice(1).map((msg, idx) => (
@@ -126,7 +190,7 @@ export default function TarotReadingResult({
               type="text"
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
-              placeholder="对此解读有何疑惑？开启深潜模式..."
+              placeholder="对此解读有何疑惑？开启深潜追问..."
               disabled={isLoading}
               className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-amber-100 placeholder-white/20 focus:outline-none focus:border-amber-500/50 transition-all font-serif"
             />
@@ -135,7 +199,7 @@ export default function TarotReadingResult({
           <button
             type="submit"
             disabled={isLoading || !inputMessage.trim()}
-            className="p-4 bg-amber-600 hover:bg-amber-500 text-white rounded-2xl transition-all shadow-lg shadow-amber-900/20 disabled:opacity-30"
+            className="p-4 bg-amber-600 hover:bg-amber-500 text-white rounded-2xl transition-all shadow-lg shadow-amber-900/20 disabled:opacity-30 cursor-pointer"
           >
             <Send className="w-5 h-5" />
           </button>
@@ -145,7 +209,7 @@ export default function TarotReadingResult({
       <div className="flex flex-col sm:flex-row justify-center gap-4">
         <button
           onClick={onReset}
-          className="px-10 py-4 border border-amber-500/20 text-amber-500 hover:bg-amber-500/10 rounded-full font-serif tracking-widest transition-all flex items-center justify-center gap-2"
+          className="px-10 py-4 border border-amber-500/20 text-amber-500 hover:bg-amber-500/10 rounded-full font-serif tracking-widest transition-all flex items-center justify-center gap-2 cursor-pointer"
         >
           <RefreshCw className="w-4 h-4" />
           重新起牌
@@ -153,7 +217,7 @@ export default function TarotReadingResult({
         <button
           onClick={() => handleGeneratePoster(posterRef.current, `tarot-${Date.now()}.jpg`)}
           disabled={isGeneratingPoster}
-          className="px-10 py-4 bg-amber-600 text-white rounded-full font-serif tracking-widest shadow-xl hover:bg-amber-500 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+          className="px-10 py-4 bg-amber-600 text-white rounded-full font-serif tracking-widest shadow-xl hover:bg-amber-500 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
         >
           <Download className="w-4 h-4" />
           {isGeneratingPoster ? "生成中..." : "保存分享海报"}

@@ -9,7 +9,7 @@ export const MAJOR_ARCANA_DATA: Omit<TarotCard, 'id' | 'isReversed'>[] = [
     name: "愚人",
     englishName: "The Fool",
     rank: "0",
-    image: "https://raw.githubusercontent.com/wpwarman/TarotImages/master/maj00.jpeg",
+    image: "https://fastly.jsdelivr.net/gh/wpwarman/TarotImages@master/maj00.jpeg",
     arcana: 'Major',
     keywords: {
       upright: ["开始", "纯真", "自发性", "自由精神", "冒险", "信任宇宙"],
@@ -21,7 +21,7 @@ export const MAJOR_ARCANA_DATA: Omit<TarotCard, 'id' | 'isReversed'>[] = [
     name: "魔术师",
     englishName: "The Magician",
     rank: "I",
-    image: "https://raw.githubusercontent.com/wpwarman/TarotImages/master/maj01.jpeg",
+    image: "https://fastly.jsdelivr.net/gh/wpwarman/TarotImages@master/maj01.jpeg",
     arcana: 'Major',
     keywords: {
       upright: ["表现", "资源丰富", "力量", "灵感", "意志力", "创造力"],
@@ -33,7 +33,7 @@ export const MAJOR_ARCANA_DATA: Omit<TarotCard, 'id' | 'isReversed'>[] = [
     name: "女祭司",
     englishName: "The High Priestess",
     rank: "II",
-    image: "https://raw.githubusercontent.com/wpwarman/TarotImages/master/maj02.jpeg",
+    image: "https://fastly.jsdelivr.net/gh/wpwarman/TarotImages@master/maj02.jpeg",
     arcana: 'Major',
     keywords: {
       upright: ["直觉", "潜意识", "神圣女性", "神秘", "内在智慧", "静默"],
@@ -45,7 +45,7 @@ export const MAJOR_ARCANA_DATA: Omit<TarotCard, 'id' | 'isReversed'>[] = [
     name: "皇后",
     englishName: "The Empress",
     rank: "III",
-    image: "https://raw.githubusercontent.com/wpwarman/TarotImages/master/maj03.jpeg",
+    image: "https://fastly.jsdelivr.net/gh/wpwarman/TarotImages@master/maj03.jpeg",
     arcana: 'Major',
     keywords: {
       upright: ["丰饶", "自然", "母性", "感官享受", "创造力", "滋养"],
@@ -57,7 +57,7 @@ export const MAJOR_ARCANA_DATA: Omit<TarotCard, 'id' | 'isReversed'>[] = [
     name: "皇帝",
     englishName: "The Emperor",
     rank: "IV",
-    image: "https://raw.githubusercontent.com/wpwarman/TarotImages/master/maj04.jpeg",
+    image: "https://fastly.jsdelivr.net/gh/wpwarman/TarotImages@master/maj04.jpeg",
     arcana: 'Major',
     keywords: {
       upright: ["权威", "结构", "控制", "父亲形象", "稳定", "逻辑"],
@@ -69,7 +69,7 @@ export const MAJOR_ARCANA_DATA: Omit<TarotCard, 'id' | 'isReversed'>[] = [
     name: "教皇",
     englishName: "The Hierophant",
     rank: "V",
-    image: "https://raw.githubusercontent.com/wpwarman/TarotImages/master/maj05.jpeg",
+    image: "https://fastly.jsdelivr.net/gh/wpwarman/TarotImages@master/maj05.jpeg",
     arcana: 'Major',
     keywords: {
       upright: ["传统", "精神智慧", "宗教", "一致性", "教导", "社会规范"],
@@ -81,7 +81,7 @@ export const MAJOR_ARCANA_DATA: Omit<TarotCard, 'id' | 'isReversed'>[] = [
     name: "恋人",
     englishName: "The Lovers",
     rank: "VI",
-    image: "https://raw.githubusercontent.com/wpwarman/TarotImages/master/maj06.jpeg",
+    image: "https://fastly.jsdelivr.net/gh/wpwarman/TarotImages@master/maj06.jpeg",
     arcana: 'Major',
     keywords: {
       upright: ["爱", "和谐", "关系", "价值观对齐", "选择", "吸引力"],
@@ -93,7 +93,7 @@ export const MAJOR_ARCANA_DATA: Omit<TarotCard, 'id' | 'isReversed'>[] = [
     name: "战车",
     englishName: "The Chariot",
     rank: "VII",
-    image: "https://raw.githubusercontent.com/wpwarman/TarotImages/master/maj07.jpeg",
+    image: "https://fastly.jsdelivr.net/gh/wpwarman/TarotImages@master/maj07.jpeg",
     arcana: 'Major',
     keywords: {
       upright: ["控制", "意志力", "成功", "行动", "决心", "克服障碍"],
@@ -105,7 +105,7 @@ export const MAJOR_ARCANA_DATA: Omit<TarotCard, 'id' | 'isReversed'>[] = [
     name: "力量",
     englishName: "Strength",
     rank: "VIII",
-    image: "https://raw.githubusercontent.com/wpwarman/TarotImages/master/maj08.jpeg",
+    image: "https://fastly.jsdelivr.net/gh/wpwarman/TarotImages@master/maj08.jpeg",
     arcana: 'Major',
     keywords: {
       upright: ["勇气", "说服力", "影响力", "同情心", "内在力量", "耐心"],
@@ -117,7 +117,7 @@ export const MAJOR_ARCANA_DATA: Omit<TarotCard, 'id' | 'isReversed'>[] = [
     name: "隐士",
     englishName: "The Hermit",
     rank: "IX",
-    image: "https://raw.githubusercontent.com/wpwarman/TarotImages/master/maj09.jpeg",
+    image: "https://fastly.jsdelivr.net/gh/wpwarman/TarotImages@master/maj09.jpeg",
     arcana: 'Major',
     keywords: {
       upright: ["内省", "寻求真理", "孤独", "引导", "智慧", "撤退"],
@@ -129,7 +129,7 @@ export const MAJOR_ARCANA_DATA: Omit<TarotCard, 'id' | 'isReversed'>[] = [
     name: "命运之轮",
     englishName: "Wheel of Fortune",
     rank: "X",
-    image: "https://raw.githubusercontent.com/wpwarman/TarotImages/master/maj10.jpeg",
+    image: "https://fastly.jsdelivr.net/gh/wpwarman/TarotImages@master/maj10.jpeg",
     arcana: 'Major',
     keywords: {
       upright: ["好运", "业力", "生命周期", "转折点", "命运", "变化"],
@@ -141,7 +141,7 @@ export const MAJOR_ARCANA_DATA: Omit<TarotCard, 'id' | 'isReversed'>[] = [
     name: "正义",
     englishName: "Justice",
     rank: "XI",
-    image: "https://raw.githubusercontent.com/wpwarman/TarotImages/master/maj11.jpeg",
+    image: "https://fastly.jsdelivr.net/gh/wpwarman/TarotImages@master/maj11.jpeg",
     arcana: 'Major',
     keywords: {
       upright: ["正义", "公平", "真理", "法律", "因果", "责任"],
@@ -153,7 +153,7 @@ export const MAJOR_ARCANA_DATA: Omit<TarotCard, 'id' | 'isReversed'>[] = [
     name: "倒吊人",
     englishName: "The Hanged Man",
     rank: "XII",
-    image: "https://raw.githubusercontent.com/wpwarman/TarotImages/master/maj12.jpeg",
+    image: "https://fastly.jsdelivr.net/gh/wpwarman/TarotImages@master/maj12.jpeg",
     arcana: 'Major',
     keywords: {
       upright: ["暂停", "投降", "新视角", "牺牲", "等待", "释放"],
@@ -165,7 +165,7 @@ export const MAJOR_ARCANA_DATA: Omit<TarotCard, 'id' | 'isReversed'>[] = [
     name: "死神",
     englishName: "Death",
     rank: "XIII",
-    image: "https://raw.githubusercontent.com/wpwarman/TarotImages/master/maj13.jpeg",
+    image: "https://fastly.jsdelivr.net/gh/wpwarman/TarotImages@master/maj13.jpeg",
     arcana: 'Major',
     keywords: {
       upright: ["结束", "变化", "转型", "过渡", "重生", "消除"],
@@ -177,7 +177,7 @@ export const MAJOR_ARCANA_DATA: Omit<TarotCard, 'id' | 'isReversed'>[] = [
     name: "节制",
     englishName: "Temperance",
     rank: "XIV",
-    image: "https://raw.githubusercontent.com/wpwarman/TarotImages/master/maj14.jpeg",
+    image: "https://fastly.jsdelivr.net/gh/wpwarman/TarotImages@master/maj14.jpeg",
     arcana: 'Major',
     keywords: {
       upright: ["平衡", "节制", "耐心", "目的", "融合", "炼金术"],
@@ -189,7 +189,7 @@ export const MAJOR_ARCANA_DATA: Omit<TarotCard, 'id' | 'isReversed'>[] = [
     name: "恶魔",
     englishName: "The Devil",
     rank: "XV",
-    image: "https://raw.githubusercontent.com/wpwarman/TarotImages/master/maj15.jpeg",
+    image: "https://fastly.jsdelivr.net/gh/wpwarman/TarotImages@master/maj15.jpeg",
     arcana: 'Major',
     keywords: {
       upright: ["阴影自我", "依恋", "成瘾", "限制", "物质主义", "诱惑"],
@@ -201,7 +201,7 @@ export const MAJOR_ARCANA_DATA: Omit<TarotCard, 'id' | 'isReversed'>[] = [
     name: "高塔",
     englishName: "The Tower",
     rank: "XVI",
-    image: "https://raw.githubusercontent.com/wpwarman/TarotImages/master/maj16.jpeg",
+    image: "https://fastly.jsdelivr.net/gh/wpwarman/TarotImages@master/maj16.jpeg",
     arcana: 'Major',
     keywords: {
       upright: ["突变", "灾难", "剧变", "启示", "觉醒", "崩溃"],
@@ -213,7 +213,7 @@ export const MAJOR_ARCANA_DATA: Omit<TarotCard, 'id' | 'isReversed'>[] = [
     name: "星星",
     englishName: "The Star",
     rank: "XVII",
-    image: "https://raw.githubusercontent.com/wpwarman/TarotImages/master/maj17.jpeg",
+    image: "https://fastly.jsdelivr.net/gh/wpwarman/TarotImages@master/maj17.jpeg",
     arcana: 'Major',
     keywords: {
       upright: ["希望", "信仰", "目的", "更新", "灵感", "宁静"],
@@ -225,7 +225,7 @@ export const MAJOR_ARCANA_DATA: Omit<TarotCard, 'id' | 'isReversed'>[] = [
     name: "月亮",
     englishName: "The Moon",
     rank: "XVIII",
-    image: "https://raw.githubusercontent.com/wpwarman/TarotImages/master/maj18.jpeg",
+    image: "https://fastly.jsdelivr.net/gh/wpwarman/TarotImages@master/maj18.jpeg",
     arcana: 'Major',
     keywords: {
       upright: ["幻觉", "恐惧", "焦虑", "潜意识", "直觉", "迷茫"],
@@ -237,7 +237,7 @@ export const MAJOR_ARCANA_DATA: Omit<TarotCard, 'id' | 'isReversed'>[] = [
     name: "太阳",
     englishName: "The Sun",
     rank: "XIX",
-    image: "https://raw.githubusercontent.com/wpwarman/TarotImages/master/maj19.jpeg",
+    image: "https://fastly.jsdelivr.net/gh/wpwarman/TarotImages@master/maj19.jpeg",
     arcana: 'Major',
     keywords: {
       upright: ["积极", "活力", "成功", "光芒", "喜悦", "真理"],
@@ -249,7 +249,7 @@ export const MAJOR_ARCANA_DATA: Omit<TarotCard, 'id' | 'isReversed'>[] = [
     name: "审判",
     englishName: "Judgement",
     rank: "XX",
-    image: "https://raw.githubusercontent.com/wpwarman/TarotImages/master/maj20.jpeg",
+    image: "https://fastly.jsdelivr.net/gh/wpwarman/TarotImages@master/maj20.jpeg",
     arcana: 'Major',
     keywords: {
       upright: ["审判", "重生", "内在召唤", "宽恕", "觉醒", "决定"],
@@ -261,7 +261,7 @@ export const MAJOR_ARCANA_DATA: Omit<TarotCard, 'id' | 'isReversed'>[] = [
     name: "世界",
     englishName: "The World",
     rank: "XXI",
-    image: "https://raw.githubusercontent.com/wpwarman/TarotImages/master/maj21.jpeg",
+    image: "https://fastly.jsdelivr.net/gh/wpwarman/TarotImages@master/maj21.jpeg",
     arcana: 'Major',
     keywords: {
       upright: ["完成", "整合", "成就", "旅行", "圆满", "统一"],
@@ -374,7 +374,7 @@ export function generateDeck(): TarotCard[] {
         id: `minor-${suitIndex}-${rankIndex}`,
         name: `${suit}${rank}`,
         englishName: `${RANKS_EN[rankIndex]} of ${SUITS_EN[suitIndex]}`,
-        image: `https://raw.githubusercontent.com/wpwarman/TarotImages/master/${SUITS_EN[suitIndex].toLowerCase() === 'pentacles' ? 'pents' : SUITS_EN[suitIndex].toLowerCase()}${(rankIndex + 1).toString().padStart(2, '0')}.jpeg`,
+        image: `https://fastly.jsdelivr.net/gh/wpwarman/TarotImages@master/${SUITS_EN[suitIndex].toLowerCase() === 'pentacles' ? 'pents' : SUITS_EN[suitIndex].toLowerCase()}${(rankIndex + 1).toString().padStart(2, '0')}.jpeg`,
         rank: RANKS_EN[rankIndex],
         arcana: 'Minor',
         suit,

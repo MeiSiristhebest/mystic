@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from "motion/react";
 import { playMysticChime, triggerHapticVibration, playCardSound } from "@/lib/audio";
 import { TarotCardBack } from "./TarotCardBack";
 import { SpreadGeometry } from "./SpreadGeometry";
+import { TarotCardFace } from "./TarotCardFace";
+
 
 interface TarotRitualManagerProps {
   cards: any[];
@@ -327,34 +329,10 @@ export default function TarotRitualManager({ cards, spread, onComplete }: TarotR
                           visibility: i < revealedCount ? 'visible' : 'hidden',
                         }}
                       >
-                        {i < revealedCount && (() => {
-                          const card = cards[i];
-                          const imageUrl = card?.image || 
-                            `https://www.trustedtarot.com/img/cards/${card?.englishName?.toLowerCase().replace(/ /g, '-') || card?.id?.toLowerCase()}.png`;
-                          return (
-                            <>
-                              {/* Actual tarot card artwork */}
-                              <img
-                                src={imageUrl}
-                                alt={card?.name}
-                                className={`w-full h-full object-cover ${card?.isReversed ? 'rotate-180' : ''}`}
-                                crossOrigin="anonymous"
-                              />
-                              {/* Gradient overlay + name label at bottom */}
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent pointer-events-none" />
-                              <div className="absolute bottom-0 left-0 right-0 px-3 pb-3 pt-6 text-center">
-                                {card?.isReversed && (
-                                  <span className="block text-[9px] font-mono text-amber-400/80 tracking-[0.3em] uppercase mb-0.5">逆位</span>
-                                )}
-                                <span className="font-serif text-[#E8DFB8] text-xs md:text-sm tracking-widest font-medium drop-shadow-lg leading-tight">
-                                  {card?.name}
-                                </span>
-                              </div>
-                              {/* Gold inner border accent */}
-                              <div className="absolute inset-2 border border-[#C9A84C]/20 rounded-[1.5rem] pointer-events-none" />
-                            </>
-                          );
-                        })()}
+                        {i < revealedCount && cards[i] && (
+                          <TarotCardFace card={cards[i]} />
+                        )}
+
                       </div>
 
                       {/* Card Back (Hidden Face) */}

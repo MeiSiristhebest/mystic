@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Calendar, Star, Compass, Coins, Book, Map, Eye } from "lucide-react";
+import { Calendar, Star, Compass, Coins, Book, Map } from "lucide-react";
 import dynamic from "next/dynamic";
 import BreathingLoading from "./BreathingLoading";
+import { HandoffBanner } from "./MainApp/HandoffBanner";
+
 
 const BaziApp = dynamic(() => import("./BaziApp"), { 
   loading: () => <BreathingLoading text="正在感应八字紫微星轨..." /> 
@@ -12,11 +14,8 @@ const BaziApp = dynamic(() => import("./BaziApp"), {
 const IChingApp = dynamic(() => import("./IChingApp"), { 
   loading: () => <BreathingLoading text="正在推算易经玄妙爻辞..." /> 
 });
-const FaceReadingApp = dynamic(() => import("./FaceReadingApp"), { 
-  loading: () => <BreathingLoading text="正在端详骨相面相..." /> 
-});
 
-type SubSystem = "bazi" | "ziwei" | "liunian" | "liuyao" | "meihua" | "qimen" | "mianxiang";
+type SubSystem = "bazi" | "ziwei" | "liunian" | "liuyao" | "meihua" | "qimen";
 
 const SUB_SYSTEMS: { id: SubSystem; label: string; icon: any }[] = [
   { id: "bazi", label: "八字排盘", icon: Calendar },
@@ -25,7 +24,6 @@ const SUB_SYSTEMS: { id: SubSystem; label: string; icon: any }[] = [
   { id: "liuyao", label: "六爻起卦", icon: Coins },
   { id: "meihua", label: "梅花易数", icon: Book },
   { id: "qimen", label: "奇门遁甲", icon: Map },
-  { id: "mianxiang", label: "面相骨相", icon: Eye },
 ];
 
 interface EasternAppProps {
@@ -55,7 +53,9 @@ export default function EasternApp({ initialHandoff, clearHandoff }: EasternAppP
 
   return (
     <div className="w-full max-w-6xl mx-auto px-4 md:px-0">
+      <HandoffBanner />
       {/* 顶部华丽长廊导航条 */}
+
       <div className="flex justify-center mb-12">
         <div className="flex items-center gap-1.5 p-2 bg-[#0A070C]/90 rounded-full border border-amber-500/20 max-w-full overflow-x-auto custom-scrollbar shadow-[0_0_35px_rgba(0,0,0,0.8)] backdrop-blur-xl">
           {SUB_SYSTEMS.map((sys) => {
@@ -86,15 +86,13 @@ export default function EasternApp({ initialHandoff, clearHandoff }: EasternAppP
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.5 }}
+          className="w-full flex justify-center"
         >
           {isBaziGroup && (
-            <BaziApp mode={activeTab} initialHandoff={initialHandoff} clearHandoff={clearHandoff} />
+            <BaziApp mode={activeTab as 'bazi' | 'ziwei' | 'liunian'} initialHandoff={initialHandoff} clearHandoff={clearHandoff} />
           )}
           {isIChingGroup && (
-            <IChingApp mode={activeTab} initialHandoff={initialHandoff} clearHandoff={clearHandoff} />
-          )}
-          {activeTab === "mianxiang" && (
-            <FaceReadingApp onReadingChange={() => {}} />
+            <IChingApp mode={activeTab as any} initialHandoff={initialHandoff} clearHandoff={clearHandoff} />
           )}
         </motion.div>
       </AnimatePresence>

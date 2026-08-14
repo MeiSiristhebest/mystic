@@ -1,20 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import {
-  Sparkles,
-  Moon,
-  Star,
-  Compass,
-  Zap,
-  ArrowLeft,
-} from "lucide-react";
+import Image from "next/image";
+import { Sparkles, ArrowLeft } from "lucide-react";
 import dynamic from "next/dynamic";
-import { MysticImage } from "./MysticImage";
 import BreathingLoading from "../BreathingLoading";
 import { useAppStore } from "@/lib/store";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import { DivinationHandoff } from "@/app/types/divination";
+import { getCoreSystems, getSystemById, MysticSystemDefinition } from "@/lib/registry/systems";
 
 const MysticTarot = dynamic(() => import("./MysticTarot").then(mod => mod.MysticTarot), { 
   loading: () => <BreathingLoading text="正在感应塔罗能量..." /> 
@@ -22,8 +17,14 @@ const MysticTarot = dynamic(() => import("./MysticTarot").then(mod => mod.Mystic
 const AstrologyApp = dynamic(() => import("../AstrologyApp"), { 
   loading: () => <BreathingLoading text="正在连接星辰..." /> 
 });
+const VedicApp = dynamic(() => import("../VedicApp"), { 
+  loading: () => <BreathingLoading text="正在连接古印度吠陀星轨..." /> 
+});
 const EasternApp = dynamic(() => import("../EasternApp"), { 
   loading: () => <BreathingLoading text="正在对齐东方历法..." /> 
+});
+const RenjiApp = dynamic(() => import("../RenjiApp"), { 
+  loading: () => <BreathingLoading text="正在调取倪海厦经方辨证法门..." /> 
 });
 const SoulLab = dynamic(() => import("./SoulLab"), { 
   loading: () => <BreathingLoading text="正在激活心灵实验室..." /> 
@@ -33,7 +34,7 @@ const OmniOracleGuide = dynamic(() => import("./OmniOracleGuide").then(mod => mo
 });
 
 interface SystemCardProps {
-  system: any;
+  system: MysticSystemDefinition;
   isActive: boolean;
   onClick: () => void;
 }
@@ -48,14 +49,22 @@ function SystemCard({ system, isActive, onClick }: SystemCardProps) {
         isActive ? "border-[#C9A84C]/60 bg-[#C9A84C]/10 shadow-[0_0_80px_rgba(201,168,76,0.2)]" : "hover:border-[#C9A84C]/40 hover:shadow-[0_0_50px_rgba(201,168,76,0.1)]"
       }`}
     >
-      <div className="absolute inset-0 z-0">
-        <MysticImage 
-          prompt={system.prompt} 
-          className={`w-full h-full object-cover transition-all duration-1000 ${isActive ? "opacity-70 scale-110" : "opacity-30 group-hover:opacity-50 group-hover:scale-105"}`}
-          aspectRatio="3:4"
+      {/* High-quality Curated Static Background Artwork */}
+      <div className="absolute inset-0 z-0 overflow-hidden">
+        <Image 
+          src={system.bgImage}
+          alt={system.name}
+          fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          className={`object-cover transition-all duration-1000 ${
+            isActive ? "opacity-70 scale-110" : "opacity-35 group-hover:opacity-55 group-hover:scale-105"
+          }`}
+          priority
         />
       </div>
+
       <div className="absolute inset-0 bg-gradient-to-t from-[#080510] via-[#080510]/60 to-transparent z-10" />
+      
       <div className="relative z-20">
         <div className="w-16 h-16 rounded-3xl border border-[#C9A84C]/20 flex items-center justify-center bg-[#C9A84C]/5 mb-6 group-hover:bg-[#C9A84C]/15 group-hover:scale-110 transition-all duration-700">
           <Icon className={`w-8 h-8 transition-colors ${
@@ -75,6 +84,8 @@ export function ExploreView() {
   const [subTab, setSubTab] = useState("");
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [handoffData, setHandoffData] = useState<DivinationHandoff | null>(null);
+  const { profile } = useUserProfile();
+  
   const setActiveTab = useAppStore((state) => state.setActiveTab);
   const activeSubTab = useAppStore((state) => state.activeSubTab);
   const setActiveSubTab = useAppStore((state) => state.setActiveSubTab);
@@ -92,7 +103,7 @@ export function ExploreView() {
     return () => clearTimeout(timer);
   }, [activeSubTab, setActiveSubTab]);
 
-  // Sync with global handoff (e.g. from TodayView or Tarot)
+  // Sync with global handoff
   useEffect(() => {
     if (globalHandoff) {
       const timer = setTimeout(() => {
@@ -110,41 +121,20 @@ export function ExploreView() {
     }
   }, [globalHandoff, setGlobalHandoff]);
 
-  const systems = [
-    { 
-      id: "tarot", 
-      name: "塔罗仪式", 
-      icon: Sparkles, 
-      desc: "西方神秘学的基石。通过78张卡片，洞察能量的微妙流动与潜意识投射。", 
-      prompt: "Mysterious tarot cards floating in a nebula, golden sacred geometry, ethereal light"
-    },
-    { 
-      id: "eastern", 
-      name: "东方命理", 
-      icon: Compass, 
-      desc: "融合八字、易经、紫微与相学。通过干支历法与古老卦象，推演人生起伏。", 
-      prompt: "Ancient Chinese astrology, bagua, yin yang, golden dragon in cosmic clouds, ink wash style"
-    },
-    { 
-      id: "astrology", 
-      name: "星象人格", 
-      icon: Moon, 
-      desc: "结合现代占星与心理学。解读星盘、合盘与MBTI，探索性格蓝图与命运契机。", 
-      prompt: "Zodiac wheel, constellations, glowing planets, nebula background, celestial map"
-    },
-    { 
-      id: "soul", 
-      name: "心灵实验室", 
-      icon: Zap, 
-      desc: "深层心理探索。包含阴影工作、灵魂合参、梦境解析等进阶神秘学工具。", 
-      prompt: "Ethereal soul discovery, glowing compass, sacred geometry, cosmic light"
-    },
-  ];
+  const coreSystems = useMemo(() => getCoreSystems(), []);
+
+  // Filter systems based on user modular settings
+  const systems = useMemo(() => {
+    const enabled = profile?.enabledModules || {};
+    return coreSystems.filter(s => enabled[s.id as keyof typeof enabled] !== false);
+  }, [coreSystems, profile?.enabledModules]);
 
   const handleBackToSystems = () => {
     setSubTab("");
     setHandoffData(null);
   };
+
+  const activeSystem = subTab ? getSystemById(subTab) : null;
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-12 md:py-20">
@@ -182,7 +172,7 @@ export function ExploreView() {
               </p>
             </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {systems.map((system) => (
                 <SystemCard 
                   key={system.id}
@@ -207,7 +197,7 @@ export function ExploreView() {
             <div className="flex items-center justify-between mb-8">
               <button 
                 onClick={handleBackToSystems}
-                className="flex items-center gap-3 text-amber-500/50 hover:text-amber-500 transition-colors font-serif uppercase tracking-[0.3em] text-xs"
+                className="flex items-center gap-3 text-amber-500/50 hover:text-amber-500 transition-colors font-serif uppercase tracking-[0.3em] text-xs cursor-pointer"
               >
                 <ArrowLeft className="w-4 h-4" />
                 <span>返回圣殿</span>
@@ -215,7 +205,7 @@ export function ExploreView() {
               <div className="flex items-center gap-4 px-4 py-2 bg-amber-500/5 border border-amber-500/20 rounded-full">
                 <Sparkles className="w-4 h-4 text-amber-500/60" />
                 <span className="font-serif text-amber-200/60 text-xs tracking-widest uppercase">
-                  {systems.find(s => s.id === subTab)?.name}
+                  {activeSystem?.name || "推演圣殿"}
                 </span>
               </div>
             </div>
@@ -223,6 +213,8 @@ export function ExploreView() {
             <div className="ritual-container">
               {subTab === "tarot" && <MysticTarot initialHandoff={handoffData} clearHandoff={() => setHandoffData(null)} />}
               {subTab === "eastern" && <EasternApp initialHandoff={handoffData} clearHandoff={() => setHandoffData(null)} />}
+              {subTab === "vedic" && <VedicApp />}
+              {subTab === "renji" && <RenjiApp />}
               {subTab === "astrology" && <AstrologyApp initialHandoff={handoffData} clearHandoff={() => setHandoffData(null)} />}
               {subTab === "soul" && <SoulLab initialHandoff={handoffData} clearHandoff={() => setHandoffData(null)} />}
             </div>

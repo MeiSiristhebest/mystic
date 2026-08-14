@@ -47,9 +47,10 @@ export default function IChingApp({
   }, [initialMode]);
 
   const { 
-    lines, setLines, isTossing, handleToss, currentCoins, calculateMeihua, 
+    lines, setLines, isTossing, handleToss, handleQuickCast, currentCoins, calculateMeihua, 
     num1, setNum1, num2, setNum2, resetEngine 
   } = useIChingEngine();
+
 
   const { 
     messages, sendMessage, isLoading, isStreaming, resetChat, currentEntryId, abort 
@@ -135,36 +136,62 @@ export default function IChingApp({
   const renderRitualInput = () => {
     if (mode === 'liuyao') {
       return (
-        <IChingRitualManager
-          lines={lines}
-          isTossing={isTossing}
-          currentCoins={currentCoins}
-          onToss={handleToss}
-          onComplete={() => handleGenerate('liuyao')}
-        />
+        <div className="w-full flex justify-center">
+          <IChingRitualManager
+            lines={lines}
+            isTossing={isTossing}
+            currentCoins={currentCoins}
+            onToss={handleToss}
+            onQuickCast={handleQuickCast}
+            onComplete={() => handleGenerate('liuyao')}
+          />
+        </div>
+
       );
     }
     if (mode === 'meihua') {
       return (
-        <div className="flex flex-col items-center w-full max-w-md">
+        <div className="flex flex-col items-center w-full max-w-md mx-auto">
           <div className="flex gap-4 w-full mb-8">
-            <input type="number" placeholder="第一个数字" value={num1} onChange={(e) => setNum1(e.target.value)} className="w-1/2 bg-black/40 border border-amber-500/30 rounded-xl p-4 text-amber-100 text-center text-xl" />
-            <input type="number" placeholder="第二个数字" value={num2} onChange={(e) => setNum2(e.target.value)} className="w-1/2 bg-black/40 border border-amber-500/30 rounded-xl p-4 text-amber-100 text-center text-xl" />
+            <input 
+              type="number" 
+              placeholder="第一个数字" 
+              value={num1} 
+              onChange={(e) => setNum1(e.target.value)} 
+              className="w-1/2 bg-black/40 border border-amber-500/30 rounded-xl p-4 text-amber-100 text-center text-xl focus:border-amber-400 focus:outline-none transition-colors" 
+            />
+            <input 
+              type="number" 
+              placeholder="第二个数字" 
+              value={num2} 
+              onChange={(e) => setNum2(e.target.value)} 
+              className="w-1/2 bg-black/40 border border-amber-500/30 rounded-xl p-4 text-amber-100 text-center text-xl focus:border-amber-400 focus:outline-none transition-colors" 
+            />
           </div>
           {error && <p className="text-red-400 text-sm mb-4 font-serif">{error}</p>}
-          <button id="meihua-trigger" onClick={() => handleGenerate('meihua')} className="px-10 py-4 w-full bg-amber-700 hover:bg-amber-600 text-amber-100 rounded-full font-serif text-lg shadow-lg">
+          <button 
+            id="meihua-trigger" 
+            onClick={() => handleGenerate('meihua')} 
+            className="px-10 py-4 w-full bg-gradient-to-r from-amber-700 to-amber-600 hover:from-amber-600 hover:to-amber-500 text-amber-100 rounded-full font-serif text-lg shadow-lg cursor-pointer transition-all hover:shadow-[0_0_25px_rgba(245,158,11,0.4)]"
+          >
             起卦并解读
           </button>
         </div>
       );
     }
     return (
-      <div className="flex flex-col items-center w-full">
-        <div className="flex flex-col items-center justify-center mb-8 min-h-[200px] w-full bg-black/30 rounded-xl p-6 border border-amber-500/20">
-          <Map className="w-16 h-16 text-amber-500/30 mb-4" />
-          <p className="text-amber-200/80 font-serif text-center max-w-md">奇门遁甲以当前时辰为基准排盘。<br/>输入问题后开始推演。</p>
+      <div className="flex flex-col items-center w-full max-w-md mx-auto">
+        <div className="flex flex-col items-center justify-center mb-8 min-h-[200px] w-full bg-black/30 rounded-2xl p-6 border border-amber-500/20">
+          <Map className="w-16 h-16 text-amber-500/40 mb-4 animate-pulse" />
+          <p className="text-amber-200/80 font-serif text-center max-w-md leading-relaxed">
+            奇门遁甲以当前时辰为基准排盘。<br/>输入心中所求后开启天地人神推演。
+          </p>
         </div>
-        <button id="qimen-trigger" onClick={() => handleGenerate('qimen')} className="px-10 py-4 w-full md:w-1/2 bg-amber-700 hover:bg-amber-600 text-amber-100 rounded-full font-serif text-lg">
+        <button 
+          id="qimen-trigger" 
+          onClick={() => handleGenerate('qimen')} 
+          className="px-10 py-4 w-full bg-gradient-to-r from-amber-700 to-amber-600 hover:from-amber-600 hover:to-amber-500 text-amber-100 rounded-full font-serif text-lg cursor-pointer shadow-lg transition-all hover:shadow-[0_0_25px_rgba(245,158,11,0.4)]"
+        >
           开始推演
         </button>
       </div>
@@ -183,13 +210,15 @@ export default function IChingApp({
       resetLabel="收起蓍草"
     >
       {!messages.length && !isLoading ? (
-        <div className="w-full max-w-5xl glass-panel p-8 rounded-2xl flex flex-col items-center">
-          <div className="w-full flex flex-col gap-8">
-            <div className="max-w-2xl mx-auto w-full">
-              <label className="block text-sm font-medium text-amber-200/80 mb-3 font-serif uppercase tracking-widest">1. 你的问题</label>
+        <div className="w-full max-w-4xl mx-auto glass-panel p-8 md:p-12 rounded-3xl flex flex-col items-center shadow-2xl">
+          <div className="w-full max-w-2xl mx-auto flex flex-col gap-8">
+            <div className="w-full">
+              <label className="block text-sm font-medium text-amber-200/80 mb-3 font-serif uppercase tracking-widest text-center sm:text-left">
+                1. 你的问题
+              </label>
               <textarea
                 rows={4}
-                className="w-full bg-black/40 border border-amber-500/30 rounded-xl p-4 text-amber-100 focus:ring-2 focus:ring-amber-500/50 resize-none"
+                className="w-full bg-black/40 border border-amber-500/30 rounded-2xl p-5 text-amber-100 placeholder-amber-500/30 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-500/30 resize-none font-serif text-base transition-all"
                 placeholder="例如：我最近的感情走向如何？"
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
@@ -199,7 +228,7 @@ export default function IChingApp({
           </div>
         </div>
       ) : (
-        <div className="flex flex-col space-y-8 w-full">
+        <div className="flex flex-col space-y-8 w-full max-w-4xl mx-auto">
           {isLoading && !messages.length ? (
              <BreathingLoading text="正在推演先天八卦与后天八卦的玄妙变化..." />
           ) : (
