@@ -1,8 +1,17 @@
 allowBuilds:
   '@firebase/util': true
   '@google/genai': true
-  esbuild: set this to true or false
+  esbuild: true
   protobufjs: true
   re2: true
   sharp: true
   unrs-resolver: true
+
+onlyBuiltDependencies:
+  - '@firebase/util'
+  - '@google/genai'
+  - esbuild
+  - protobufjs
+  - re2
+  - sharp
+  - unrs-resolver
