@@ -58,31 +58,31 @@ Conventional astrology and esoteric AI applications typically dump raw birth dat
 
 ```mermaid
 graph TD
-    subgraph Layer1 [Layer 1: Deterministic Facts & Astronomical Calculations (Tier A)]
-        Z_Calc[Ziwei: iztro Lunar / Major Stars / Sihua Astrolabe]
-        V_Calc[Vedic: Sidereal Lahiri Ayanamsa + 120-Year 3-Tier Dasha]
-        N_Fact[TCM: Clinical Questionnaires + Seasonal Wuyun Liuqi]
+    subgraph Layer1["Layer 1: Deterministic Facts & Astronomical Calculations (Tier A)"]
+        Z_Calc["Ziwei: iztro Lunar / Major Stars / Sihua Astrolabe"]
+        V_Calc["Vedic: Sidereal Lahiri Ayanamsa + 120-Year 3-Tier Dasha"]
+        N_Fact["TCM: Clinical Questionnaires + Seasonal Wuyun Liuqi"]
     end
 
-    subgraph Layer2 [Layer 2: Deterministic Rules & Pattern Matching (Tier B)]
-        Z_Rule[Ziwei Patterns Engine: 80+ Classical Patterns & Conditions]
-        V_Rule[Vedic 7-Chara Karakas + D9/D10 Divisional Maps + Sade Sati]
-        N_Rule[Ni Haixia Eight Principles & Six Stages Diagnostic Decision Tree]
+    subgraph Layer2["Layer 2: Deterministic Rules & Pattern Matching (Tier B)"]
+        Z_Rule["Ziwei Patterns Engine: 80+ Classical Patterns & Conditions"]
+        V_Rule["Vedic 7-Chara Karakas + D9/D10 Divisional Maps + Sade Sati"]
+        N_Rule["Ni Haixia Eight Principles & Six Stages Diagnostic Decision Tree"]
     end
 
-    subgraph Layer3 [Layer 3: Canonical Evidence Graph & Grounding (Tier C)]
-        EG[Canonical Evidence Graph]
+    subgraph Layer3["Layer 3: Canonical Evidence Graph & Grounding (Tier C)"]
+        EG["Canonical Evidence Graph"]
         Z_Rule --> EG
         V_Rule --> EG
         N_Rule --> EG
     end
 
-    subgraph Layer4 [Layer 4: Dialectical Conflict Detection & LLM Synthesis (Tier D)]
-        CD[CrossDomainConflictDetector]
+    subgraph Layer4["Layer 4: Dialectical Conflict Detection & LLM Synthesis (Tier D)"]
+        CD["CrossDomainConflictDetector"]
         EG --> CD
-        CD --> Pipeline[PromptPipeline Context Assembly]
-        Pipeline --> LLM[Gemini Multimodal Reasoning]
-        LLM --> UI[Structured Output: Facts | Evidences | Tensions | Guidance]
+        CD --> Pipeline["PromptPipeline Context Assembly"]
+        Pipeline --> LLM["Gemini Multimodal Reasoning"]
+        LLM --> UI["Structured Output: Facts | Evidences | Tensions | Guidance"]
     end
 ```
 

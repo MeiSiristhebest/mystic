@@ -58,31 +58,31 @@
 
 ```mermaid
 graph TD
-    subgraph Layer1 [Layer 1: 确定性计算与天文历法事实层 (Tier A)]
-        Z_Calc[紫微: iztro 农历/主星/四化排盘]
-        V_Calc[吠陀: 恒星黄道 Lahiri Ayanamsa + 120年递归三级 Dasha]
-        N_Fact[中医: 问诊采集 + 节气与五运六气先天天时]
+    subgraph Layer1["Layer 1: 确定性计算与天文历法事实层 (Tier A)"]
+        Z_Calc["紫微: iztro 农历/主星/四化排盘"]
+        V_Calc["吠陀: 恒星黄道 Lahiri Ayanamsa + 120年递归三级 Dasha"]
+        N_Fact["中医: 问诊采集 + 节气与五运六气先天天时"]
     end
 
-    subgraph Layer2 [Layer 2: 确定性规则与格局匹配层 (Tier B)]
-        Z_Rule[紫微 Patterns 规则引擎: 80+ 经典格局命中]
-        V_Rule[吠陀 7-Chara Karakas + D9/D10 分盘映射 + Sade Sati 周期]
-        N_Rule[倪师八纲六经辨证决策树 + 经典经方药对匹配]
+    subgraph Layer2["Layer 2: 确定性规则与格局匹配层 (Tier B)"]
+        Z_Rule["紫微 Patterns 规则引擎: 80+ 经典格局命中"]
+        V_Rule["吠陀 7-Chara Karakas + D9/D10 分盘映射 + Sade Sati 周期"]
+        N_Rule["倪师八纲六经辨证决策树 + 经典经方药对匹配"]
     end
 
-    subgraph Layer3 [Layer 3: 证据图谱与经典溯源层 (Tier C)]
-        EG[Canonical Evidence Graph 证据图谱]
+    subgraph Layer3["Layer 3: 证据图谱与经典溯源层 (Tier C)"]
+        EG["Canonical Evidence Graph 证据图谱"]
         Z_Rule --> EG
         V_Rule --> EG
         N_Rule --> EG
     end
 
-    subgraph Layer4 [Layer 4: 跨体系辩证冲突检测与 LLM 综合层 (Tier D)]
-        CD[CrossDomainConflictDetector 冲突仲裁器]
+    subgraph Layer4["Layer 4: 跨体系辩证冲突检测与 LLM 综合层 (Tier D)"]
+        CD["CrossDomainConflictDetector 冲突仲裁器"]
         EG --> CD
-        CD --> Pipeline[PromptPipeline 上下文编排]
-        Pipeline --> LLM[Gemini 1.5/2.0 多模态推理]
-        LLM --> UI[结构化可解释呈现: 事实 | 证据 | 分歧 | 建议]
+        CD --> Pipeline["PromptPipeline 上下文编排"]
+        Pipeline --> LLM["Gemini 1.5/2.0 多模态推理"]
+        LLM --> UI["结构化可解释呈现: 事实 | 证据 | 分歧 | 建议"]
     end
 ```
 
