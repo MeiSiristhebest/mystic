@@ -52,7 +52,56 @@
     }
   },
   {
-    "id": "tcm_golden_004_insufficient_vague",
+    "id": "tcm_golden_004_taiyin_pixu",
+    "name": "太阴脾虚中焦虚寒腹满下利证",
+    "symptoms": "腹满、便溏拉肚子、食不下、胃口差、肚子凉喜温喜按",
+    "healthScores": {
+      "appetite": 40,
+      "bowel": 45
+    },
+    "expected": {
+      "status": "confirmed",
+      "stage": "taiyin",
+      "ruleId": "RULE_TAIYIN_PIXU",
+      "formula": "理中汤",
+      "classicalClause": "《伤寒论》第273条",
+      "mustIncludeHerbs": ["人参", "干姜", "白术", "炙甘草"]
+    }
+  },
+  {
+    "id": "tcm_golden_005_yangming_jing",
+    "name": "阳明经热炽盛四大证",
+    "symptoms": "大热、大渴喜冷饮、大汗、面红目赤烦躁、脉洪大",
+    "healthScores": {
+      "thirst": 85
+    },
+    "expected": {
+      "status": "confirmed",
+      "stage": "yangming",
+      "ruleId": "RULE_YANGMING_JING",
+      "formula": "白虎汤",
+      "classicalClause": "《伤寒论》第176条",
+      "mustIncludeHerbs": ["知母", "生石膏", "甘草", "粳米"]
+    }
+  },
+  {
+    "id": "tcm_golden_006_counter_evidence_exclusion",
+    "name": "反证排除机制测试（有自汗但大渴便秘日晡潮热，排除太阳中风确立阳明腑实）",
+    "symptoms": "出汗、便秘数日不大便、腹满胀痛拒按、日晡潮热、大渴喜冷饮",
+    "healthScores": {
+      "bowel": 30
+    },
+    "expected": {
+      "status": "confirmed",
+      "stage": "yangming",
+      "ruleId": "RULE_YANGMING_FU",
+      "formula": "大承气汤",
+      "classicalClause": "《伤寒论》第208条",
+      "mustIncludeHerbs": ["大黄", "芒硝", "枳实", "厚朴"]
+    }
+  },
+  {
+    "id": "tcm_golden_007_insufficient_vague",
     "name": "指征不足拒绝强制确诊案例 (Vague Input)",
     "symptoms": "今天感觉有点累，没别的明显不适",
     "healthScores": {},
