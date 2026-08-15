@@ -21,7 +21,16 @@
 
 ---
 
-## 3. Traditional Classical Literature Citations
+## 3. Inspirations & Conceptual Heritage
+
+Mystic's domain adapters draw conceptual and engineering inspiration from several open-source traditional knowledge projects:
+- **`nihaixia`**: Inspiration for structured Ni Haixia classical formulas, 6-stages differential logic, and clinical case paradigms.
+- **`vedic-astro-skills`**: Inspiration for Jyotish astronomical precision workflows, Dasha timelines, and agentic domain calculation structures.
+- **`ziwei-doushu`**: Inspiration for classical astrolabe patterns, Si Hua mutagen rules, and structured Chinese astrology knowledge modeling.
+
+---
+
+## 4. Traditional Classical Literature Citations
 - **Shanghan Lun & Jingui Yaolue**: Classical public domain medical literature by Zhang Zhongjing (Eastern Han Dynasty).
 - **Ziwei Doushu Classical Verses**: 《紫微斗数全书》《骨髓赋》 Public domain classical literature.
 - **Brihat Parashara Hora Shastra (BPHS) & Jaimini Sutras**: Ancient Vedic astronomical and astrological sutras (Public Domain).

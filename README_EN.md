@@ -151,10 +151,14 @@ pnpm verify
 
 ---
 
-## License & Upstream Notices
-
-- Mystic core application is licensed under the [MIT License](LICENSE).
-- Detailed upstream dependency notices (e.g. `ephemeris` GPL-3.0 Moshier algorithms) are documented in [NOTICE.md](NOTICE.md).
+## License & Acknowledgments
+ 
+- The core codebase is licensed under the [MIT License](LICENSE).
+- For third-party ephemeris dependencies (e.g. `ephemeris` GPL-3.0) and classical public domain literature notices, please refer to [NOTICE.md](NOTICE.md).
+- **Inspirations & Acknowledgments**: Mystic's domain adapters draw conceptual and engineering inspiration from several open-source traditional knowledge projects:
+  - [`nihaixia`](https://github.com/jangviktor-web/nihaixia): Ni Haixia classical formula systems and 6-stages differential logic modeling.
+  - [`vedic-astro-skills`](https://github.com/CNWU16/vedic-astro-skills): Jyotish ephemeris precision workflows and agentic skill architectural patterns.
+  - [`ziwei-doushu`](https://github.com/Renhuai123/ziwei-doushu): Classical astrolabe rules, mutagen interactions, and Chinese astrology knowledge engineering.
 
 ---
 

@@ -152,10 +152,14 @@ pnpm verify
 
 ---
 
-## 开源许可证与上游告示 (License & Notices)
+## 开源许可证与致谢 (License & Acknowledgments)
 
 - 本项目核心代码采用 [MIT License](LICENSE) 开源许可证。
 - 详细第三方依赖（如 `ephemeris` GPL-3.0 Moshier 算法）与古籍公共文献声明，请参见 [NOTICE.md](NOTICE.md)。
+- **灵感与致谢 (Inspirations)**：Mystic 的领域适配器在概念与知识建模上吸取了开源社区优秀项目的启发：
+  - [`nihaixia`](https://github.com/jangviktor-web/nihaixia)：倪海厦先生经方医学体系与六经辨证整理思路。
+  - [`vedic-astro-skills`](https://github.com/CNWU16/vedic-astro-skills)：吠陀占星天文计算与 Agent 化技能体系设计理念。
+  - [`ziwei-doushu`](https://github.com/Renhuai123/ziwei-doushu)：紫微斗数排盘规则与经典格局知识工程建模。
 
 ---
 
