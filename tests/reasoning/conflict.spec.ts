@@ -3,6 +3,7 @@ import { CanonicalEvidenceNode } from "../../lib/contracts/types";
 import { ZiweiService } from "../../lib/services/ziweiService";
 import { TCMService } from "../../lib/services/tcmService";
 import { AstrologyService } from "../../lib/services/astrologyService";
+import { EasternService } from "../../lib/services/easternService";
 
 export function testConflictSuite() {
   console.log("▶ [TEST SUITE] Cross-Domain Conflict Detector & Evidence Relation Graph");
@@ -110,16 +111,17 @@ export function testConflictSuite() {
     failed++;
   }
 
-  // 3. Real Integration Test (Real Ziwei + Real Vedic + Real TCM Evidences)
+  // 3. Real Integration Test (Real Ziwei + Real Vedic + Real TCM + Real Bazi Evidences)
   const ziweiEval = ZiweiService.getZiweiDomainEvaluation('1990-05-15', 6, '男');
   const vedicEval = AstrologyService.getVedicDomainEvaluation('1990-05-15', '06:00', 116.40, 39.90, 'Asia/Shanghai');
   const tcmEval = TCMService.diagnoseWithRules('常年手脚冰凉，极度怕冷，夜尿频多', { temperature: 35 });
+  const baziEval = EasternService.getBaziDomainEvaluation('1990-05-15', '06:00');
   
-  const fullE2EEvidences = [...ziweiEval.evidences, ...vedicEval.evidences, ...tcmEval.evidences];
+  const fullE2EEvidences = [...ziweiEval.evidences, ...vedicEval.evidences, ...tcmEval.evidences, ...baziEval.evidences];
 
   const realConflicts = CrossDomainConflictDetector.detectConflicts(fullE2EEvidences);
-  if (Array.isArray(realConflicts) && fullE2EEvidences.length >= 8) {
-    console.log(`  ✓ [E2E INTEGRATION PASS] Full Real Tri-Domain Pipeline (Ziwei+Vedic+TCM) produced ${fullE2EEvidences.length} canonical nodes with relations`);
+  if (Array.isArray(realConflicts) && fullE2EEvidences.length >= 10) {
+    console.log(`  ✓ [E2E INTEGRATION PASS] Full Real 4-Domain Pipeline (Ziwei+Vedic+TCM+Bazi) produced ${fullE2EEvidences.length} canonical nodes with dynamic relation graph`);
     passed++;
   } else {
     console.error(`  ✗ [E2E INTEGRATION FAIL] Real integration test failed`);

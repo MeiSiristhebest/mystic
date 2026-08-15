@@ -335,7 +335,7 @@ export function matchDiagnosticRules(
       ruleName: r.name,
       level: idx === 0 ? 'core' : 'support',
       dimension: 'health',
-      polarity: r.sixStage.startsWith('shao') || r.sixStage.startsWith('tai') ? 'transformative' : 'unfavorable',
+      polarity: (r.sixStage === 'taiyin' || r.sixStage === 'shaoyin' || r.sixStage === 'jueyin') ? 'unfavorable' : 'transformative',
       confidence: confBreakdown.overall,
       confidenceBreakdown: confBreakdown,
       temporalScope: {

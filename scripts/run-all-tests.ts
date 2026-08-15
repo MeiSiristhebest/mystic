@@ -1,6 +1,7 @@
 import { testZiweiSuite } from "../tests/ziwei/patterns.spec";
 import { testVedicSuite } from "../tests/vedic/dasha.spec";
 import { testNihaixiaSuite } from "../tests/nihaixia/rules.spec";
+import { testBaziSuite } from "../tests/bazi/bazi.spec";
 import { testConflictSuite } from "../tests/reasoning/conflict.spec";
 
 function main() {
@@ -26,9 +27,14 @@ function main() {
   totalFailed += r3.failed;
   console.log();
 
-  const r4 = testConflictSuite();
+  const r4 = testBaziSuite();
   totalPassed += r4.passed;
   totalFailed += r4.failed;
+  console.log();
+
+  const r5 = testConflictSuite();
+  totalPassed += r5.passed;
+  totalFailed += r5.failed;
   console.log();
 
   console.log("================================================================================");

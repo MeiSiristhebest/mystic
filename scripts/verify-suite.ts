@@ -16,6 +16,7 @@ import { matchDiagnosticRules, validateHealthAnswers, NIHAIXIA_DIAGNOSTIC_RULES 
 import { generateChart, detectPatterns, extractZiweiEvidences, validateZiweiChart } from '../lib/ziwei';
 import { CrossDomainConflictDetector } from '../lib/reasoning';
 import { CanonicalEvidenceNode, calculateDeterministicConfidence } from '../lib/contracts';
+import { BaziService } from '../lib/services/baziService';
 
 function runTestSuite() {
   console.log('====================================================');
@@ -229,9 +230,32 @@ function runTestSuite() {
   }
 
   // ----------------------------------------------------
-  // TEST SUITE 5: Confidence Aggregation & Evidence Relations
+  // TEST SUITE 5: Bazi Four Pillars & 24 Solar Terms Engine
   // ----------------------------------------------------
-  console.log('\n--- Suite 5: Deterministic Confidence & Evidence Relation Graph ---');
+  console.log('\n--- Suite 5: Bazi Four Pillars & 24 Solar Terms Engine ---');
+
+  const bazi1 = BaziService.getBazi('1990-05-15', '06:00');
+  assert(
+    bazi1.yearGanZhi === '庚午' && bazi1.monthGanZhi === '辛巳' && bazi1.dayGanZhi === '庚辰' && bazi1.timeGanZhi === '己卯',
+    'Bazi Four Pillars correctly computed with 24 Solar Terms (1990-05-15 -> 庚午 辛巳 庚辰 己卯)'
+  );
+
+  const baziPre = BaziService.getBazi('1995-01-15', '12:00');
+  assert(
+    baziPre.yearGanZhi === '甲戌',
+    'Bazi Lichun boundary correctly shifts pre-Lichun Jan 15 birth to prior solar year (甲戌)'
+  );
+
+  const baziEval = BaziService.getBaziDomainEvaluation('1990-05-15', '06:00');
+  assert(
+    baziEval.chart.dayMaster === '庚金' && baziEval.evidences.length >= 3 && baziEval.validation.isValid,
+    'Bazi Domain Evaluation extracts DayMaster, TenGods, NaYin and Canonical Evidence Graph'
+  );
+
+  // ----------------------------------------------------
+  // TEST SUITE 6: Confidence Aggregation & Evidence Relations
+  // ----------------------------------------------------
+  console.log('\n--- Suite 6: Deterministic Confidence & Evidence Relation Graph ---');
 
   const calibratedConf = calculateDeterministicConfidence({
     calculation: 0.98,

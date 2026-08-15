@@ -3,7 +3,7 @@
  * Maintains backward compatibility while delegating to specialized domain services.
  */
 
-import { BaziService, BaziCalculationResult } from "./baziService";
+import { BaziService, BaziCalculationResult, BaziChart } from "./baziService";
 import { ZiweiService } from "./ziweiService";
 import { QiMenService, QiMenResult } from "./qimenService";
 import { ZiweiChart, Pattern } from "@/lib/ziwei";
@@ -16,6 +16,10 @@ export class EasternService {
 
   static getBazi(birthDate: string, birthTime: string): BaziCalculationResult {
     return BaziService.getBazi(birthDate, birthTime);
+  }
+
+  static getBaziDomainEvaluation(birthDate: string, birthTime: string): DomainEvaluationResult<BaziChart> {
+    return BaziService.getBaziDomainEvaluation(birthDate, birthTime);
   }
 
   static getZiwei(birthDate: string, hour: number, gender: '男' | '女'): {

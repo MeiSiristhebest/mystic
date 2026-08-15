@@ -27,6 +27,13 @@ export async function getBaziData(birthDate: string, birthTime: string) {
 }
 
 /**
+ * Server-side Bazi Domain Evaluation Package with Canonical Evidence Graph.
+ */
+export async function getBaziDomainEvaluationServerData(birthDate: string, birthTime: string) {
+  return EasternService.getBaziDomainEvaluation(birthDate, birthTime);
+}
+
+/**
  * Server-side Ziwei Tianji calculation with 80+ patterns and evidence graph.
  */
 export async function getZiweiServerData(birthDate: string, hour: number, gender: '男' | '女') {

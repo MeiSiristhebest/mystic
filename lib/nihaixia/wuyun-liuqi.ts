@@ -3,6 +3,7 @@
  * 计算出生年份的岁运、司天、在泉及先天脏腑体质倾向
  */
 
+import { Solar } from 'lunar-javascript';
 import { WuyunLiuqiResult } from './types';
 
 const STEMS = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
@@ -39,22 +40,39 @@ const BRANCH_LIUQI_MAP: Record<string, { siTian: string; zaiQuan: string; siTian
 };
 
 /**
- * 推算出生年份的五运六气全息格局
+ * 推算出生年份与节气的五运六气全息格局
  */
-export function calculateWuyunLiuqi(year: number): WuyunLiuqiResult {
-  // 计算农历天干地支（以公元4年为甲子年基准）
-  const offset = year - 4;
-  const stemIdx = ((offset % 10) + 10) % 10;
-  const branchIdx = ((offset % 12) + 12) % 12;
+export function calculateWuyunLiuqi(year: number, month?: number, day?: number): WuyunLiuqiResult {
+  let stem = '';
+  let branch = '';
 
-  const stem = STEMS[stemIdx];
-  const branch = BRANCHES[branchIdx];
+  if (month !== undefined && day !== undefined) {
+    try {
+      const solar = Solar.fromYmd(year, month, day);
+      const yearGz = solar.getLunar().getEightChar().getYear();
+      stem = yearGz.charAt(0);
+      branch = yearGz.charAt(1);
+    } catch (e) {
+      // Fallback
+    }
+  }
+
+  if (!stem || !branch) {
+    // 公元4年为甲子年基准
+    const offset = year - 4;
+    const stemIdx = ((offset % 10) + 10) % 10;
+    const branchIdx = ((offset % 12) + 12) % 12;
+    stem = STEMS[stemIdx];
+    branch = BRANCHES[branchIdx];
+  }
+
+  const stemIdx = STEMS.indexOf(stem);
   const yearGanZhi = `${stem}${branch}年`;
 
   // 岁运（大运）
   const isYangStem = stemIdx % 2 === 0; // 甲丙戊庚壬为阳干
   const wuyunMeta = STEM_WUYUN_MAP[stem] || { element: '土', desc: '土运平气' };
-  const excessOrDeficiency = isYangStem ? '太过' : '不及';
+  const excessOrDeficiency: '太过' | '不及' = isYangStem ? '太过' : '不及';
 
   // 司天与在泉
   const liuqiMeta = BRANCH_LIUQI_MAP[branch] || BRANCH_LIUQI_MAP['子'];
@@ -98,15 +116,14 @@ export function calculateWuyunLiuqi(year: number): WuyunLiuqiResult {
     potentialPathologies.push('干咳少痰', '过敏鼻炎', '皮肤干燥', '便秘不畅');
     lifestyleBalancingTips.push('注意早晚防风保暖，多练习深呼吸或腹式呼吸，秋季多食润燥之物。');
     recommendedHerbalDiet.push('银耳雪梨百合羹', '黄芪生姜粥（补卫表气）', '蜂蜜杏仁茶');
-  } else {
-    // 水
+  } else if (wuyunMeta.element === '水') {
     predisposition = excessOrDeficiency === '太过' 
-      ? '寒水偏盛型：体质偏偏寒偏凝，下焦阳气易受压制，腰膝易冷痛。' 
-      : '肾阳虚水泛型：肾精肾气易亏虚，夜尿较多，早起浮肿，精力易耗竭。';
-    vulnerableOrgans.push('肾脏', '膀胱', '骨髓');
-    potentialPathologies.push('腰酸腿软', '畏寒肢冷', '脱发耳鸣', '夜尿频多');
-    lifestyleBalancingTips.push('每晚热水泡脚后搓涌泉穴，冬日注意腰腹脚踝保暖，房事节制守精。');
-    recommendedHerbalDiet.push('核桃黑芝麻粥', '当归生姜羊肉汤', '熟地肉桂枸杞炖品');
+      ? '水寒偏盛型：体质偏阴寒，畏寒肢冷，下肢易沉重水肿，腰膝酸软。' 
+      : '肾水不足型：阴虚内热，虚火上浮，腰酸耳鸣，健忘易疲劳，夜尿多。';
+    vulnerableOrgans.push('肾脏', '膀胱', '骨骼');
+    potentialPathologies.push('腰背酸痛', '水肿夜尿', '怕冷畏寒', '耳鸣眩晕');
+    lifestyleBalancingTips.push('晚上坚持用艾叶花椒温热水泡脚，注意腰部与脚踝保暖，严禁熬夜。');
+    recommendedHerbalDiet.push('黑豆核桃芡实粥', '杜仲巴戟天羊肉汤', '肉桂生姜红糖饮');
   }
 
   return {
@@ -120,12 +137,12 @@ export function calculateWuyunLiuqi(year: number): WuyunLiuqiResult {
     siTian: {
       climate: liuqiMeta.siTian,
       organImpact: liuqiMeta.siTianImpact,
-      desc: `司天上半年主事，代表出生年份上半年天运主导气场为【${liuqiMeta.siTian}】。`,
+      desc: liuqiMeta.siTianImpact,
     },
     zaiQuan: {
       climate: liuqiMeta.zaiQuan,
       organImpact: liuqiMeta.zaiQuanImpact,
-      desc: `在泉下半年主事，代表出生年份下半年地运主导气场为【${liuqiMeta.zaiQuan}】。`,
+      desc: liuqiMeta.zaiQuanImpact,
     },
     constitutionalTendency: {
       predisposition,
