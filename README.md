@@ -62,7 +62,7 @@
 | :--- | :--- | :--- | :--- |
 | **紫微斗数** | 12 宫排盘、108 星曜、三方四正、80+ 经典格局判定、iztro 1:1 差分回归、**流年天干四化与流曜小限动态叠盘（三盘合一共振）**、**紫微双人合盘与生年四化跨盘互涉** | 动态虚星神煞微调 | 飞星派十四化飞宫（本项目坚持经典三合派） |
 | **四柱八字** | 全球 IANA 时区与真太阳时（EoT 均时差 + 经度时角差）、严格节气换月换年（立春分界）、子初（23:00）换日、地支藏干、十神信号、12 个边界 Golden Fixtures | 细粒度格局强弱旺衰定局模型 | 盲派口诀、铁板神数 |
-| **吠陀占星** | IANA 时区夏令时、JD 儒略日、Moshier 天文星历、Lahiri 岁差、27 月宿与 Pada、120 年全量 3 级递归 Vimshottari、7-Chara Karakas、D1/D7/D9/D10/D12/D60 分盘、**生时校正引擎 (Rectifier)**、**时事卜卦引擎 (Prashna)**、**完整 36 分 Ashtakuta 合盘与 Dosha 化解判定** | 基础 Ashtakavarga 定性 | C++ 原生 Swiss Ephemeris (`pysweph`) 绑定、JHora 桌面级 15 张全分盘精细运算 |
+| **吠陀占星** | IANA 时区夏令时、JD 儒略日、Moshier 天文星历、Lahiri 岁差、27 月宿与 Pada、120 年全量 3 级递归 Vimshottari、7-Chara Karakas、D1/D7/D9/D10/D12/D60 分盘、**生时校正规则推演 (Rectifier Heuristic)**、**时事卜卦推演 (Prashna Rule Engine)**、**Ashtakuta 核心维度与关系特征评估（简化合盘模型）** | 基础 Ashtakavarga 定性 | C++ 原生 Swiss Ephemeris (`pysweph`) 绑定、JHora 桌面级 15 张全分盘精细运算 |
 | **倪海厦中医** | 正向支持与反向排除差分决策、五大核心四诊缺失拒诊机制（`insufficient_evidence`）、八大金标准量化、五运六气、**脉象与舌象结构化差分交叉鉴别 (Deep Pulse & Tongue Differential)**、**经方剂量与加减化裁矩阵** | 六经层级候选证型评分与排序 | 临床处方开具（系统仅提供文献候选证型与理法文化研究，严禁作为医疗处方） |
 | **证据与冲突仲裁** | 规范证据图谱（CEG）、多维证据质量矩阵（计算/输入/规则/原典分级）、认识论上限封顶、时间作用域、跨体系时空冲突检测器、Prompt Firewall 辩证防火墙、时域区间重叠与语义前驱关系推断 | 跨子图图遍历剪枝算法 | 任意自然语言 Claim 的完全自动化逻辑形式化验证 |
 
@@ -125,6 +125,7 @@ graph TD
 - **确定性证据校准分数学模型 (Deterministic Evidence Score)**：
   $$\text{Weighted Mean} = 0.35 \times \text{Calc} + 0.25 \times \text{Input} + 0.25 \times \text{Rule} + 0.15 \times \text{Source}$$
   $$\text{Overall} = \min(\text{Weighted Mean}, \min(\text{Calc}, \text{Input}, \text{Rule}) + 0.15)$$
+- **⚠️ 证据分语义界定**：本系统的证据校准分（`confidence` / `overallEvidenceQuality`）严格表示 Mystic 内部的**结构化证据完整度与文献支持质量**，用于衡量计算完备性、输入充分度与原典层级，**绝不代表现实事件的统计预测准确率或科学概率**。
 - **时域感知动态语义关系推断**：自动为证据节点建立 `corroborating`（同频印证）、`contradicting`（时域交集分歧）、`timing_precursor`（时机前驱承接）、`surface_vs_root`（表本张力）、`temporally_separate`（跨时段相位差）等语义关系。
 - **反伪共识防火墙**：强制 LLM 呈现各体系不同视角的立论依据，输出富有哲理与辩证深度的决策建议。
 
