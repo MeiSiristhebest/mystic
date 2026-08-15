@@ -1,28 +1,58 @@
 /**
- * True Solar Time (真太阳时) & Equation of Time (均时差) Engine.
+ * True Solar Time (真太阳时) & Astronomical Equation of Time (均时差) Engine.
  * 
- * Computes astronomical True Solar Time from civil wall-clock time and IANA timezone,
- * using pure UTC Instants to eliminate host machine runtime timezone pollution.
- * 
- * Features:
+ * Computes exact astronomical True Solar Time directly from celestial coordinates and IANA timezones:
  * 1. Full IANA Timezone Resolution via Intl.DateTimeFormat (Accounts for DST and standard offset).
- * 2. Spencer Equation of Time (EoT) calculation based on Earth's orbital eccentricity and obliquity.
- * 3. Geographic Longitude Time-Angle offset relative to the standard timezone meridian (4 min / deg).
+ * 2. Pure UTC Instant conversion eliminating host machine runtime timezone pollution.
+ * 3. Astronomical Equation of Time (EoT) derived from Mean Solar Longitude (L0) and True Solar Right Ascension (Alpha).
+ * 4. Geographic Longitude Time-Angle offset relative to the standard timezone meridian (4 min / deg).
  */
 
-import { parseCivilTimeToUtc } from '../vedic/ephemeris';
+import { parseCivilTimeToUtc, calculateJulianDay } from '../vedic/ephemeris';
 
-export function calculateSpencerEquationOfTime(utcDate: Date): number {
-  // Day of the year (1 - 366) in UTC
-  const startOfYear = new Date(Date.UTC(utcDate.getUTCFullYear(), 0, 1));
-  const dayOfYear = Math.floor((utcDate.getTime() - startOfYear.getTime()) / (86400000)) + 1;
+/**
+ * Compute true astronomical Equation of Time (EoT) using Sun's true geocentric right ascension.
+ * Definition: EoT = (L0 - Alpha_sun) * 4 minutes/degree
+ * Reference: Astronomical Algorithms (Jean Meeus, 2nd ed, Chap 28)
+ */
+export function calculateAstronomicalEquationOfTime(utcDate: Date): number {
+  const jd = calculateJulianDay(utcDate);
+  const T = (jd - 2451545.0) / 36525.0; // Julian centuries since J2000.0
 
-  // Spencer fractional day angle B in radians
-  const bDeg = (360.0 / 365.2422) * (dayOfYear - 81);
-  const bRad = (bDeg * Math.PI) / 180.0;
+  // Geometric Mean Longitude of the Sun (in degrees)
+  let L0 = 280.46646 + 36000.76983 * T + 0.0003032 * T * T;
+  L0 = ((L0 % 360) + 360) % 360;
 
-  // Spencer formula for Equation of Time (in minutes)
-  const eotMinutes = 9.87 * Math.sin(2 * bRad) - 7.53 * Math.cos(bRad) - 1.5 * Math.sin(bRad);
+  // Mean Anomaly of the Sun (in degrees)
+  let M = 357.52911 + 35999.05029 * T - 0.0001537 * T * T;
+  M = ((M % 360) + 360) % 360;
+  const mRad = (M * Math.PI) / 180.0;
+
+  // Sun's Equation of the Center C
+  const C = (1.914602 - 0.004817 * T - 0.000014 * T * T) * Math.sin(mRad) +
+            (0.019993 - 0.000101 * T) * Math.sin(2 * mRad) +
+            0.000289 * Math.sin(3 * mRad);
+
+  // Sun's True Tropical Longitude (lambda)
+  let lambda = L0 + C;
+  lambda = ((lambda % 360) + 360) % 360;
+
+  // True Obliquity of the Ecliptic (epsilon)
+  const eps0 = 23.4392911 - 0.013004167 * T - 0.000000164 * T * T + 0.0000005036 * T * T * T;
+  const epsRad = (eps0 * Math.PI) / 180.0;
+  const lamRad = (lambda * Math.PI) / 180.0;
+
+  // Sun's Right Ascension (Alpha) in degrees
+  let alpha = (Math.atan2(Math.cos(epsRad) * Math.sin(lamRad), Math.cos(lamRad)) * 180.0) / Math.PI;
+  alpha = ((alpha % 360) + 360) % 360;
+
+  // Equation of Time in minutes: (L0 - Alpha) * 4 min/deg
+  let diffDeg = L0 - alpha;
+  // Normalize difference to [-180, +180]
+  if (diffDeg > 180) diffDeg -= 360;
+  if (diffDeg < -180) diffDeg += 360;
+
+  const eotMinutes = diffDeg * 4.0;
   return Math.round(eotMinutes * 100) / 100;
 }
 
@@ -35,7 +65,6 @@ export function resolveTimezoneDetails(utcDate: Date, timeZone: string): {
   dstOffsetMinutes: number;
   standardMeridian: number;
 } {
-  // 1. Current offset at this instant
   const formatter = new Intl.DateTimeFormat('en-US', {
     timeZone,
     year: 'numeric',
@@ -57,7 +86,7 @@ export function resolveTimezoneDetails(utcDate: Date, timeZone: string): {
   const localMs = Date.UTC(pMap.year, (pMap.month || 1) - 1, pMap.day || 1, pMap.hour || 0, pMap.minute || 0, pMap.second || 0);
   const totalOffsetMinutes = Math.round((localMs - utcDate.getTime()) / 60000);
 
-  // 2. Sample January and July to find standard baseline offset (non-DST)
+  // Sample January and July to find standard baseline offset (non-DST)
   const probeDateJan = new Date(Date.UTC(utcDate.getUTCFullYear(), 0, 15, 12, 0, 0));
   const probeDateJul = new Date(Date.UTC(utcDate.getUTCFullYear(), 6, 15, 12, 0, 0));
 
@@ -73,11 +102,8 @@ export function resolveTimezoneDetails(utcDate: Date, timeZone: string): {
   const janOffset = getOffset(probeDateJan);
   const julOffset = getOffset(probeDateJul);
 
-  // In Northern hemisphere, standard is Jan offset (smaller). In Southern, standard is Jul offset.
   const standardOffsetMinutes = Math.min(janOffset, julOffset);
   const dstOffsetMinutes = totalOffsetMinutes - standardOffsetMinutes;
-
-  // Standard Meridian = standardOffset in minutes / 4.0 degrees
   const standardMeridian = standardOffsetMinutes / 4.0;
 
   return {
@@ -91,7 +117,7 @@ export function resolveTimezoneDetails(utcDate: Date, timeZone: string): {
 export interface TrueSolarTimeResult {
   utcInstant: string;
   civilLocalTime: string;
-  trueSolarDate: Date; // Expressed in local calendar coordinates
+  trueSolarDate: Date;
   trueSolarTime: string;
   eotMinutes: number;
   longitudeOffsetMinutes: number;
@@ -122,21 +148,18 @@ export function calculateAstronomicalTrueSolarTime(
   const tzDetails = resolveTimezoneDetails(utcDate, timeZone);
 
   // 3. Compute Longitude Offset relative to standard meridian
-  // Standard timezone meridian: standardMeridian (degrees)
   const longitudeOffsetMinutes = (longitude - tzDetails.standardMeridian) * 4.0;
 
-  // 4. Compute Spencer Equation of Time (EoT)
-  const eotMinutes = calculateSpencerEquationOfTime(utcDate);
+  // 4. Compute Astronomical Equation of Time (EoT) via true solar right ascension
+  const eotMinutes = calculateAstronomicalEquationOfTime(utcDate);
 
-  // 5. Total Solar Correction Shift = Longitude Offset + EoT - DST Offset (DST artificial wall-clock advance)
-  // If DST is active (+60 min), wall clock is 1h ahead of standard solar position
+  // 5. Total Solar Correction Shift = Longitude Offset + EoT - DST Offset
   const totalShiftMinutes = longitudeOffsetMinutes + eotMinutes - tzDetails.dstOffsetMinutes;
 
   // 6. Compute True Solar Date from civil local time without host machine timezone pollution
   const [y, m, d] = birthDate.split('-').map(Number);
   const [h, min] = (birthTime || '12:00').split(':').map(Number);
 
-  // Use UTC millisecond arithmetic for clean shift
   const civilLocalMs = Date.UTC(y, m - 1, d, h || 0, min || 0, 0);
   const trueSolarMs = civilLocalMs + Math.round(totalShiftMinutes * 60000);
   const trueSolarUtcObj = new Date(trueSolarMs);

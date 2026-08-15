@@ -1,7 +1,10 @@
 import { Solar } from "lunar-javascript";
 import { BirthContext, ValidationReport } from "../contracts/types";
-import { BaziCalculationError, BaziPillars, HiddenStem, VisibleElementDistribution, BaziTenGodInfo, BaziConvention, DEFAULT_BAZI_CONVENTION, BaziTimeContext } from "./types";
+import { BaziCalculationError, BaziPillars, HiddenStem, VisibleElementDistribution, BaziTenGodInfo, BaziConvention, DEFAULT_BAZI_CONVENTION, BaziTimeContext, BranchInteraction, DayMasterStrengthEvaluation, DaYunTimeline } from "./types";
 import { calculateAstronomicalTrueSolarTime } from "./solar-time";
+import { analyzeInteractions } from "./interactions";
+import { evaluateDayMasterStrength } from "./strength";
+import { calculateDaYunTimeline } from "./dayun";
 
 export const STEM_ELEMENT_MAP: Record<string, { element: '木' | '火' | '土' | '金' | '水'; yinYang: '阳' | '阴' }> = {
   甲: { element: '木', yinYang: '阳' },
@@ -100,7 +103,7 @@ export function calculateTenGod(dayGan: string, targetGan: string): string {
 }
 
 /**
- * Core Bazi Calculation with Fail-Fast Validation, IANA Timezone, and BaziConvention Options
+ * Core Bazi Calculation with Fail-Fast Validation, IANA Timezone, Interactions, Strength, and Da Yun
  */
 export function calculateBaziCore(
   context: BirthContext,
@@ -113,11 +116,14 @@ export function calculateBaziCore(
   dayNaYin: string;
   timeNaYin: string;
   dayMaster: string;
-  dayMasterElement: string;
-  dayMasterYinYang: string;
+  dayMasterElement: '木' | '火' | '土' | '金' | '水';
+  dayMasterYinYang: '阳' | '阴';
   visibleElementDistribution: VisibleElementDistribution;
   hiddenStems: HiddenStem[];
   tenGods: BaziTenGodInfo;
+  interactions: BranchInteraction[];
+  strengthEvaluation: DayMasterStrengthEvaluation;
+  daYun: DaYunTimeline;
   timeContext: BaziTimeContext;
   solarTimeDetails: {
     civilTime: string;
@@ -134,7 +140,7 @@ export function calculateBaziCore(
     ...conventionOptions,
   };
 
-  const { birthDate, birthTime = '12:00', timeZone = 'Asia/Shanghai', longitude = 116.40 } = context;
+  const { birthDate, birthTime = '12:00', timeZone = 'Asia/Shanghai', longitude = 116.40, gender = 'male' } = context;
 
   if (!birthDate || !birthDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
     throw new BaziCalculationError(`Invalid birthDate format '${birthDate}'. Expected 'YYYY-MM-DD'.`);
@@ -147,7 +153,7 @@ export function calculateBaziCore(
     throw new BaziCalculationError(`Invalid calendar date: ${birthDate}`);
   }
 
-  // Calculate Astronomical True Solar Time via IANA / Spencer EoT
+  // Calculate Astronomical True Solar Time via IANA / Ephemeris EoT
   const solarTimeResult = calculateAstronomicalTrueSolarTime(birthDate, birthTime, timeZone, longitude);
 
   // Target coordinates for Lunar calculation
@@ -219,7 +225,7 @@ export function calculateBaziCore(
   const dmInfo = STEM_ELEMENT_MAP[dayGan];
   const dayMaster = `${dayGan}${dmInfo.element}`;
 
-  // Visible Element Distribution across 8 characters (explicit count only, NOT weighted strength)
+  // Visible Element Distribution across 8 characters
   const chars = [
     yearGanZhi.charAt(0), yearGanZhi.charAt(1),
     monthGanZhi.charAt(0), monthGanZhi.charAt(1),
@@ -255,6 +261,22 @@ export function calculateBaziCore(
     timeGan: eightChar.getTimeShiShenGan(),
   };
 
+  const pillars: BaziPillars = {
+    year: yearGanZhi,
+    month: monthGanZhi,
+    day: dayGanZhi,
+    time: timeGanZhi,
+  };
+
+  // 1. Analyze Stem/Branch Interactions
+  const interactions = analyzeInteractions(pillars);
+
+  // 2. Evaluate Day Master Seasonality & Root Strength
+  const strengthEvaluation = evaluateDayMasterStrength(pillars, dayMaster, dmInfo.element, hiddenStems);
+
+  // 3. Compute Da Yun Timeline
+  const daYun = calculateDaYunTimeline(solar, gender, dayGan);
+
   const validation: ValidationReport = {
     isValid: issues.filter(i => i.severity === 'error').length === 0,
     issues,
@@ -273,12 +295,7 @@ export function calculateBaziCore(
   };
 
   return {
-    pillars: {
-      year: yearGanZhi,
-      month: monthGanZhi,
-      day: dayGanZhi,
-      time: timeGanZhi,
-    },
+    pillars,
     lunarDateString: `${lunar.getYearInChinese()}年 ${lunar.getMonthInChinese()}月 ${lunar.getDayInChinese()} ${lunar.getTimeZhi()}时`,
     yearNaYin: eightChar.getYearNaYin(),
     monthNaYin: eightChar.getMonthNaYin(),
@@ -290,6 +307,9 @@ export function calculateBaziCore(
     visibleElementDistribution,
     hiddenStems,
     tenGods,
+    interactions,
+    strengthEvaluation,
+    daYun,
     timeContext,
     solarTimeDetails: {
       civilTime: solarTimeResult.civilLocalTime,
