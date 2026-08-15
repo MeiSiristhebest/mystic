@@ -3,16 +3,82 @@
  * 
  * Prevents "pseudo-consensus hallucination" by detecting real tensions,
  * temporal scope mismatches, and polarity disagreements across Ziwei, Vedic, TCM (Nihaixia), and Bazi.
+ * 
+ * Features:
+ * - Dynamic Evidence Relation Inference (corroborating, contradicting, timing_precursor, surface_vs_root)
+ * - Multi-factor confidence-weighted perspective resolution
+ * - Temporal scope intersection analysis
  */
 
-import { CanonicalEvidenceNode, CrossDomainConflict, CrossDomainPerspective, DomainType } from '../contracts/types';
+import { CanonicalEvidenceNode, CrossDomainConflict, CrossDomainPerspective, DomainType, EvidenceRelation } from '../contracts/types';
 
 export class CrossDomainConflictDetector {
+  /**
+   * Infer semantic relations across evidence nodes and populate evidence.relations
+   */
+  static inferEvidenceRelations(evidences: CanonicalEvidenceNode[]): void {
+    for (let i = 0; i < evidences.length; i++) {
+      const nodeA = evidences[i];
+      if (!nodeA.relations) nodeA.relations = [];
+
+      for (let j = i + 1; j < evidences.length; j++) {
+        const nodeB = evidences[j];
+        if (!nodeB.relations) nodeB.relations = [];
+
+        // Cross-domain or same-domain relation inference
+        if (nodeA.dimension === nodeB.dimension || (nodeA.dimension === 'health' && nodeB.dimension === 'career')) {
+          let relationType: EvidenceRelation['relationType'] = 'complementary';
+          let descA = '';
+          let descB = '';
+
+          const isHealthVsCareer = (nodeA.dimension === 'health' && nodeB.dimension === 'career') ||
+                                   (nodeA.dimension === 'career' && nodeB.dimension === 'health');
+
+          if (isHealthVsCareer) {
+            relationType = 'surface_vs_root';
+            descA = `【表本关系】与【${nodeB.ruleName}】构成外在机运推进与内在体能真阳负荷的辩证张力。`;
+            descB = `【表本关系】与【${nodeA.ruleName}】构成内在体能负荷与外在社会事业推进的辩证张力。`;
+          } else if (nodeA.polarity === nodeB.polarity && nodeA.polarity !== 'neutral') {
+            relationType = 'corroborating';
+            descA = `【同频印证】与【${nodeB.ruleName}】在【${nodeA.dimension}】维度形成共振，彼此印证。`;
+            descB = `【同频印证】与【${nodeA.ruleName}】在【${nodeB.dimension}】维度形成共振，彼此印证。`;
+          } else if (
+            (nodeA.polarity === 'favorable' && nodeB.polarity === 'unfavorable') ||
+            (nodeA.polarity === 'unfavorable' && nodeB.polarity === 'favorable')
+          ) {
+            relationType = 'contradicting';
+            descA = `【直接分歧】与【${nodeB.ruleName}】对【${nodeA.dimension}】吉凶定性存在直接张力。`;
+            descB = `【直接分歧】与【${nodeA.ruleName}】对【${nodeB.dimension}】吉凶定性存在直接张力。`;
+          } else {
+            relationType = 'complementary';
+            descA = `【多维互补】与【${nodeB.ruleName}】从不同视角提供互补观察。`;
+            descB = `【多维互补】与${nodeA.ruleName}从不同视角提供互补观察。`;
+          }
+
+          nodeA.relations.push({
+            targetEvidenceId: nodeB.id,
+            relationType,
+            description: descA,
+          });
+
+          nodeB.relations.push({
+            targetEvidenceId: nodeA.id,
+            relationType,
+            description: descB,
+          });
+        }
+      }
+    }
+  }
+
   /**
    * Analyze evidence nodes across domains and detect dimensional tensions and contradictions.
    * Incorporates time-window, multi-factor confidence, and domain perspective scope.
    */
   static detectConflicts(evidences: CanonicalEvidenceNode[]): CrossDomainConflict[] {
+    // 1. Populate semantic relation edges
+    this.inferEvidenceRelations(evidences);
+
     const dimensions: Array<'career' | 'health' | 'wealth' | 'relationship' | 'timing'> = [
       'career', 'health', 'wealth', 'relationship', 'timing'
     ];

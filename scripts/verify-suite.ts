@@ -2,17 +2,18 @@
  * Comprehensive Verification & Regression Test Suite for Mystic Reasoning Engine.
  * Validates:
  * 1. Vedic Jyotish 3-tier Vimshottari Dasha recursion & 120-year continuity
- * 2. Vedic 16-point structural validator
+ * 2. Vedic 16-point structural validator & multi-timezone instant conversion
  * 3. Ni Haixia TCM Eight Principles & Six Stages deterministic rule engine & citations
  * 4. Ziwei Doushu astrolabe generation, 80+ patterns & evidence extraction
- * 5. CrossDomainConflictDetector multi-system dialectic arbitration
+ * 5. Canonical Evidence Graph deterministic confidence calibration & dynamic relations
+ * 6. CrossDomainConflictDetector multi-system dialectic arbitration
  */
 
-import { buildVedicChart, buildVimshottariTimeline, getCurrentDashaHierarchy, validateVedicChart } from '../lib/vedic';
+import { buildVedicChart, buildVimshottariTimeline, getCurrentDashaHierarchy, validateVedicChart, normalizeToUtcInstant } from '../lib/vedic';
 import { matchDiagnosticRules, validateHealthAnswers, NIHAIXIA_DIAGNOSTIC_RULES } from '../lib/nihaixia';
 import { generateChart, detectPatterns, extractZiweiEvidences, validateZiweiChart } from '../lib/ziwei';
 import { CrossDomainConflictDetector } from '../lib/reasoning';
-import { CanonicalEvidenceNode } from '../lib/contracts/types';
+import { CanonicalEvidenceNode, calculateDeterministicConfidence } from '../lib/contracts';
 
 function runTestSuite() {
   console.log('====================================================');
@@ -83,6 +84,14 @@ function runTestSuite() {
     currentDasha.formattedDisplay
   );
   console.log(`      Current Resolved Dasha: ${currentDasha.formattedDisplay}`);
+
+  // Test Timezone Normalization
+  const beijingUtc = normalizeToUtcInstant('1995-06-15', '06:00', 8);
+  const londonUtc = normalizeToUtcInstant('1995-06-15', '06:00', 0);
+  assert(
+    londonUtc.getTime() - beijingUtc.getTime() === 8 * 3600 * 1000,
+    'Timezone normalization correctly offsets 8 hours between Beijing (UTC+8) and London (UTC+0)'
+  );
 
   // Test full Vedic Chart building & validation
   const testTropicalPlanets = [
@@ -194,13 +203,27 @@ function runTestSuite() {
   }
 
   // ----------------------------------------------------
-  // TEST SUITE 4: Cross-Domain Conflict Detector
+  // TEST SUITE 4: Confidence Aggregation & Evidence Relations
   // ----------------------------------------------------
-  console.log('\n--- Suite 4: Cross-Domain Conflict Detector & Dialectics ---');
+  console.log('\n--- Suite 4: Deterministic Confidence & Evidence Relation Graph ---');
 
-  // Create mock cross-system tension:
-  // Ziwei: Favorable career (三奇加会 / 化禄)
-  // Vedic: Transformative / Unfavorable Saturn Dasha contraction in Career
+  const calibratedConf = calculateDeterministicConfidence({
+    calculation: 0.98,
+    inputCompleteness: 0.95,
+    ruleMatch: 0.90,
+    sourceAuthority: 0.92,
+  });
+  assert(
+    calibratedConf.overall > 0.85 && calibratedConf.overall <= 1.0,
+    'Deterministic confidence aggregation computes mathematical overall score',
+    `Result: ${calibratedConf.overall}`
+  );
+
+  // ----------------------------------------------------
+  // TEST SUITE 5: Cross-Domain Conflict Detector
+  // ----------------------------------------------------
+  console.log('\n--- Suite 5: Cross-Domain Conflict Detector & Dialectics ---');
+
   const mockEvidences: CanonicalEvidenceNode[] = [
     {
       id: 'mock_ziwei_career',
@@ -250,6 +273,10 @@ function runTestSuite() {
   assert(
     careerConflict?.conflictType === 'timing_mismatch' || careerConflict?.conflictType === 'direct_contradiction',
     'Career tension categorized with explicit dialectical conflict type'
+  );
+  assert(
+    Boolean(mockEvidences[0].relations && mockEvidences[0].relations.length > 0),
+    'Dynamically populates semantic relation edges across evidence nodes'
   );
   
   const promptBlock = CrossDomainConflictDetector.formatConflictPromptBlock(conflicts);

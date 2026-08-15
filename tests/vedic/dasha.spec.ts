@@ -9,6 +9,7 @@ import {
   calculateHighPrecisionGrahas,
   calculateLahiriAyanamsa,
   calculateJulianDay,
+  normalizeToUtcInstant,
   extractVedicEvidences,
   VEDIC_SIGNS
 } from "../../lib/vedic";
@@ -21,8 +22,8 @@ export function testVedicSuite() {
   let failed = 0;
 
   // 1. Astronomical Ephemeris & Ayanamsa Accuracy Test
-  const testDate = new Date(1995, 5, 15, 6, 0); // 1995-06-15 06:00
-  const jd = calculateJulianDay(testDate, 8);
+  const utcTestDate = normalizeToUtcInstant('1995-06-15', '06:00', 8);
+  const jd = calculateJulianDay(utcTestDate);
   const ayanamsa = calculateLahiriAyanamsa(jd);
   // Expected Lahiri Ayanamsa for mid-1995 is ~23.79°
   if (ayanamsa > 23.70 && ayanamsa < 23.95) {
@@ -33,7 +34,22 @@ export function testVedicSuite() {
     failed++;
   }
 
-  const grahas = calculateHighPrecisionGrahas(testDate);
+  // 2. Timezone Normalization Test across International Locations
+  const delhiUtc = normalizeToUtcInstant('1992-05-18', '10:30', 5.5);
+  const nyUtc = normalizeToUtcInstant('2000-01-01', '18:00', -5);
+  if (delhiUtc.getUTCHours() === 5 && delhiUtc.getUTCMinutes() === 0 && nyUtc.getUTCHours() === 23) {
+    console.log(`  ✓ [L3 TIMEZONE INSTANT PASS] Normalizes +5.5 (Delhi) and -5 (NY) into exact UTC timestamps`);
+    passed++;
+  } else {
+    console.error(`  ✗ [L3 TIMEZONE INSTANT FAIL] Unexpected UTC times`);
+    failed++;
+  }
+
+  const grahas = calculateHighPrecisionGrahas(utcTestDate, {
+    latitude: 39.90,
+    longitude: 116.40,
+    timezoneOffsetHours: 8,
+  });
   if (grahas.planets.length === 9 && grahas.ascendant.sidereal >= 0 && grahas.ascendant.sidereal < 360) {
     console.log(`  ✓ [L3 EPHEMERIS 9 GRAHAS PASS] Computed 9 planetary sidereal positions (Ascendant: ${grahas.ascendant.signName} ${grahas.ascendant.sidereal.toFixed(2)}°)`);
     passed++;
@@ -42,7 +58,7 @@ export function testVedicSuite() {
     failed++;
   }
 
-  // 2. Extended Varga Divisional Charts (D1, D7, D9, D10, D12, D60)
+  // 3. Extended Varga Divisional Charts (D1, D7, D9, D10, D12, D60)
   const d7Sign = getVargaSignIndex(145.5, 7);
   const d9Sign = getVargaSignIndex(145.5, 9);
   const d10Sign = getVargaSignIndex(145.5, 10);
@@ -57,7 +73,7 @@ export function testVedicSuite() {
     failed++;
   }
 
-  // 3. Golden Cases & Recursive Dasha Tests
+  // 4. Golden Cases & Recursive Dasha Tests
   for (const gc of goldenCases) {
     const nakInfo = getNakshatraByDegree(gc.moonSiderealDegree);
     

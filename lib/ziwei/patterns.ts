@@ -16,6 +16,7 @@
  */
 
 import type { ZiweiChart, Palace, Star, Pattern, PatternCondition } from './types';
+import { calculateDeterministicConfidence } from '../contracts';
 
 // ────────────────── 常量 ──────────────────
 const SHA_NAMES = ['擎羊', '陀罗', '火星', '铃星', '地空', '地劫'];
@@ -1135,7 +1136,12 @@ export function extractZiweiEvidences(chart: ZiweiChart, patterns: Pattern[]): i
       : p.level === 'caution' ? 'warning'
       : 'support';
 
-    const overallConf = p.level === 'excellent' ? 0.95 : p.level === 'caution' ? 0.90 : 0.85;
+    const confBreakdown = calculateDeterministicConfidence({
+      calculation: 1.0, // Exact iztro discrete calendar & star positions
+      inputCompleteness: 0.95,
+      ruleMatch: p.level === 'excellent' ? 0.98 : 0.90,
+      sourceAuthority: 0.95,
+    });
 
     return {
       id: `ziwei_pattern_${idx}_${p.name.replace(/\s+/g, '_')}`,
@@ -1145,14 +1151,8 @@ export function extractZiweiEvidences(chart: ZiweiChart, patterns: Pattern[]): i
       level: evidenceLevel,
       dimension,
       polarity,
-      confidence: overallConf,
-      confidenceBreakdown: {
-        calculation: 1.0, // Exact iztro discrete calendar & star positions
-        inputCompleteness: 0.95,
-        ruleMatch: p.level === 'excellent' ? 0.98 : 0.90,
-        sourceAuthority: 0.95,
-        overall: overallConf,
-      },
+      confidence: confBreakdown.overall,
+      confidenceBreakdown: confBreakdown,
       temporalScope: {
         scopeType: 'natal',
       },

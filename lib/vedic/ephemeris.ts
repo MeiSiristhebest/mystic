@@ -2,15 +2,15 @@
  * High-Precision Astronomical Ephemeris & Sidereal Vedic Mathematics Engine.
  * 
  * Implements:
- * 1. Julian Day (JD) calculation with Universal Time (UT) adjustments.
- * 2. True Lahiri Ayanamsa computation (BPHS / Chitrapaksha reference standard).
- * 3. Geocentric high-precision planetary longitudes (VSOP87 / Ephemeris integration).
- * 4. Mean Lunar Nodes (Rahu & Ketu) astronomical calculations (Meeus Ch. 47).
- * 5. Accurate Ascendant (Lagna) computation using Greenwich Mean Sidereal Time (GMST),
- *    Local Sidereal Time (LST), geographic coordinates, and true obliquity of ecliptic.
- * 6. Extended Varga Divisional charts: D1, D9 (Navamsa), D10 (Dasamsa), D7 (Saptamsa),
+ * 1. UTC Instant & Universal Time (UT) normalization across arbitrary timezones.
+ * 2. Julian Day (JD) calculation.
+ * 3. True Lahiri Ayanamsa computation (BPHS / Chitrapaksha standard: 23°51'25.53" at J2000).
+ * 4. Geocentric planetary longitudes via Moshier astronomical ephemeris (npm `ephemeris`).
+ * 5. Mean Lunar Nodes (Rahu & Ketu) astronomical calculations (Meeus Ch. 47).
+ * 6. Accurate Ascendant (Lagna) computation using Greenwich Mean Sidereal Time (GMST),
+ *    Local Sidereal Time (LST), geographic coordinates, and true obliquity of the ecliptic.
+ * 7. Extended Varga Divisional charts: D1, D7 (Saptamsa), D9 (Navamsa), D10 (Dasamsa),
  *    D12 (Dwadasamsa), D60 (Shashtiamsa).
- * 7. Shadbala strength & Ashtakavarga quantifiers.
  */
 
 import ephem from 'ephemeris';
@@ -21,7 +21,7 @@ export interface GeoLocation {
   latitude: number;
   longitude: number;
   altitude?: number;
-  timezoneOffsetHours?: number; // e.g. +8 for Beijing, +5.5 for IST, 0 for UTC
+  timezoneOffsetHours?: number; // e.g. +8 for Beijing, +5.5 for IST, 0 for UTC, -5 for EST
 }
 
 export const DEFAULT_GEO: GeoLocation = {
@@ -32,10 +32,24 @@ export const DEFAULT_GEO: GeoLocation = {
 };
 
 /**
- * Calculate Julian Day (JD) for a given Gregorian Date and Universal Time
+ * Convert local birth date and time into a precise UTC Instant Date object
  */
-export function calculateJulianDay(date: Date, tzOffsetHours = 8): number {
-  const utcMs = date.getTime();
+export function normalizeToUtcInstant(birthDate: string, birthTime: string, tzOffsetHours = 8): Date {
+  const [year, month, day] = birthDate.split('-').map(Number);
+  const [hour, minute] = (birthTime || '12:00').split(':').map(Number);
+  
+  const offsetMinutes = Math.round(tzOffsetHours * 60);
+  const localEpochMs = Date.UTC(year, (month || 1) - 1, day || 1, hour || 0, minute || 0, 0, 0);
+  const utcInstantMs = localEpochMs - (offsetMinutes * 60 * 1000);
+  
+  return new Date(utcInstantMs);
+}
+
+/**
+ * Calculate Julian Day (JD) for a given UTC Date
+ */
+export function calculateJulianDay(utcDate: Date): number {
+  const utcMs = utcDate.getTime();
   // Julian Day 2440587.5 is 1970-01-01 00:00:00 UTC
   return (utcMs / 86400000.0) + 2440587.5;
 }
@@ -136,14 +150,15 @@ export function calculateLunarNodes(
 }
 
 /**
- * Extract High Precision 9 Grahas using VSOP87 / Ephemeris and Sidereal Correction
+ * Extract High Precision 9 Grahas using Moshier-based Ephemeris and Sidereal Correction
  */
 export function calculateHighPrecisionGrahas(
-  date: Date,
+  utcDate: Date,
   geo: GeoLocation = DEFAULT_GEO
 ): {
   ayanamsa: number;
   jd: number;
+  utcDate: Date;
   ascendant: { tropical: number; sidereal: number; signIndex: number; signName: string };
   planets: Array<{
     name: VedicPlanetName;
@@ -155,14 +170,14 @@ export function calculateHighPrecisionGrahas(
     isRetrograde: boolean;
   }>;
 } {
-  const jd = calculateJulianDay(date, geo.timezoneOffsetHours);
+  const jd = calculateJulianDay(utcDate);
   const ayanamsa = calculateLahiriAyanamsa(jd);
   const asc = calculateAscendant(jd, geo, ayanamsa);
 
-  // Call ephemeris library
+  // Call ephemeris library with UTC date
   let rawEphem: any = null;
   try {
-    rawEphem = ephem.getAllPlanets(date, geo.longitude, geo.latitude, geo.altitude || 0);
+    rawEphem = ephem.getAllPlanets(utcDate, geo.longitude, geo.latitude, geo.altitude || 0);
   } catch (err) {
     console.warn('Ephemeris query fallback to analytical models:', err);
   }
@@ -202,7 +217,7 @@ export function calculateHighPrecisionGrahas(
     const sa = extractDeg('saturn');
     planetMap['Saturn'] = { tropical: sa.deg, isRetro: sa.retro };
   } else {
-    // High-precision Keplerian fallback if ephemeris engine throws
+    // Analytical Keplerian fallback if ephemeris engine throws
     const t = (jd - 2451545.0) / 36525.0;
     const sunMean = 280.46646 + 36000.76983 * t;
     const sunAnomaly = 357.52911 + 35999.05029 * t;
@@ -252,6 +267,7 @@ export function calculateHighPrecisionGrahas(
   return {
     ayanamsa,
     jd,
+    utcDate,
     ascendant: {
       tropical: asc.tropicalLongitude,
       sidereal: asc.siderealLongitude,

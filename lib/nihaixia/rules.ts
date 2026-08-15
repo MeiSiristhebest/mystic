@@ -8,7 +8,7 @@
  */
 
 import { SixStages, NihaixiaCase } from './types';
-import { CanonicalEvidenceNode } from '../contracts/types';
+import { CanonicalEvidenceNode, calculateDeterministicConfidence } from '../contracts';
 import { NIHAIXIA_CASES } from './cases';
 
 export interface DiagnosticRule {
@@ -321,6 +321,13 @@ export function matchDiagnosticRules(
     const posCount = sObj?.positiveHits.length || 1;
     const ruleMatch = Math.min(0.7 + posCount * 0.1, 0.98);
 
+    const confBreakdown = calculateDeterministicConfidence({
+      calculation: 0.92,
+      inputCompleteness: Math.min(posCount / (r.requiredObservations.length || 3), 1.0),
+      ruleMatch,
+      sourceAuthority: 1.0, // Authentic Shanghan Lun clause
+    });
+
     return {
       id: `tcm_rule_${r.id.toLowerCase()}`,
       domain: 'nihaixia',
@@ -329,14 +336,8 @@ export function matchDiagnosticRules(
       level: idx === 0 ? 'core' : 'support',
       dimension: 'health',
       polarity: r.sixStage.startsWith('shao') || r.sixStage.startsWith('tai') ? 'transformative' : 'unfavorable',
-      confidence: Math.min(0.75 + (idx === 0 ? 0.2 : 0.1), 0.95),
-      confidenceBreakdown: {
-        calculation: 0.92,
-        inputCompleteness: Math.min(posCount / (r.requiredObservations.length || 3), 1.0),
-        ruleMatch,
-        sourceAuthority: 1.0, // Authentic Shanghan Lun clause
-        overall: Math.min(0.75 + (idx === 0 ? 0.2 : 0.1), 0.95),
-      },
+      confidence: confBreakdown.overall,
+      confidenceBreakdown: confBreakdown,
       temporalScope: {
         scopeType: 'acute',
       },
@@ -348,7 +349,7 @@ export function matchDiagnosticRules(
         positiveHits: sObj?.positiveHits,
       },
       classicalSource: r.classicalCitation,
-      canonicalInterpretation: `依据六经辨证条文，符合【${r.patternName}】病机特征：${r.pathologyMechanism} 经典对证经方为《${r.primaryFormula}》（组成：${r.formulaComposition.join('、')}）。调护禁忌：${r.contraindication}`,
+      canonicalInterpretation: `依据六经辨证条文，符合【${r.patternName}】病机特征：${r.pathologyMechanism} 经典对证经方为《${r.primaryFormula}》（组成：${r.formulaComposition.join('、')}）。调护禁忌：${r.contraindication}【文献参考，非处方凭据】`,
     };
   });
 

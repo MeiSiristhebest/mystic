@@ -15,7 +15,7 @@
 
 <p align="center">
   <strong>Deterministic Domain & Evidence-Grounded Multi-Domain AI Reasoning Engine</strong><br/>
-  <em>4-Tier Decoupled Architecture · High-Precision Ephemeris · Differential TCM Diagnosis · Multi-Factor Confidence · Cross-Domain Dialectical Arbitration</em>
+  <em>4-Tier Decoupled Architecture · Moshier Ephemeris & Sidereal Zodiac · Differential TCM Diagnosis · Evidence Relation Graph · Multi-Factor Confidence · Cross-Domain Dialectical Arbitration</em>
 </p>
 
 <p align="center">
@@ -27,12 +27,13 @@
 ## Table of Contents
 
 - [About the Project](#about-the-project)
+- [Capabilities & Scope Matrix](#capabilities--scope-matrix)
 - [4-Tier Decoupled Architecture](#4-tier-decoupled-architecture)
 - [Deterministic Domain Engines](#deterministic-domain-engines)
   - [1. Vedic Jyotish & Ephemeris Engine](#1-vedic-jyotish--ephemeris-engine)
   - [2. Ni Haixia Differential TCM Engine](#2-ni-haixia-differential-tcm-engine)
   - [3. Ziwei Doushu Astrolabe Engine](#3-ziwei-doushu-astrolabe-engine)
-  - [4. Cross-Domain Conflict & Dialectic Firewall](#4-cross-domain-conflict--dialectic-firewall)
+  - [4. Evidence Relation Graph & Cross-Domain Dialectics](#4-evidence-relation-graph--cross-domain-dialectics)
 - [Automated Verification & CI Harness](#automated-verification--ci-harness)
 - [Installation & Setup](#installation--setup)
 - [License](#license)
@@ -46,10 +47,23 @@
 Traditional metaphysical/astrology AI applications dump raw birth information or subjective user questions directly into an LLM prompt, inevitably causing Barnum-effect platitudes, hallucinations, and false cross-domain consensus.
 
 **Mystic refuses to be a naive prompt wrapper.** It establishes a strict deterministic computation and reasoning firewall between user interaction and LLM synthesis:
-1. **Deterministic Ephemeris & Astronomical Truth**: Astronomical longitudes, Julian Days, LST, and sidereal Chitrapaksha Lahiri ayanamsa are 100% computed via pure mathematical algorithms.
-2. **Deterministic Rules & Differential Diagnostics**: TCM positive/negative exclusion trees, Ziwei 80+ patterns, and Vedic 7-Chara Karakas are evaluated deterministically with authentic classical citations.
-3. **Canonical Evidence Graph**: Every insight is anchored to a structured `CanonicalEvidenceNode` with 4-dimensional confidence breakdown (`calculation`, `inputCompleteness`, `ruleMatch`, `sourceAuthority`) and temporal scopes.
-4. **Cross-Domain Temporal Tension Arbitration**: Evaluates real tensions across disciplines within overlapping time windows (e.g., surface opportunity vs. somatic energy deficits), instructing the LLM to provide dialectical depth without forced consensus.
+1. **Deterministic Ephemeris & Astronomical Truth**: UTC Instant time normalization, Julian Days (JD), Moshier astronomical ephemeris, Local Sidereal Time (LST), and Chitrapaksha (Lahiri) Ayanamsa are 100% computed via mathematical algorithms.
+2. **Deterministic Rules & Differential Diagnostics**: TCM positive/negative exclusion trees, refusal on insufficient evidence, Ziwei 80+ patterns, and Vedic 7-Chara Karakas are evaluated deterministically with authentic classical citations.
+3. **Canonical Evidence Graph with Inferred Relations**: Every insight is anchored to a structured `CanonicalEvidenceNode` with 4-dimensional deterministic confidence aggregation (`calculation`, `inputCompleteness`, `ruleMatch`, `sourceAuthority`) and active semantic relation edges (`corroborating`, `contradicting`, `surface_vs_root`, `timing_precursor`).
+4. **Cross-Domain Temporal Tension Arbitration**: Evaluates real tensions across disciplines within overlapping time windows, instructing the LLM to provide dialectical depth without forced consensus.
+
+---
+
+## Capabilities & Scope Matrix
+
+For technical honesty and architectural clarity, the table below specifies the exact implementation boundaries of Mystic:
+
+| Domain Module | ✅ Fully Implemented Capabilities | ⚠️ Simplified / Partial Capabilities | ❌ Out of Scope / Not Included |
+| :--- | :--- | :--- | :--- |
+| **Ziwei Doushu** | 12 Palaces, 108 Stars, San Fang Si Zheng, 80+ Classical Patterns (Must / Bonus / Busting conditions), 1:1 iztro differential parity testing | Decadal flow-star overlays | Flying Star 14 Mutagen Palace transformations (San He classic school prioritized) |
+| **Vedic Jyotish** | UTC Instant multi-timezone normalization, JD calculation, Moshier 9-Grahas true longitudes, Lahiri Ayanamsa, Sidereal Lagna, 27 Nakshatras & Padas, 120-Yr 3-Tier Recursive Vimshottari (9MD/81AD/729PD), 7-Chara Karakas, D1/D7/D9/D10/D12/D60 Vargas | Basic Ashtakavarga and qualitative Shadbala | Native C++ Swiss Ephemeris (`pysweph`) bindings, Full JHora 15-divisional desktop-grade calculations |
+| **Ni Haixia TCM** | Positive indicators, Negative contra-indicators, 5-core missing observations refusal (`insufficient_evidence`), 100% authentic *Shanghan Lun* / *Jingui Yaolüe* citations, 8 Health Standards quantification | 6-Stages candidate syndrome scoring and ranking | Medical prescriptions (System is strictly designed for traditional literature study & philosophical reasoning, never for medical advice) |
+| **Evidence & Dialectics** | Canonical Evidence Graph (CEG), Deterministic 4D confidence aggregation formula, `temporalScope` boundaries, Cross-Domain Conflict Detector, Prompt Firewall, Dynamic Relation Inference (`inferEvidenceRelations`) | Subgraph graph traversal pruning | Automated formal verification on arbitrary free-form natural language claims |
 
 ---
 
@@ -58,7 +72,7 @@ Traditional metaphysical/astrology AI applications dump raw birth information or
 ```mermaid
 graph TD
     subgraph Layer1 [Tier A: Deterministic Facts & Ephemeris Layer]
-        Ephem["High-Precision Ephemeris: JDE Julian Day + VSOP87 + LST + Lahiri Ayanamsa"]
+        Ephem["Astronomical Ephemeris: UTC Instant + JDE Julian Day + Moshier Engine + LST + Lahiri Ayanamsa"]
         Asc["Lagna Ascendant Calculation: Geographic Coordinates + Ecliptic Obliquity"]
         Iztro["iztro Astrolabe: 12 Palaces + 14 Major & Auxiliary Stars"]
         TcmStd["TCM 8 Health Standards Quantifier + Wuyun Liuqi Innate Predisposition"]
@@ -70,15 +84,15 @@ graph TD
         T_Engine["Ni Haixia TCM Engine: Positive/Negative/Missing Differential Tree + Refusal"]
     end
 
-    subgraph Layer3 [Tier C: Canonical Evidence Graph]
-        CEG["Canonical Evidence Graph: 4D Confidence + Time Windows + Classical Lore"]
+    subgraph Layer3 [Tier C: Canonical Evidence Graph & Relation Engine]
+        CEG["Canonical Evidence Graph: 4D Confidence Aggregation + Time Windows + Semantic Relations"]
         V_Engine --> CEG
         Z_Engine --> CEG
         T_Engine --> CEG
     end
 
     subgraph Layer4 [Tier D: Cross-Domain Arbitration & AI Synthesis]
-        Arbitrator["CrossDomainConflictDetector: Temporal Overlap + Semantic Tension"]
+        Arbitrator["CrossDomainConflictDetector: Temporal Overlap + Semantic Tension + Relation Inference"]
         CEG --> Arbitrator
         Arbitrator --> Firewall["Prompt Pipeline Dialectical Firewall (Anti-Consensus Rules)"]
         Firewall --> LLM["Google Gemini Multimodal Streaming Synthesis"]
@@ -90,7 +104,7 @@ graph TD
 ## Deterministic Domain Engines
 
 ### 1. Vedic Jyotish & Ephemeris Engine
-- **Astronomical Ephemeris**: Calculates real geocentric longitudes and retrograde statuses for the 9 Grahas (Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, Rahu, Ketu).
+- **Astronomical Ephemeris & Multi-Timezone**: Converts any global timezone to UTC Instant, calculating real geocentric longitudes and retrograde statuses for the 9 Grahas via Moshier astronomical algorithms.
 - **Sidereal Lagna**: Uses Local Sidereal Time and Chitrapaksha (Lahiri) Ayanamsa.
 - **120-Year 3-Tier Recursive Dasha**: Seamless timeline across 9 Mahadashas $\to$ 81 Antardashas $\to$ 729 Pratyantardashas.
 - **Extended Vargas**: D1 (Natal), D7 (Saptamsa), D9 (Navamsa), D10 (Dasamsa), D12 (Dwadasamsa), D60 (Shashtiamsa).
@@ -99,14 +113,17 @@ graph TD
 ### 2. Ni Haixia Differential TCM Engine
 - **Differential Protocol**: Evaluates positive indicators, negative exclusion contraindications, and missing clinical observations.
 - **Refusal on Insufficient Evidence**: Rejects false diagnoses when symptoms are vague, returning an exact checklist of missing observations instead of defaulting to a formula.
-- **Authentic Classical Lore**: Direct citations from *Shanghan Lun* and *Jingui Yaolüe*.
+- **Authentic Classical Lore**: Direct citations from *Shanghan Lun* and *Jingui Yaolüe* for cultural and literature research.
 
 ### 3. Ziwei Doushu Astrolabe Engine
 - **Full Astrolabe Deconstruction**: 12 Palaces, 108 Stars, Body Palace, San Fang Si Zheng, Mutagens (Si Hua), and Decadal Luck via `iztro`.
 - **80+ Classical Patterns**: Rigorous evaluation of auspicious, neutral, and afflicted configurations.
 
-### 4. Cross-Domain Conflict & Dialectic Firewall
-- **Temporal Scope Awareness**: Identifies overlapping timeframes and distinguishes macro-cycles from acute phases.
+### 4. Evidence Relation Graph & Cross-Domain Dialectics
+- **Deterministic Confidence Aggregation**:
+  $$\text{Weighted Mean} = 0.35 \times \text{Calc} + 0.25 \times \text{Input} + 0.25 \times \text{Rule} + 0.15 \times \text{Source}$$
+  $$\text{Overall} = \min(\text{Weighted Mean}, \min(\text{Calc}, \text{Input}, \text{Rule}) + 0.15)$$
+- **Dynamic Semantic Relations**: Automatically populates `corroborating`, `contradicting`, `surface_vs_root`, and `timing_precursor` relation edges across evidence nodes.
 - **Anti-Consensus Firewall**: Guides the generative model to present honest dialectical synthesis rather than smoothing away contradictions.
 
 ---
@@ -116,7 +133,7 @@ graph TD
 Built with a 4-tier automated test harness wired directly into GitHub Actions:
 * **L1 Execution Health**: Zero runtime exceptions in pure functional units.
 * **L2 Structural Integrity**: 12 palaces, 14 major stars completeness, and 9/81/729 Dasha continuity.
-* **L3 Domain Golden Values**: Precise assertions on planetary sequences, matched patterns, classical herbs, and refusal mechanics.
+* **L3 Domain Golden Values**: Multi-timezone assertions (Beijing, New Delhi, London, New York), planetary positions, matched patterns, classical herbs, and refusal mechanics.
 * **L4 Differential Testing**: 1:1 parity check between Mystic adapter and raw `iztro` engine.
 
 ```bash

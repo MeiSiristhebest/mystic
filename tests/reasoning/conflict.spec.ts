@@ -2,14 +2,15 @@ import { CrossDomainConflictDetector } from "../../lib/reasoning";
 import { CanonicalEvidenceNode } from "../../lib/contracts/types";
 import { ZiweiService } from "../../lib/services/ziweiService";
 import { TCMService } from "../../lib/services/tcmService";
+import { AstrologyService } from "../../lib/services/astrologyService";
 
 export function testConflictSuite() {
-  console.log("▶ [TEST SUITE] Cross-Domain Conflict Detector & Dialectic Firewall");
+  console.log("▶ [TEST SUITE] Cross-Domain Conflict Detector & Evidence Relation Graph");
 
   let passed = 0;
   let failed = 0;
 
-  // 1. Synthetic Conflict Assertion with Time Window
+  // 1. Synthetic Conflict Assertion with Time Window & Dynamic Relation Inference
   const mockConflictNodes: CanonicalEvidenceNode[] = [
     {
       id: 'e1',
@@ -48,6 +49,15 @@ export function testConflictSuite() {
     failed++;
   }
 
+  // Verify that active relations were inferred and populated
+  if (mockConflictNodes[0].relations && mockConflictNodes[0].relations.length > 0) {
+    console.log(`  ✓ [RELATION GRAPH PASS] Dynamically inferred relation edge: ${mockConflictNodes[0].relations[0].relationType} -> ${mockConflictNodes[0].relations[0].targetEvidenceId}`);
+    passed++;
+  } else {
+    console.error(`  ✗ [RELATION GRAPH FAIL] Relations not populated on evidence node`);
+    failed++;
+  }
+
   const promptBlock = CrossDomainConflictDetector.formatConflictPromptBlock(conflicts);
   if (promptBlock.includes('cross_domain_dialectic_firewall') && promptBlock.includes('反伪共识规范')) {
     console.log(`  ✓ [FIREWALL PASS] Dialectic firewall block formatted properly`);
@@ -57,17 +67,19 @@ export function testConflictSuite() {
     failed++;
   }
 
-  // 2. Real Integration Test (Real Ziwei Evidences + Real TCM Evidences)
+  // 2. Real Integration Test (Real Ziwei + Real Vedic + Real TCM Evidences)
   const ziweiEval = ZiweiService.getZiweiDomainEvaluation('1990-05-15', 6, '男');
+  const vedicEval = AstrologyService.getVedicDomainEvaluation('1990-05-15', '06:00', 116.40, 39.90, 8);
   const tcmEval = TCMService.diagnoseWithRules('常年手脚冰凉，极度怕冷，夜尿频多', { temperature: 35 });
-  const combinedEvidences = [...ziweiEval.evidences, ...tcmEval.evidences];
+  
+  const fullE2EEvidences = [...ziweiEval.evidences, ...vedicEval.evidences, ...tcmEval.evidences];
 
-  const realConflicts = CrossDomainConflictDetector.detectConflicts(combinedEvidences);
-  if (Array.isArray(realConflicts)) {
-    console.log(`  ✓ [INTEGRATION PASS] Real multi-domain evidence pipeline produced ${combinedEvidences.length} nodes and evaluated ${realConflicts.length} dimensional perspectives`);
+  const realConflicts = CrossDomainConflictDetector.detectConflicts(fullE2EEvidences);
+  if (Array.isArray(realConflicts) && fullE2EEvidences.length >= 8) {
+    console.log(`  ✓ [E2E INTEGRATION PASS] Full Real Tri-Domain Pipeline (Ziwei+Vedic+TCM) produced ${fullE2EEvidences.length} canonical nodes with relations`);
     passed++;
   } else {
-    console.error(`  ✗ [INTEGRATION FAIL] Real integration test failed`);
+    console.error(`  ✗ [E2E INTEGRATION FAIL] Real integration test failed`);
     failed++;
   }
 

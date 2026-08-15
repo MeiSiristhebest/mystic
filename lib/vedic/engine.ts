@@ -10,7 +10,7 @@ import {
 } from './types';
 import { getNakshatraByDegree, NAKSHATRAS } from './nakshatras';
 import { validateVedicChart } from './validation';
-import { CanonicalEvidenceNode } from '../contracts/types';
+import { CanonicalEvidenceNode, calculateDeterministicConfidence } from '../contracts';
 import { VEDIC_SIGNS, PLANET_CN_MAP, DASHA_ORDER } from './constants';
 
 export { VEDIC_SIGNS, PLANET_CN_MAP, DASHA_ORDER };
@@ -280,6 +280,12 @@ export function extractVedicEvidences(
   // 1. Moon Nakshatra Evidence
   const moon = chart.planets.find(p => p.name === 'Moon');
   if (moon && chart.moonNakshatra) {
+    const confBreakdown = calculateDeterministicConfidence({
+      calculation: 0.99,
+      inputCompleteness: 0.95,
+      ruleMatch: 1.0,
+      sourceAuthority: 0.98,
+    });
     evidences.push({
       id: `vedic_moon_nakshatra_${chart.moonNakshatra.index}`,
       domain: 'vedic',
@@ -288,14 +294,8 @@ export function extractVedicEvidences(
       level: 'core',
       dimension: 'personality',
       polarity: 'neutral',
-      confidence: 0.95,
-      confidenceBreakdown: {
-        calculation: 0.99,
-        inputCompleteness: 0.95,
-        ruleMatch: 1.0,
-        sourceAuthority: 0.98,
-        overall: 0.95,
-      },
+      confidence: confBreakdown.overall,
+      confidenceBreakdown: confBreakdown,
       temporalScope: {
         scopeType: 'natal',
       },
@@ -313,6 +313,12 @@ export function extractVedicEvidences(
   // 2. Atmakaraka (AK) Evidence
   const ak = chart.charaKarakas.find(k => k.role === 'AK');
   if (ak) {
+    const confBreakdown = calculateDeterministicConfidence({
+      calculation: 0.98,
+      inputCompleteness: 0.95,
+      ruleMatch: 0.95,
+      sourceAuthority: 0.95,
+    });
     evidences.push({
       id: `vedic_chara_karaka_ak_${ak.planet}`,
       domain: 'vedic',
@@ -321,14 +327,8 @@ export function extractVedicEvidences(
       level: 'core',
       dimension: 'spiritual',
       polarity: 'transformative',
-      confidence: 0.92,
-      confidenceBreakdown: {
-        calculation: 0.98,
-        inputCompleteness: 0.95,
-        ruleMatch: 0.95,
-        sourceAuthority: 0.95,
-        overall: 0.92,
-      },
+      confidence: confBreakdown.overall,
+      confidenceBreakdown: confBreakdown,
       temporalScope: {
         scopeType: 'natal',
       },
@@ -341,6 +341,12 @@ export function extractVedicEvidences(
   // 3. Amatyakaraka (AmK) Evidence
   const amk = chart.charaKarakas.find(k => k.role === 'AmK');
   if (amk) {
+    const confBreakdown = calculateDeterministicConfidence({
+      calculation: 0.98,
+      inputCompleteness: 0.95,
+      ruleMatch: 0.90,
+      sourceAuthority: 0.92,
+    });
     evidences.push({
       id: `vedic_chara_karaka_amk_${amk.planet}`,
       domain: 'vedic',
@@ -349,14 +355,8 @@ export function extractVedicEvidences(
       level: 'support',
       dimension: 'career',
       polarity: 'favorable',
-      confidence: 0.88,
-      confidenceBreakdown: {
-        calculation: 0.98,
-        inputCompleteness: 0.95,
-        ruleMatch: 0.90,
-        sourceAuthority: 0.92,
-        overall: 0.88,
-      },
+      confidence: confBreakdown.overall,
+      confidenceBreakdown: confBreakdown,
       temporalScope: {
         scopeType: 'natal',
       },
@@ -370,6 +370,12 @@ export function extractVedicEvidences(
   const md = chart.currentDasha.mahaDasha;
   const ad = chart.currentDasha.antarDasha;
   const pd = chart.currentDasha.pratyantarDasha;
+  const dashaConfBreakdown = calculateDeterministicConfidence({
+    calculation: 0.99,
+    inputCompleteness: 0.95,
+    ruleMatch: 0.98,
+    sourceAuthority: 0.99,
+  });
   evidences.push({
     id: `vedic_current_dasha_${md.planet}_${ad.planet}`,
     domain: 'vedic',
@@ -378,14 +384,8 @@ export function extractVedicEvidences(
     level: 'core',
     dimension: 'timing',
     polarity: md.planet === 'Saturn' || md.planet === 'Rahu' || md.planet === 'Ketu' ? 'transformative' : 'favorable',
-    confidence: 0.96,
-    confidenceBreakdown: {
-      calculation: 0.99,
-      inputCompleteness: 0.95,
-      ruleMatch: 0.98,
-      sourceAuthority: 0.99,
-      overall: 0.96,
-    },
+    confidence: dashaConfBreakdown.overall,
+    confidenceBreakdown: dashaConfBreakdown,
     temporalScope: {
       timeWindow: `${md.startDate.slice(0, 4)}~${md.endDate.slice(0, 4)} (${md.planet} MD)`,
       startDate: md.startDate,
@@ -412,6 +412,12 @@ export function extractVedicEvidences(
       const houseDiff = (saturnHouse - moonHouse + 12) % 12; // 0=conjunction, 1=2nd, 11=12th
       if (houseDiff === 11 || houseDiff === 0 || houseDiff === 1) {
         const phase = houseDiff === 11 ? '第一阶段 (12宫准备期)' : houseDiff === 0 ? '第二阶段 (本宫巅峰考验)' : '第三阶段 (2宫收尾转型)';
+        const sadeSatiConf = calculateDeterministicConfidence({
+          calculation: 0.95,
+          inputCompleteness: 0.90,
+          ruleMatch: 0.88,
+          sourceAuthority: 0.90,
+        });
         evidences.push({
           id: 'vedic_sade_sati_active',
           domain: 'vedic',
@@ -420,14 +426,8 @@ export function extractVedicEvidences(
           level: 'warning',
           dimension: 'timing',
           polarity: 'transformative',
-          confidence: 0.85,
-          confidenceBreakdown: {
-            calculation: 0.95,
-            inputCompleteness: 0.90,
-            ruleMatch: 0.88,
-            sourceAuthority: 0.90,
-            overall: 0.85,
-          },
+          confidence: sadeSatiConf.overall,
+          confidenceBreakdown: sadeSatiConf,
           temporalScope: {
             timeWindow: '7.5年土星过境照月周期',
             scopeType: 'transit',
