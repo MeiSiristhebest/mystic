@@ -1,13 +1,13 @@
 import { BirthContext, CanonicalEvidenceNode, DomainEvaluationResult } from '../contracts/types';
 import { calculateDeterministicConfidence } from '../contracts/confidence';
-import { BaziChart } from './types';
+import { BaziChart, BaziConvention } from './types';
 import { calculateBaziCore } from './calculator';
 
 export function evaluateBazi(
   context: BirthContext,
-  useTrueSolarTime: boolean = true
+  conventionOptions?: Partial<BaziConvention>
 ): DomainEvaluationResult<BaziChart> {
-  const core = calculateBaziCore(context, useTrueSolarTime);
+  const core = calculateBaziCore(context, conventionOptions);
 
   const summaryTags: string[] = [
     `日主${core.dayMaster}`,
@@ -17,30 +17,32 @@ export function evaluateBazi(
 
   const evidences: CanonicalEvidenceNode[] = [];
 
-  // 1. Day Master Core Celestial Stem Fact (Deterministic Fact, Neutral Polarity)
-  const confDm = calculateDeterministicConfidence(
+  // 1. Day Master Core Celestial Stem Fact (Deterministic Fact -> Dimension: Structural)
+  const confDmFact = calculateDeterministicConfidence(
     {
       calculation: 1.0,
       inputCompleteness: 1.0,
-      ruleMatch: 0.95,
-      sourceAuthority: 0.88,
+      ruleMatch: 1.0,
+      sourceAuthority: 0.95,
     },
     { evidenceType: 'deterministic_fact', sourceTier: 'secondary_lore' }
   );
 
   evidences.push({
-    id: `bazi_daymaster_${core.dayMaster}`,
+    id: `bazi_daymaster_fact_${core.dayMaster}`,
     domain: 'bazi',
-    ruleId: 'BAZI_DAY_MASTER',
-    ruleName: `日主元神: ${core.dayMaster} (${core.dayMasterYinYang}${core.dayMasterElement})`,
+    ruleId: 'BAZI_DAY_MASTER_FACT',
+    ruleName: `日元天干事实: ${core.dayMaster} (${core.dayMasterYinYang}${core.dayMasterElement})`,
     level: 'core',
     evidenceType: 'deterministic_fact',
     sourceTier: 'secondary_lore',
-    dimension: 'personality',
-    polarity: 'neutral', // Fact itself is not inherently favorable/unfavorable
-    confidence: confDm.overall,
-    confidenceBreakdown: confDm,
-    temporalScope: { scopeType: 'natal' },
+    dimension: 'structural',
+    polarity: 'neutral',
+    valence: 'neutral',
+    dynamicMode: 'stable',
+    confidence: confDmFact.overall,
+    confidenceBreakdown: confDmFact,
+    temporalScope: { scopeType: 'natal', isNatalBaseline: true },
     parameters: {
       dayMaster: core.dayMaster,
       element: core.dayMasterElement,
@@ -48,11 +50,43 @@ export function evaluateBazi(
       visibleElementDistribution: core.visibleElementDistribution,
       trueSolarTime: core.solarTimeDetails.trueSolarTime,
     },
-    classicalSource: '《滴天髓·论天干》',
-    canonicalInterpretation: `命主日元为【${core.dayMaster}】（${core.dayMasterYinYang}${core.dayMasterElement}），为八字本命元神支柱。显性干支分布：木${core.visibleElementDistribution.wood}、火${core.visibleElementDistribution.fire}、土${core.visibleElementDistribution.earth}、金${core.visibleElementDistribution.metal}、水${core.visibleElementDistribution.water}（注：仅为显性字符计数，非定局强弱）。`,
+    canonicalInterpretation: `命主日元为【${core.dayMaster}】（${core.dayMasterYinYang}${core.dayMasterElement}），为四柱八字之客观天干基准。显性干支分布：木${core.visibleElementDistribution.wood}、火${core.visibleElementDistribution.fire}、土${core.visibleElementDistribution.earth}、金${core.visibleElementDistribution.metal}、水${core.visibleElementDistribution.water}（注：仅为显性字符计数，非定局强弱）。`,
   });
 
-  // 2. Month Pillar Ten God Signal (Derived Rule, Neutral Polarity)
+  // 2. Day Master Classical Interpretation (Classical Lore -> Dimension: Personality)
+  const confDmLore = calculateDeterministicConfidence(
+    {
+      calculation: 1.0,
+      inputCompleteness: 1.0,
+      ruleMatch: 0.90,
+      sourceAuthority: 0.88,
+    },
+    { evidenceType: 'classical_interpretation', sourceTier: 'secondary_lore' }
+  );
+
+  evidences.push({
+    id: `bazi_daymaster_lore_${core.dayMaster}`,
+    domain: 'bazi',
+    ruleId: 'BAZI_DAY_MASTER_LORE',
+    ruleName: `日主性情阐释: ${core.dayMaster}`,
+    level: 'support',
+    evidenceType: 'classical_interpretation',
+    sourceTier: 'secondary_lore',
+    dimension: 'personality',
+    polarity: 'neutral',
+    valence: 'neutral',
+    dynamicMode: 'stable',
+    confidence: confDmLore.overall,
+    confidenceBreakdown: confDmLore,
+    temporalScope: { scopeType: 'natal', isNatalBaseline: true },
+    parameters: {
+      dayMaster: core.dayMaster,
+    },
+    classicalSource: '《滴天髓·论天干》',
+    canonicalInterpretation: `《滴天髓》论【${core.dayMaster}】先天气质象意。日主代表个体认知滤镜与本能作风，吉凶由全局五行调候与格局搭配决定，本体并无吉凶偏向。`,
+  });
+
+  // 3. Month Pillar Ten God Signal (Derived Rule -> Dimension: Structural)
   const confTg = calculateDeterministicConfidence(
     {
       calculation: 1.0,
@@ -67,25 +101,27 @@ export function evaluateBazi(
     id: `bazi_month_tengod_${core.tenGods.monthGan || 'signal'}`,
     domain: 'bazi',
     ruleId: 'BAZI_TEN_GOD_SIGNAL',
-    ruleName: `月令透干信号: ${core.tenGods.monthGan}`,
+    ruleName: `月令透干结构信号: ${core.tenGods.monthGan}`,
     level: 'core',
     evidenceType: 'derived_rule',
     sourceTier: 'secondary_lore',
-    dimension: 'career',
-    polarity: 'neutral', // Ten gods cannot be labeled favorable/unfavorable without full pattern balance
+    dimension: 'structural',
+    polarity: 'neutral',
+    valence: 'neutral',
+    dynamicMode: 'stable',
     confidence: confTg.overall,
     confidenceBreakdown: confTg,
-    temporalScope: { scopeType: 'natal' },
+    temporalScope: { scopeType: 'natal', isNatalBaseline: true },
     parameters: {
       monthShiShen: core.tenGods.monthGan,
       yearShiShen: core.tenGods.yearGan,
       timeShiShen: core.tenGods.timeGan,
     },
     classicalSource: '《子平真诠·论月令》与《三命通会》',
-    canonicalInterpretation: `月干透出【${core.tenGods.monthGan}】，反映命主外显社会功能与行为倾向。十神吉凶必须结合日主强弱、格局配合与喜忌制化综合判定，不可单凭名称预设立场。`,
+    canonicalInterpretation: `月干透出【${core.tenGods.monthGan}】，构成八字结构信号之一。十神之用必须结合全局日干强弱、格局成败与用神喜忌综合推演，不作为单一维度的吉凶结论。`,
   });
 
-  // 3. Na Yin Element (Heuristic Inference, Tertiary Branch, Capped Confidence)
+  // 4. Na Yin Element (Heuristic Inference -> Tertiary Branch -> Optional / Capped)
   const confNy = calculateDeterministicConfidence(
     {
       calculation: 1.0,
@@ -100,21 +136,22 @@ export function evaluateBazi(
     id: `bazi_nayin_${core.yearNaYin}`,
     domain: 'bazi',
     ruleId: 'BAZI_NAYIN_SIGNAL',
-    ruleName: `年命纳音: ${core.yearNaYin}`,
-    level: 'optional', // Tertiary branch evidence
+    ruleName: `年命纳音参考: ${core.yearNaYin}`,
+    level: 'optional',
     evidenceType: 'heuristic_inference',
     sourceTier: 'tertiary_branch',
     dimension: 'health',
     polarity: 'neutral',
+    valence: 'neutral',
     confidence: confNy.overall, // Hard capped <= 0.60
     confidenceBreakdown: confNy,
-    temporalScope: { scopeType: 'natal' },
+    temporalScope: { scopeType: 'natal', isNatalBaseline: true },
     parameters: {
       yearNaYin: core.yearNaYin,
       dayNaYin: core.dayNaYin,
     },
     classicalSource: '《五行精纪·纳音篇》',
-    canonicalInterpretation: `年柱纳音为【${core.yearNaYin}】，日柱纳音为【${core.dayNaYin}】。纳音属于传统音律五行取象分支，作为气质体感之文化参照，不参与硬性跨领域矛盾判定。`,
+    canonicalInterpretation: `年柱纳音为【${core.yearNaYin}】，日柱纳音为【${core.dayNaYin}】。纳音属于古代音律五行取象，仅作宏观文化隐喻与背景体感参照，绝不参与跨领域硬冲突判定。`,
   });
 
   const chart: BaziChart = {
@@ -135,9 +172,10 @@ export function evaluateBazi(
     visibleElementDistribution: core.visibleElementDistribution,
     hiddenStems: core.hiddenStems,
     tenGods: core.tenGods,
+    timeContext: core.timeContext,
     solarTimeDetails: core.solarTimeDetails,
     calculationStatus: 'exact',
-    calculationMethod: useTrueSolarTime ? 'lunar_24_solar_terms_true_solar' : 'lunar_civil_standard',
+    calculationMethod: core.convention.useTrueSolarTime ? 'spencer_true_solar_iana' : 'civil_clock_iana',
     validation: core.validation,
     evidences,
     summaryTags,

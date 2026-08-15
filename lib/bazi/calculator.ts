@@ -1,7 +1,7 @@
 import { Solar } from "lunar-javascript";
 import { BirthContext, ValidationReport } from "../contracts/types";
-import { BaziCalculationError, BaziChart, BaziPillars, HiddenStem, VisibleElementDistribution, BaziTenGodInfo } from "./types";
-import { calculateTrueSolarTime } from "./solar-time";
+import { BaziCalculationError, BaziPillars, HiddenStem, VisibleElementDistribution, BaziTenGodInfo, BaziConvention, DEFAULT_BAZI_CONVENTION, BaziTimeContext } from "./types";
+import { calculateAstronomicalTrueSolarTime } from "./solar-time";
 
 export const STEM_ELEMENT_MAP: Record<string, { element: '木' | '火' | '土' | '金' | '水'; yinYang: '阳' | '阴' }> = {
   甲: { element: '木', yinYang: '阳' },
@@ -100,11 +100,11 @@ export function calculateTenGod(dayGan: string, targetGan: string): string {
 }
 
 /**
- * Core Bazi Calculation with Fail-Fast Validation and True Solar Time
+ * Core Bazi Calculation with Fail-Fast Validation, IANA Timezone, and BaziConvention Options
  */
 export function calculateBaziCore(
   context: BirthContext,
-  useTrueSolarTime: boolean = true
+  conventionOptions?: Partial<BaziConvention>
 ): {
   pillars: BaziPillars;
   lunarDateString: string;
@@ -118,6 +118,7 @@ export function calculateBaziCore(
   visibleElementDistribution: VisibleElementDistribution;
   hiddenStems: HiddenStem[];
   tenGods: BaziTenGodInfo;
+  timeContext: BaziTimeContext;
   solarTimeDetails: {
     civilTime: string;
     trueSolarTime: string;
@@ -125,40 +126,59 @@ export function calculateBaziCore(
     longitudeOffsetMinutes: number;
     usedTrueSolarTime: boolean;
   };
+  convention: BaziConvention;
   validation: ValidationReport;
 } {
-  const { birthDate, birthTime, timeZone = 'Asia/Shanghai', longitude = 116.40 } = context;
+  const convention: BaziConvention = {
+    ...DEFAULT_BAZI_CONVENTION,
+    ...conventionOptions,
+  };
+
+  const { birthDate, birthTime = '12:00', timeZone = 'Asia/Shanghai', longitude = 116.40 } = context;
 
   if (!birthDate || !birthDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
     throw new BaziCalculationError(`Invalid birthDate format '${birthDate}'. Expected 'YYYY-MM-DD'.`);
   }
 
-  const [year, month, day] = birthDate.split('-').map(Number);
-  const [hour, minute] = (birthTime || '12:00').split(':').map(Number);
+  const [y, m, d] = birthDate.split('-').map(Number);
+  const [h, min] = (birthTime || '12:00').split(':').map(Number);
 
-  if (isNaN(year) || isNaN(month) || isNaN(day) || month < 1 || month > 12 || day < 1 || day > 31) {
+  if (isNaN(y) || isNaN(m) || isNaN(d) || m < 1 || m > 12 || d < 1 || d > 31) {
     throw new BaziCalculationError(`Invalid calendar date: ${birthDate}`);
   }
 
-  // Construct civil local Date
-  const civilLocal = new Date(year, month - 1, day, hour || 0, minute || 0, 0);
+  // Calculate Astronomical True Solar Time via IANA / Spencer EoT
+  const solarTimeResult = calculateAstronomicalTrueSolarTime(birthDate, birthTime, timeZone, longitude);
 
-  // Compute True Solar Time
-  const solarTimeResult = calculateTrueSolarTime(civilLocal, longitude, timeZone);
-  const targetDate = useTrueSolarTime ? solarTimeResult.trueSolarDate : civilLocal;
+  // Target coordinates for Lunar calculation
+  let targetYear = y;
+  let targetMonth = m;
+  let targetDay = d;
+  let targetHour = h;
+  let targetMinute = min;
+  let targetSecond = 0;
+
+  if (convention.useTrueSolarTime) {
+    targetYear = solarTimeResult.trueSolarComponents.year;
+    targetMonth = solarTimeResult.trueSolarComponents.month;
+    targetDay = solarTimeResult.trueSolarComponents.day;
+    targetHour = solarTimeResult.trueSolarComponents.hour;
+    targetMinute = solarTimeResult.trueSolarComponents.minute;
+    targetSecond = solarTimeResult.trueSolarComponents.second;
+  }
 
   let solar: any;
   try {
     solar = Solar.fromYmdHms(
-      targetDate.getFullYear(),
-      targetDate.getMonth() + 1,
-      targetDate.getDate(),
-      targetDate.getHours(),
-      targetDate.getMinutes(),
-      targetDate.getSeconds()
+      targetYear,
+      targetMonth,
+      targetDay,
+      targetHour,
+      targetMinute,
+      targetSecond
     );
   } catch (err) {
-    throw new BaziCalculationError(`lunar-javascript Solar conversion failed for target date ${targetDate.toISOString()}`, err);
+    throw new BaziCalculationError(`lunar-javascript Solar conversion failed for target ${targetYear}-${targetMonth}-${targetDay} ${targetHour}:${targetMinute}`, err);
   }
 
   const lunar = solar.getLunar();
@@ -199,7 +219,7 @@ export function calculateBaziCore(
   const dmInfo = STEM_ELEMENT_MAP[dayGan];
   const dayMaster = `${dayGan}${dmInfo.element}`;
 
-  // Visible Element Distribution across 8 characters (Note: explicit count only, NOT weighted strength)
+  // Visible Element Distribution across 8 characters (explicit count only, NOT weighted strength)
   const chars = [
     yearGanZhi.charAt(0), yearGanZhi.charAt(1),
     monthGanZhi.charAt(0), monthGanZhi.charAt(1),
@@ -240,6 +260,18 @@ export function calculateBaziCore(
     issues,
   };
 
+  const timeContext: BaziTimeContext = {
+    civilLocalTime: solarTimeResult.civilLocalTime,
+    utcInstant: solarTimeResult.utcInstant,
+    trueSolarTime: solarTimeResult.trueSolarTime,
+    standardOffsetMinutes: solarTimeResult.standardOffsetMinutes,
+    dstOffsetMinutes: solarTimeResult.dstOffsetMinutes,
+    totalTimezoneOffsetMinutes: solarTimeResult.totalTimezoneOffsetMinutes,
+    eotMinutes: solarTimeResult.eotMinutes,
+    longitudeOffsetMinutes: solarTimeResult.longitudeOffsetMinutes,
+    convention,
+  };
+
   return {
     pillars: {
       year: yearGanZhi,
@@ -258,13 +290,15 @@ export function calculateBaziCore(
     visibleElementDistribution,
     hiddenStems,
     tenGods,
+    timeContext,
     solarTimeDetails: {
-      civilTime: solarTimeResult.formattedCivilTime,
-      trueSolarTime: solarTimeResult.formattedTrueSolarTime,
+      civilTime: solarTimeResult.civilLocalTime,
+      trueSolarTime: solarTimeResult.trueSolarTime,
       eotMinutes: solarTimeResult.eotMinutes,
       longitudeOffsetMinutes: solarTimeResult.longitudeOffsetMinutes,
-      usedTrueSolarTime: useTrueSolarTime,
+      usedTrueSolarTime: convention.useTrueSolarTime,
     },
+    convention,
     validation,
   };
 }

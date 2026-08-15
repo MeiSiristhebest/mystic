@@ -7,6 +7,20 @@ export class BaziCalculationError extends Error {
   }
 }
 
+export interface BaziConvention {
+  useTrueSolarTime: boolean;            // 是否使用 Spencer 均时差与经度偏移进行真太阳时校正
+  dayBoundary: 'midnight' | 'zi_early'; // 'zi_early': 子初(23:00)换日; 'midnight': 00:00换日
+  yearBoundary: 'lichun';                // 严格以立春作为年柱分界
+  monthBoundary: 'jie';                  // 严格以二十四节气交节日换月
+}
+
+export const DEFAULT_BAZI_CONVENTION: BaziConvention = {
+  useTrueSolarTime: true,
+  dayBoundary: 'zi_early',
+  yearBoundary: 'lichun',
+  monthBoundary: 'jie',
+};
+
 export interface BaziPillars {
   year: string;
   month: string;
@@ -38,6 +52,18 @@ export interface BaziTenGodInfo {
   timeGan: string;
 }
 
+export interface BaziTimeContext {
+  civilLocalTime: string;
+  utcInstant: string;
+  trueSolarTime: string;
+  standardOffsetMinutes: number;
+  dstOffsetMinutes: number;
+  totalTimezoneOffsetMinutes: number;
+  eotMinutes: number;
+  longitudeOffsetMinutes: number;
+  convention: BaziConvention;
+}
+
 export interface BaziChart {
   baziString: string;
   lunarDateString: string;
@@ -56,6 +82,7 @@ export interface BaziChart {
   visibleElementDistribution: VisibleElementDistribution;
   hiddenStems: HiddenStem[];
   tenGods: BaziTenGodInfo;
+  timeContext: BaziTimeContext;
   solarTimeDetails: {
     civilTime: string;
     trueSolarTime: string;
@@ -64,7 +91,7 @@ export interface BaziChart {
     usedTrueSolarTime: boolean;
   };
   calculationStatus: 'exact' | 'degraded';
-  calculationMethod: 'lunar_24_solar_terms_true_solar' | 'lunar_civil_standard';
+  calculationMethod: string;
   validation: ValidationReport;
   evidences: CanonicalEvidenceNode[];
   summaryTags: string[];

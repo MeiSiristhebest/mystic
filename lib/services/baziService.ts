@@ -1,7 +1,7 @@
 import { BirthContext, DomainEvaluationResult } from "../contracts/types";
-import { BaziChart, calculateBaziCore, evaluateBazi, BaziCalculationError } from "../bazi";
+import { BaziChart, calculateBaziCore, evaluateBazi, BaziCalculationError, BaziConvention } from "../bazi";
 
-export type { BaziChart };
+export type { BaziChart, BaziConvention };
 export { BaziCalculationError };
 
 export interface BaziCalculationResult {
@@ -52,7 +52,7 @@ export class BaziService {
   }
 
   /**
-   * Calculate Bazi four pillars with 24 Solar Terms and True Solar Time.
+   * Calculate Bazi four pillars with 24 Solar Terms, IANA timezones, and BaziConvention.
    */
   static getBazi(
     birthDateOrContext: string | BirthContext,
@@ -60,10 +60,14 @@ export class BaziService {
     lon = 116.40,
     lat = 39.90,
     timeZone = "Asia/Shanghai",
-    useTrueSolarTime = true
+    conventionOptions?: Partial<BaziConvention> | boolean
   ): BaziCalculationResult {
     const context = this.toBirthContext(birthDateOrContext, birthTime, lon, lat, timeZone);
-    const core = calculateBaziCore(context, useTrueSolarTime);
+    const convention: Partial<BaziConvention> = typeof conventionOptions === 'boolean' 
+      ? { useTrueSolarTime: conventionOptions } 
+      : (conventionOptions || {});
+
+    const core = calculateBaziCore(context, convention);
 
     return {
       baziString: `${core.pillars.year}年 ${core.pillars.month}月 ${core.pillars.day}日 ${core.pillars.time}时`,
@@ -89,9 +93,9 @@ export class BaziService {
     lon = 116.40,
     lat = 39.90,
     timeZone = "Asia/Shanghai",
-    useTrueSolarTime = true
+    conventionOptions?: Partial<BaziConvention>
   ): DomainEvaluationResult<BaziChart> {
     const context = this.toBirthContext(birthDateOrContext, birthTime, lon, lat, timeZone);
-    return evaluateBazi(context, useTrueSolarTime);
+    return evaluateBazi(context, conventionOptions);
   }
 }

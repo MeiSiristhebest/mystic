@@ -7,14 +7,20 @@
     "timeZone": "Asia/Shanghai",
     "longitude": 116.40,
     "latitude": 39.90,
+    "reference": "《三命通会》与《万年历》标准历表",
+    "referenceVersion": "lunar-javascript v1.6.12",
+    "convention": { "useTrueSolarTime": false, "dayBoundary": "zi_early" },
+    "verifiedAt": "2026-08-15",
     "expected": {
+      "utcInstant": "1990-05-14T21:00:00.000Z",
       "yearGanZhi": "庚午",
       "monthGanZhi": "辛巳",
       "dayGanZhi": "庚辰",
       "timeGanZhi": "己卯",
       "dayMaster": "庚金",
       "dayMasterElement": "金",
-      "yearNaYin": "路旁土"
+      "yearNaYin": "路旁土",
+      "dstOffsetMinutes": 60
     }
   },
   {
@@ -25,11 +31,18 @@
     "timeZone": "Asia/Shanghai",
     "longitude": 116.40,
     "latitude": 39.90,
+    "reference": "紫金山天文台二十四节气公报 (1995立春交节于2月4日)",
+    "referenceVersion": "lunar-javascript v1.6.12",
+    "convention": { "useTrueSolarTime": false, "dayBoundary": "zi_early" },
+    "verifiedAt": "2026-08-15",
     "expected": {
+      "utcInstant": "1995-01-15T04:00:00.000Z",
       "yearGanZhi": "甲戌",
       "monthGanZhi": "丁丑",
-      "dayMaster": "戊土",
-      "dayMasterElement": "土"
+      "dayGanZhi": "丙午",
+      "timeGanZhi": "甲午",
+      "dayMaster": "丙火",
+      "dayMasterElement": "火"
     }
   },
   {
@@ -40,11 +53,18 @@
     "timeZone": "Asia/Shanghai",
     "longitude": 116.40,
     "latitude": 39.90,
+    "reference": "紫金山天文台二十四节气公报",
+    "referenceVersion": "lunar-javascript v1.6.12",
+    "convention": { "useTrueSolarTime": false, "dayBoundary": "zi_early" },
+    "verifiedAt": "2026-08-15",
     "expected": {
+      "utcInstant": "1995-02-06T04:00:00.000Z",
       "yearGanZhi": "乙亥",
       "monthGanZhi": "戊寅",
-      "dayMaster": "庚金",
-      "dayMasterElement": "金"
+      "dayGanZhi": "戊辰",
+      "timeGanZhi": "戊午",
+      "dayMaster": "戊土",
+      "dayMasterElement": "土"
     }
   },
   {
@@ -55,11 +75,17 @@
     "timeZone": "Asia/Shanghai",
     "longitude": 116.40,
     "latitude": 39.90,
+    "reference": "《中国天文年历》",
+    "referenceVersion": "lunar-javascript v1.6.12",
+    "convention": { "useTrueSolarTime": false, "dayBoundary": "zi_early" },
+    "verifiedAt": "2026-08-15",
     "expected": {
       "yearGanZhi": "戊辰",
       "monthGanZhi": "乙卯",
-      "dayMaster": "丙火",
-      "dayMasterElement": "火"
+      "dayGanZhi": "壬戌",
+      "timeGanZhi": "乙巳",
+      "dayMaster": "壬水",
+      "dayMasterElement": "水"
     }
   },
   {
@@ -70,11 +96,17 @@
     "timeZone": "Asia/Shanghai",
     "longitude": 116.40,
     "latitude": 39.90,
+    "reference": "《中国天文年历》",
+    "referenceVersion": "lunar-javascript v1.6.12",
+    "convention": { "useTrueSolarTime": false, "dayBoundary": "zi_early" },
+    "verifiedAt": "2026-08-15",
     "expected": {
       "yearGanZhi": "壬申",
       "monthGanZhi": "甲辰",
-      "dayMaster": "戊土",
-      "dayMasterElement": "土"
+      "dayGanZhi": "甲寅",
+      "timeGanZhi": "戊辰",
+      "dayMaster": "甲木",
+      "dayMasterElement": "木"
     }
   },
   {
@@ -85,6 +117,10 @@
     "timeZone": "Asia/Shanghai",
     "longitude": 116.40,
     "latitude": 39.90,
+    "reference": "子平命理早晚子时规范 (子初换日派)",
+    "referenceVersion": "lunar-javascript v1.6.12",
+    "convention": { "useTrueSolarTime": false, "dayBoundary": "zi_early" },
+    "verifiedAt": "2026-08-15",
     "expected": {
       "yearGanZhi": "庚午",
       "monthGanZhi": "辛巳",
@@ -99,37 +135,59 @@
     "timeZone": "Asia/Shanghai",
     "longitude": 87.60,
     "latitude": 43.80,
+    "reference": "乌鲁木齐与东经120度标准子午线时差 (-129.6 min)",
+    "referenceVersion": "Spencer EoT 1971",
+    "convention": { "useTrueSolarTime": true, "dayBoundary": "zi_early" },
+    "verifiedAt": "2026-08-15",
     "expected": {
       "yearGanZhi": "庚午",
-      "monthGanZhi": "辛巳"
+      "monthGanZhi": "辛巳",
+      "dayGanZhi": "庚辰",
+      "timeGanZhi": "辛巳"
     }
   },
   {
     "id": "bazi_008_newyork_est",
-    "name": "纽约西五区命例 (2000-01-01 18:00, America/New_York)",
+    "name": "纽约西五区冬令时命例 (2000-01-01 18:00, America/New_York)",
     "birthDate": "2000-01-01",
     "birthTime": "18:00",
     "timeZone": "America/New_York",
     "longitude": -74.00,
     "latitude": 40.71,
+    "reference": "IANA Timezone Database (America/New_York, EST UTC-5)",
+    "referenceVersion": "tzdb 2024b",
+    "convention": { "useTrueSolarTime": false, "dayBoundary": "zi_early" },
+    "verifiedAt": "2026-08-15",
     "expected": {
+      "utcInstant": "2000-01-01T23:00:00.000Z",
       "yearGanZhi": "己卯",
       "monthGanZhi": "丙子",
-      "dayMaster": "戊土"
+      "dayGanZhi": "戊午",
+      "timeGanZhi": "辛酉",
+      "dayMaster": "戊土",
+      "dstOffsetMinutes": 0
     }
   },
   {
     "id": "bazi_009_london_bst",
-    "name": "伦敦夏令时命例 (1988-08-08 12:00, Europe/London)",
+    "name": "伦敦夏令时命例 (1988-08-08 12:00, Europe/London -> BST UTC+1)",
     "birthDate": "1988-08-08",
     "birthTime": "12:00",
     "timeZone": "Europe/London",
     "longitude": 0.0,
     "latitude": 51.50,
+    "reference": "IANA Timezone Database (Europe/London, British Summer Time UTC+1)",
+    "referenceVersion": "tzdb 2024b",
+    "convention": { "useTrueSolarTime": false, "dayBoundary": "zi_early" },
+    "verifiedAt": "2026-08-15",
     "expected": {
+      "utcInstant": "1988-08-08T11:00:00.000Z",
       "yearGanZhi": "戊辰",
       "monthGanZhi": "庚申",
-      "dayMaster": "甲木"
+      "dayGanZhi": "乙未",
+      "timeGanZhi": "壬午",
+      "dayMaster": "乙木",
+      "dstOffsetMinutes": 60
     }
   },
   {
@@ -140,9 +198,15 @@
     "timeZone": "Asia/Shanghai",
     "longitude": 116.40,
     "latitude": 39.90,
+    "reference": "六十花甲子纪年周期基准",
+    "referenceVersion": "lunar-javascript v1.6.12",
+    "convention": { "useTrueSolarTime": false, "dayBoundary": "zi_early" },
+    "verifiedAt": "2026-08-15",
     "expected": {
       "yearGanZhi": "甲子",
       "monthGanZhi": "丙寅",
+      "dayGanZhi": "甲戌",
+      "timeGanZhi": "庚午",
       "dayMaster": "甲木"
     }
   },
@@ -154,10 +218,16 @@
     "timeZone": "Asia/Shanghai",
     "longitude": 116.40,
     "latitude": 39.90,
+    "reference": "《中国天文年历》",
+    "referenceVersion": "lunar-javascript v1.6.12",
+    "convention": { "useTrueSolarTime": false, "dayBoundary": "zi_early" },
+    "verifiedAt": "2026-08-15",
     "expected": {
       "yearGanZhi": "丙子",
       "monthGanZhi": "甲午",
-      "dayMaster": "己土"
+      "dayGanZhi": "戊寅",
+      "timeGanZhi": "庚申",
+      "dayMaster": "戊土"
     }
   },
   {
@@ -168,9 +238,15 @@
     "timeZone": "Asia/Shanghai",
     "longitude": 116.40,
     "latitude": 39.90,
+    "reference": "《中国天文年历》",
+    "referenceVersion": "lunar-javascript v1.6.12",
+    "convention": { "useTrueSolarTime": false, "dayBoundary": "zi_early" },
+    "verifiedAt": "2026-08-15",
     "expected": {
       "yearGanZhi": "壬午",
       "monthGanZhi": "己酉",
+      "dayGanZhi": "辛巳",
+      "timeGanZhi": "癸巳",
       "dayMaster": "辛金"
     }
   }

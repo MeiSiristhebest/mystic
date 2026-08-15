@@ -2,82 +2,104 @@
  * Cross-Domain Conflict Detector and Multi-Domain Dialectical Synthesizer.
  * 
  * Prevents "pseudo-consensus hallucination" by detecting real tensions,
- * temporal scope mismatches, and polarity disagreements across Ziwei, Vedic, TCM (Nihaixia), and Bazi.
+ * temporal scope mismatches, and polarity/valence disagreements across Ziwei, Vedic, TCM (Nihaixia), and Bazi.
  * 
- * Features:
- * - Semantic Eligibility & Temporal Scope Intersection Analysis
- * - Dynamic Evidence Relation Inference (corroborating, contradicting, timing_precursor, surface_vs_root, temporally_separate)
- * - Epistemic SourceTier filtering (prevents heuristic inferences from contaminating core conflict arbitration)
- * - Multi-factor confidence-weighted perspective resolution
+ * Epistemic & Temporal Features:
+ * 1. Millisecond-precision Date Timestamp Intersections (Eliminates integer-year truncation errors).
+ * 2. Natal Baseline Decoupling: Natal structural baselines do not falsely trigger "time overlap contradictions" with transient transits.
+ * 3. SourceTier & EvidenceType structural eligibility filtering (Excludes tertiary branch and heuristic analogies from hard arbitration).
+ * 4. Objective relation naming (temporal_precedence, corroborating, contradicting, surface_vs_root, temporally_separate).
+ * 5. Prompt Pipeline Dialectic Firewall generation.
  */
 
-import { CanonicalEvidenceNode, CrossDomainConflict, CrossDomainPerspective, DomainType, EvidenceRelation, EvidenceTemporalScope } from '../contracts/types';
+import { CanonicalEvidenceNode, CrossDomainConflict, CrossDomainPerspective, DomainType, EvidenceRelation, EvidenceTemporalScope, RelationType } from '../contracts/types';
 
-export interface ParsedTimeRange {
-  startYear: number;
-  endYear: number;
-  isNatal: boolean;
+export interface ParsedTimeInterval {
+  startTimeMs: number;
+  endTimeMs: number;
+  isNatalBaseline: boolean;
 }
 
-export function parseTemporalScope(scope?: EvidenceTemporalScope): ParsedTimeRange {
-  if (!scope || scope.scopeType === 'natal') {
-    return { startYear: 0, endYear: 9999, isNatal: true };
+export function parseTemporalInterval(scope?: EvidenceTemporalScope): ParsedTimeInterval {
+  if (!scope || scope.scopeType === 'natal' || scope.isNatalBaseline) {
+    return { startTimeMs: 0, endTimeMs: 0, isNatalBaseline: true };
   }
 
+  // Exact YYYY-MM-DD parsing
   if (scope.startDate && scope.endDate) {
-    const sY = parseInt(scope.startDate.slice(0, 4), 10) || 0;
-    const eY = parseInt(scope.endDate.slice(0, 4), 10) || 9999;
-    return { startYear: sY, endYear: eY, isNatal: false };
-  }
-
-  if (scope.timeWindow) {
-    const match = scope.timeWindow.match(/(\d{4})\s*[-~至]\s*(\d{4})/);
-    if (match) {
-      return {
-        startYear: parseInt(match[1], 10),
-        endYear: parseInt(match[2], 10),
-        isNatal: false,
-      };
+    const sMs = Date.parse(`${scope.startDate}T00:00:00Z`);
+    const eMs = Date.parse(`${scope.endDate}T23:59:59Z`);
+    if (!isNaN(sMs) && !isNaN(eMs)) {
+      return { startTimeMs: sMs, endTimeMs: eMs, isNatalBaseline: false };
     }
   }
 
-  return { startYear: 0, endYear: 9999, isNatal: false };
+  // Parse YYYY-MM-DD or YYYY format from timeWindow
+  if (scope.timeWindow) {
+    const fullDateMatch = scope.timeWindow.match(/(\d{4}-\d{2}-\d{2})\s*[-~至]\s*(\d{4}-\d{2}-\d{2})/);
+    if (fullDateMatch) {
+      const sMs = Date.parse(`${fullDateMatch[1]}T00:00:00Z`);
+      const eMs = Date.parse(`${fullDateMatch[2]}T23:59:59Z`);
+      if (!isNaN(sMs) && !isNaN(eMs)) {
+        return { startTimeMs: sMs, endTimeMs: eMs, isNatalBaseline: false };
+      }
+    }
+
+    const yearMatch = scope.timeWindow.match(/(\d{4})\s*[-~至]\s*(\d{4})/);
+    if (yearMatch) {
+      const sMs = Date.parse(`${yearMatch[1]}-01-01T00:00:00Z`);
+      const eMs = Date.parse(`${yearMatch[2]}-12-31T23:59:59Z`);
+      if (!isNaN(sMs) && !isNaN(eMs)) {
+        return { startTimeMs: sMs, endTimeMs: eMs, isNatalBaseline: false };
+      }
+    }
+  }
+
+  return { startTimeMs: 0, endTimeMs: 0, isNatalBaseline: false };
 }
 
 export class CrossDomainConflictDetector {
   /**
-   * Check if two temporal scopes have an active overlapping window
+   * Check if two temporal scopes have an active overlapping window in dynamic time.
+   * Explicitly isolates natal baseline from transient dynamic dasha/transits.
    */
   static checkTemporalOverlap(scopeA?: EvidenceTemporalScope, scopeB?: EvidenceTemporalScope): {
     hasOverlap: boolean;
+    isNatalComparison: boolean;
     aPrecedesB: boolean;
     bPrecedesA: boolean;
   } {
-    const rA = parseTemporalScope(scopeA);
-    const rB = parseTemporalScope(scopeB);
+    const rA = parseTemporalInterval(scopeA);
+    const rB = parseTemporalInterval(scopeB);
 
-    if (rA.isNatal || rB.isNatal) {
-      return { hasOverlap: true, aPrecedesB: false, bPrecedesA: false };
+    if (rA.isNatalBaseline || rB.isNatalBaseline) {
+      return { hasOverlap: false, isNatalComparison: true, aPrecedesB: false, bPrecedesA: false };
     }
 
-    const hasOverlap = Math.max(rA.startYear, rB.startYear) <= Math.min(rA.endYear, rB.endYear);
-    const aPrecedesB = rA.endYear < rB.startYear;
-    const bPrecedesA = rB.endYear < rA.startYear;
+    if (rA.startTimeMs === 0 || rB.startTimeMs === 0) {
+      return { hasOverlap: true, isNatalComparison: false, aPrecedesB: false, bPrecedesA: false };
+    }
 
-    return { hasOverlap, aPrecedesB, bPrecedesA };
+    const hasOverlap = Math.max(rA.startTimeMs, rB.startTimeMs) <= Math.min(rA.endTimeMs, rB.endTimeMs);
+    const aPrecedesB = rA.endTimeMs < rB.startTimeMs;
+    const bPrecedesA = rB.endTimeMs < rA.startTimeMs;
+
+    return { hasOverlap, isNatalComparison: false, aPrecedesB, bPrecedesA };
   }
 
   /**
-   * Check if an evidence node is semantically eligible for primary structural relation inference
+   * Enforces strict Epistemic SourceTier & EvidenceType structural eligibility.
+   * Only Primary Canon and Secondary Lore nodes of core/support level can trigger hard cross-domain contradictions.
    */
-  static isEligibleForStructuralRelation(node: CanonicalEvidenceNode): boolean {
+  static isStructurallyEligible(node: CanonicalEvidenceNode): boolean {
     if (node.level === 'optional') return false;
     if (node.evidenceType === 'heuristic_inference') return false;
+    if (node.sourceTier === 'tertiary_branch' || node.sourceTier === 'school_notes') return false;
     return true;
   }
 
   /**
-   * Infer semantic relations across evidence nodes and populate evidence.relations
+   * Infer structural relations across evidence nodes and populate evidence.relations
    */
   static inferEvidenceRelations(evidences: CanonicalEvidenceNode[]): void {
     for (let i = 0; i < evidences.length; i++) {
@@ -92,25 +114,24 @@ export class CrossDomainConflictDetector {
         const isHealthVsCareer = (nodeA.dimension === 'health' && nodeB.dimension === 'career') ||
                                  (nodeA.dimension === 'career' && nodeB.dimension === 'health');
 
-        // Health vs Career Surface/Root Tension
+        // Domain Interaction Rule: Health Deficit vs Career Action (Surface vs Root)
         if (isHealthVsCareer) {
           const healthNode = nodeA.dimension === 'health' ? nodeA : nodeB;
           const careerNode = nodeA.dimension === 'career' ? nodeA : nodeB;
           
-          // Surface vs Root only triggers if health has deficit/warning and career has active drive
           const isHealthDeficit = healthNode.polarity === 'unfavorable' || (healthNode.level === 'warning' || healthNode.level === 'contraindication');
           const isCareerActive = careerNode.polarity === 'favorable' || careerNode.polarity === 'transformative';
 
-          if (isHealthDeficit && isCareerActive && this.isEligibleForStructuralRelation(healthNode) && this.isEligibleForStructuralRelation(careerNode)) {
+          if (isHealthDeficit && isCareerActive && this.isStructurallyEligible(healthNode) && this.isStructurallyEligible(careerNode)) {
             nodeA.relations.push({
               targetEvidenceId: nodeB.id,
               relationType: 'surface_vs_root',
-              description: `【表本关系】外在事业推进（${careerNode.ruleName}）与内在体能真阳负荷（${healthNode.ruleName}）构成辩证张力。`,
+              description: `【领域交互规则·表本张力】外在事业推进（${careerNode.ruleName}）与内在体能真阳负荷（${healthNode.ruleName}）构成辩证张力。`,
             });
             nodeB.relations.push({
               targetEvidenceId: nodeA.id,
               relationType: 'surface_vs_root',
-              description: `【表本关系】内在体能负荷（${healthNode.ruleName}）与外在社会事业推进（${careerNode.ruleName}）构成辩证张力。`,
+              description: `【领域交互规则·表本张力】内在体能负荷（${healthNode.ruleName}）与外在社会事业推进（${careerNode.ruleName}）构成辩证张力。`,
             });
             continue;
           }
@@ -118,38 +139,38 @@ export class CrossDomainConflictDetector {
 
         // Same Dimension Relations
         if (nodeA.dimension === nodeB.dimension) {
-          const bothEligible = this.isEligibleForStructuralRelation(nodeA) && this.isEligibleForStructuralRelation(nodeB);
+          const bothEligible = this.isStructurallyEligible(nodeA) && this.isStructurallyEligible(nodeB);
 
-          // Timing Precursor Relation (Strict semantic eligibility: both must be core/support structural nodes)
-          if (bothEligible && !timing.hasOverlap) {
+          // Temporal Precedence (Objective chronological sequence without artificial causal assumptions)
+          if (bothEligible && !timing.hasOverlap && !timing.isNatalComparison) {
             if (timing.aPrecedesB) {
               nodeA.relations.push({
                 targetEvidenceId: nodeB.id,
-                relationType: 'timing_precursor',
-                description: `【时机前驱】${nodeA.ruleName}处于前期发展周期，为后续${nodeB.ruleName}之阶段演进奠定基础。`,
+                relationType: 'temporal_precedence',
+                description: `【时序在先】${nodeA.ruleName}时间窗口处于前期，时序上早于后续${nodeB.ruleName}阶段。`,
               });
               nodeB.relations.push({
                 targetEvidenceId: nodeA.id,
                 relationType: 'complementary',
-                description: `【时运承接】承接前期${nodeA.ruleName}阶段的能量积蓄与结构塑形。`,
+                description: `【时序承接】承接前期${nodeA.ruleName}阶段之运律轮转。`,
               });
               continue;
             } else if (timing.bPrecedesA) {
               nodeB.relations.push({
                 targetEvidenceId: nodeA.id,
-                relationType: 'timing_precursor',
-                description: `【时机前驱】${nodeB.ruleName}处于前期发展周期，为后续${nodeA.ruleName}之阶段演进奠定基础。`,
+                relationType: 'temporal_precedence',
+                description: `【时序在先】${nodeB.ruleName}时间窗口处于前期，时序上早于后续${nodeA.ruleName}阶段。`,
               });
               nodeA.relations.push({
                 targetEvidenceId: nodeB.id,
                 relationType: 'complementary',
-                description: `【时运承接】承接前期${nodeB.ruleName}阶段的能量积蓄与结构塑形。`,
+                description: `【时序承接】承接前期${nodeB.ruleName}阶段之运律轮转。`,
               });
               continue;
             }
           }
 
-          // Polarity Match -> Corroborating
+          // Polarity / Valence Match -> Corroborating
           if (nodeA.polarity === nodeB.polarity && nodeA.polarity !== 'neutral') {
             nodeA.relations.push({
               targetEvidenceId: nodeB.id,
@@ -164,11 +185,11 @@ export class CrossDomainConflictDetector {
             continue;
           }
 
-          // Opposing Polarities
-          const isOpposing = (nodeA.polarity === 'favorable' && (nodeB.polarity === 'unfavorable' || nodeB.polarity === 'transformative')) ||
-                             (nodeB.polarity === 'favorable' && (nodeA.polarity === 'unfavorable' || nodeA.polarity === 'transformative'));
+          // Opposing Dynamic Polarities (Direct Contradiction only in active overlapping window)
+          const isDirectContradiction = (nodeA.polarity === 'favorable' && nodeB.polarity === 'unfavorable') ||
+                                       (nodeB.polarity === 'favorable' && nodeA.polarity === 'unfavorable');
 
-          if (isOpposing && bothEligible) {
+          if (isDirectContradiction && bothEligible) {
             if (timing.hasOverlap) {
               nodeA.relations.push({
                 targetEvidenceId: nodeB.id,
@@ -180,7 +201,7 @@ export class CrossDomainConflictDetector {
                 relationType: 'contradicting',
                 description: `【时域交集分歧】在重叠活跃周期内，与【${nodeA.ruleName}】对【${nodeB.dimension}】吉凶定性存在直接张力。`,
               });
-            } else {
+            } else if (!timing.isNatalComparison) {
               nodeA.relations.push({
                 targetEvidenceId: nodeB.id,
                 relationType: 'temporally_separate',
@@ -213,21 +234,21 @@ export class CrossDomainConflictDetector {
 
   /**
    * Analyze evidence nodes across domains and detect dimensional tensions and contradictions.
-   * Incorporates time-window, epistemic filtering, and domain perspective scope.
+   * Incorporates exact time-window, SourceTier filtering, and domain perspective scope.
    */
   static detectConflicts(evidences: CanonicalEvidenceNode[]): CrossDomainConflict[] {
     // 1. Populate semantic relation edges
     this.inferEvidenceRelations(evidences);
 
-    const dimensions: Array<'career' | 'health' | 'wealth' | 'relationship' | 'timing'> = [
-      'career', 'health', 'wealth', 'relationship', 'timing'
+    const dimensions: Array<'career' | 'health' | 'wealth' | 'relationship' | 'timing' | 'structural'> = [
+      'career', 'health', 'wealth', 'relationship', 'timing', 'structural'
     ];
 
     const conflicts: CrossDomainConflict[] = [];
 
     for (const dim of dimensions) {
-      // Filter out optional/heuristic nodes from causing primary domain conflict
-      const dimEvidences = evidences.filter(e => e.dimension === dim && this.isEligibleForStructuralRelation(e));
+      // Filter out optional/tertiary nodes from causing primary domain conflict
+      const dimEvidences = evidences.filter(e => e.dimension === dim && this.isStructurallyEligible(e));
       if (dimEvidences.length === 0) continue;
 
       // Group by domain
@@ -247,13 +268,11 @@ export class CrossDomainConflictDetector {
       let unfavorableCount = 0;
       let transformativeCount = 0;
 
-      // Time window tracking
       const timeWindows: string[] = [];
 
       for (const [domain, evList] of domainMap.entries()) {
         const topEv = evList.sort((a, b) => (b.confidenceBreakdown?.overall ?? b.confidence) - (a.confidenceBreakdown?.overall ?? a.confidence))[0];
         
-        // Extract time scope if present in parameters or temporalScope
         const timeScope = topEv.temporalScope?.timeWindow || topEv.parameters?.timeWindow || topEv.parameters?.dashaPeriod || topEv.parameters?.scope;
         if (timeScope && typeof timeScope === 'string') {
           timeWindows.push(timeScope);
@@ -263,6 +282,7 @@ export class CrossDomainConflictDetector {
           domain,
           dimension: dim,
           stance: topEv.polarity,
+          valence: topEv.valence,
           keyClaim: `${topEv.ruleName}：${topEv.canonicalInterpretation.slice(0, 120)}...`,
           temporalScope: topEv.temporalScope,
           evidenceIds: evList.map(e => e.id),
@@ -273,28 +293,32 @@ export class CrossDomainConflictDetector {
         else if (topEv.polarity === 'transformative') transformativeCount++;
       }
 
-      // Conflict logic: has opposing stances across active eligible nodes
-      const hasConflict = favorableCount > 0 && (unfavorableCount > 0 || transformativeCount > 0);
+      // Stricter conflict logic: Direct contradiction requires explicit favorable vs unfavorable opposition
+      const hasDirectContradiction = favorableCount > 0 && unfavorableCount > 0;
+      const hasTimingMismatch = dim === 'timing' && timeWindows.length > 1;
 
       let conflictType: CrossDomainConflict['conflictType'] = undefined;
       let tensionDescription = '';
       let synthesisStrategy = '';
 
-      if (hasConflict) {
-        if (favorableCount > 0 && unfavorableCount > 0) {
-          conflictType = 'direct_contradiction';
-          tensionDescription = `在【${dim}】维度上，不同推演体系出现直接分歧：部分系统指示正面吉象，而另一系统提示显著阻力或破局考验。`;
-          synthesisStrategy = `严禁强行统一或模棱两可；必须向用户客观呈现两方的立论依据（如表面机会 vs 底层暗礁），指导用户采取“防守型进取”策略。`;
-        } else if (dim === 'timing' || transformativeCount > 0) {
-          conflictType = 'timing_mismatch';
-          const windowNote = timeWindows.length > 0 ? ` (涉及时间窗口: ${timeWindows.join(' vs ')})` : '';
-          tensionDescription = `在【${dim}】时机节奏上，短期格局与底层长期运势存在相位差${windowNote}（如表面变动窗口已开，但底层深层大运尚未就位）。`;
-          synthesisStrategy = `区分“表层趋势”与“深层运律”，建议用户在微观上试水、在宏观重资产决策上保持定力。`;
-        } else {
-          conflictType = 'surface_vs_root';
-          tensionDescription = `系统呈现出“外在环境机运”与“内在身心能量/体质负荷”的张力。`;
-          synthesisStrategy = `优先以底层身心真阳/体能健康为基石，避免在身体赤字状态下过度消耗心力。`;
-        }
+      if (hasDirectContradiction) {
+        conflictType = 'direct_contradiction';
+        tensionDescription = `在【${dim}】维度上，不同推演体系出现直接分歧：部分系统指示正面吉象，而另一系统提示显著阻力或破局考验。`;
+        synthesisStrategy = `严禁强行统一或模棱两可；必须向用户客观呈现两方的立论依据（如表面机会 vs 底层暗礁），指导用户采取“防守型进取”策略。`;
+
+        conflicts.push({
+          dimension: dim,
+          hasConflict: true,
+          conflictType,
+          perspectives,
+          tensionDescription,
+          synthesisStrategy,
+        });
+      } else if (hasTimingMismatch) {
+        conflictType = 'timing_mismatch';
+        const windowNote = timeWindows.length > 0 ? ` (涉及时间窗口: ${timeWindows.join(' vs ')})` : '';
+        tensionDescription = `在【${dim}】时机节奏上，短期格局与底层长期运势存在相位差${windowNote}。`;
+        synthesisStrategy = `区分“表层趋势”与“深层运律”，建议用户在微观上试水、在宏观重资产决策上保持定力。`;
 
         conflicts.push({
           dimension: dim,
@@ -305,7 +329,7 @@ export class CrossDomainConflictDetector {
           synthesisStrategy,
         });
       } else {
-        // Systems are in consensus or neutral alignment
+        // Systems are in concord, neutral, or non-conflicting transformative state
         conflicts.push({
           dimension: dim,
           hasConflict: false,

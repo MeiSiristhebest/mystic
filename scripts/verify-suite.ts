@@ -234,7 +234,7 @@ function runTestSuite() {
   // ----------------------------------------------------
   console.log('\n--- Suite 5: Bazi Four Pillars & 24 Solar Terms Engine ---');
 
-  const bazi1 = BaziService.getBazi('1990-05-15', '06:00');
+  const bazi1 = BaziService.getBazi('1990-05-15', '06:00', 116.40, 39.90, 'Asia/Shanghai', false);
   assert(
     bazi1.yearGanZhi === '庚午' && bazi1.monthGanZhi === '辛巳' && bazi1.dayGanZhi === '庚辰' && bazi1.timeGanZhi === '己卯',
     'Bazi Four Pillars correctly computed with 24 Solar Terms (1990-05-15 -> 庚午 辛巳 庚辰 己卯)'
@@ -281,6 +281,8 @@ function runTestSuite() {
       ruleId: 'ZIWEI_SANQI',
       ruleName: '格局: 三奇加会',
       level: 'core',
+      sourceTier: 'secondary_lore',
+      evidenceType: 'derived_rule',
       dimension: 'career',
       polarity: 'favorable',
       confidence: 0.95,
@@ -295,8 +297,10 @@ function runTestSuite() {
       ruleId: 'VEDIC_SATURN_CONTRACT',
       ruleName: '土星大运收敛期',
       level: 'warning',
+      sourceTier: 'primary_canon',
+      evidenceType: 'derived_rule',
       dimension: 'career',
-      polarity: 'transformative',
+      polarity: 'unfavorable',
       confidence: 0.90,
       temporalScope: { timeWindow: '2026-2029 (Saturn Dasha)', scopeType: 'dasha' },
       parameters: {},
