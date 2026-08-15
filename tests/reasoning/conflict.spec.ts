@@ -10,7 +10,7 @@ export function testConflictSuite() {
   let passed = 0;
   let failed = 0;
 
-  // 1. Synthetic Conflict Assertion with Time Window & Dynamic Relation Inference
+  // 1. Synthetic Overlapping Conflict
   const mockConflictNodes: CanonicalEvidenceNode[] = [
     {
       id: 'e1',
@@ -21,7 +21,8 @@ export function testConflictSuite() {
       dimension: 'career',
       polarity: 'favorable',
       confidence: 0.95,
-      parameters: { timeWindow: '2026-2030 (大限官禄化禄)' },
+      temporalScope: { timeWindow: '2026-2030 (大限官禄化禄)', scopeType: 'dasha' },
+      parameters: {},
       classicalSource: '《骨髓赋》',
       canonicalInterpretation: '事业扩张',
     },
@@ -34,7 +35,8 @@ export function testConflictSuite() {
       dimension: 'career',
       polarity: 'transformative',
       confidence: 0.90,
-      parameters: { timeWindow: '2025-2028 (Saturn-Ketu Dasha)' },
+      temporalScope: { timeWindow: '2025-2028 (Saturn-Ketu Dasha)', scopeType: 'dasha' },
+      parameters: {},
       classicalSource: 'BPHS',
       canonicalInterpretation: '结构防守',
     }
@@ -49,12 +51,53 @@ export function testConflictSuite() {
     failed++;
   }
 
-  // Verify that active relations were inferred and populated
-  if (mockConflictNodes[0].relations && mockConflictNodes[0].relations.length > 0) {
-    console.log(`  ✓ [RELATION GRAPH PASS] Dynamically inferred relation edge: ${mockConflictNodes[0].relations[0].relationType} -> ${mockConflictNodes[0].relations[0].targetEvidenceId}`);
+  // Verify that active contradicting relation was inferred for overlapping windows
+  const relE1 = mockConflictNodes[0].relations?.find(r => r.targetEvidenceId === 'e2');
+  if (relE1 && relE1.relationType === 'contradicting') {
+    console.log(`  ✓ [RELATION GRAPH PASS] Dynamically inferred overlapping tension relation: ${relE1.relationType} -> e2`);
     passed++;
   } else {
-    console.error(`  ✗ [RELATION GRAPH FAIL] Relations not populated on evidence node`);
+    console.error(`  ✗ [RELATION GRAPH FAIL] Expected contradicting relation, got ${relE1?.relationType}`);
+    failed++;
+  }
+
+  // 2. Timing Precursor & Temporally Separate Relation Test
+  const sequentialNodes: CanonicalEvidenceNode[] = [
+    {
+      id: 'seq1_foundation',
+      domain: 'vedic',
+      ruleId: 'VEDIC_JUPITER_EXPANSION',
+      ruleName: '木星大运奠基',
+      level: 'core',
+      dimension: 'career',
+      polarity: 'favorable',
+      confidence: 0.92,
+      temporalScope: { startDate: '2020-01-01', endDate: '2025-12-31', scopeType: 'dasha' },
+      parameters: {},
+      canonicalInterpretation: '前期知识与人脉奠基积累',
+    },
+    {
+      id: 'seq2_harvest',
+      domain: 'ziwei',
+      ruleId: 'ZIWEI_HUAGUAN',
+      ruleName: '化权入官禄',
+      level: 'core',
+      dimension: 'career',
+      polarity: 'transformative',
+      confidence: 0.90,
+      temporalScope: { startDate: '2028-01-01', endDate: '2035-12-31', scopeType: 'dasha' },
+      parameters: {},
+      canonicalInterpretation: '中后期管理重权与主导地位',
+    }
+  ];
+
+  CrossDomainConflictDetector.inferEvidenceRelations(sequentialNodes);
+  const relSeq1 = sequentialNodes[0].relations?.find(r => r.targetEvidenceId === 'seq2_harvest');
+  if (relSeq1 && relSeq1.relationType === 'timing_precursor') {
+    console.log(`  ✓ [TIMING PRECURSOR PASS] Dynamically inferred sequence relation: ${relSeq1.relationType} (2020-2025 -> 2028-2035)`);
+    passed++;
+  } else {
+    console.error(`  ✗ [TIMING PRECURSOR FAIL] Expected timing_precursor, got ${relSeq1?.relationType}`);
     failed++;
   }
 
@@ -67,9 +110,9 @@ export function testConflictSuite() {
     failed++;
   }
 
-  // 2. Real Integration Test (Real Ziwei + Real Vedic + Real TCM Evidences)
+  // 3. Real Integration Test (Real Ziwei + Real Vedic + Real TCM Evidences)
   const ziweiEval = ZiweiService.getZiweiDomainEvaluation('1990-05-15', 6, '男');
-  const vedicEval = AstrologyService.getVedicDomainEvaluation('1990-05-15', '06:00', 116.40, 39.90, 8);
+  const vedicEval = AstrologyService.getVedicDomainEvaluation('1990-05-15', '06:00', 116.40, 39.90, 'Asia/Shanghai');
   const tcmEval = TCMService.diagnoseWithRules('常年手脚冰凉，极度怕冷，夜尿频多', { temperature: 35 });
   
   const fullE2EEvidences = [...ziweiEval.evidences, ...vedicEval.evidences, ...tcmEval.evidences];

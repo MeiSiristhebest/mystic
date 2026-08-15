@@ -29,7 +29,7 @@ export interface EvidenceTemporalScope {
 
 export interface EvidenceRelation {
   targetEvidenceId: string;
-  relationType: 'corroborating' | 'contradicting' | 'timing_precursor' | 'surface_vs_root' | 'complementary';
+  relationType: 'corroborating' | 'contradicting' | 'timing_precursor' | 'surface_vs_root' | 'complementary' | 'temporally_separate';
   description: string;
 }
 

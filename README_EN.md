@@ -15,7 +15,7 @@
 
 <p align="center">
   <strong>Deterministic Domain & Evidence-Grounded Multi-Domain AI Reasoning Engine</strong><br/>
-  <em>4-Tier Decoupled Architecture · Moshier Ephemeris & Sidereal Zodiac · Differential TCM Diagnosis · Evidence Relation Graph · Multi-Factor Confidence · Cross-Domain Dialectical Arbitration</em>
+  <em>4-Tier Decoupled Architecture · Moshier Ephemeris & IANA Timezone Engine · Differential TCM Diagnosis · Evidence Relation Graph · Deterministic Evidence Calibration Score · Cross-Domain Dialectical Arbitration</em>
 </p>
 
 <p align="center">
@@ -35,8 +35,8 @@
   - [3. Ziwei Doushu Astrolabe Engine](#3-ziwei-doushu-astrolabe-engine)
   - [4. Evidence Relation Graph & Cross-Domain Dialectics](#4-evidence-relation-graph--cross-domain-dialectics)
 - [Automated Verification & CI Harness](#automated-verification--ci-harness)
+- [License & Upstream Notices](#license--upstream-notices)
 - [Installation & Setup](#installation--setup)
-- [License](#license)
 
 ---
 
@@ -47,9 +47,9 @@
 Traditional metaphysical/astrology AI applications dump raw birth information or subjective user questions directly into an LLM prompt, inevitably causing Barnum-effect platitudes, hallucinations, and false cross-domain consensus.
 
 **Mystic refuses to be a naive prompt wrapper.** It establishes a strict deterministic computation and reasoning firewall between user interaction and LLM synthesis:
-1. **Deterministic Ephemeris & Astronomical Truth**: UTC Instant time normalization, Julian Days (JD), Moshier astronomical ephemeris, Local Sidereal Time (LST), and Chitrapaksha (Lahiri) Ayanamsa are 100% computed via mathematical algorithms.
+1. **Deterministic Ephemeris & Astronomical Truth**: IANA Timezone with DST normalization, Julian Days (JD), Moshier astronomical ephemeris, Local Sidereal Time (LST), and Chitrapaksha (Lahiri) linear precession are computed via mathematical algorithms with fail-fast guarantees (no fake static planet fallbacks).
 2. **Deterministic Rules & Differential Diagnostics**: TCM positive/negative exclusion trees, refusal on insufficient evidence, Ziwei 80+ patterns, and Vedic 7-Chara Karakas are evaluated deterministically with authentic classical citations.
-3. **Canonical Evidence Graph with Inferred Relations**: Every insight is anchored to a structured `CanonicalEvidenceNode` with 4-dimensional deterministic confidence aggregation (`calculation`, `inputCompleteness`, `ruleMatch`, `sourceAuthority`) and active semantic relation edges (`corroborating`, `contradicting`, `surface_vs_root`, `timing_precursor`).
+3. **Canonical Evidence Graph with Inferred Relations**: Every insight is anchored to a structured `CanonicalEvidenceNode` with 4-dimensional deterministic evidence calibration score (`calculation`, `inputCompleteness`, `ruleMatch`, `sourceAuthority`) and active semantic relation edges (`corroborating`, `contradicting`, `timing_precursor`, `surface_vs_root`, `temporally_separate`).
 4. **Cross-Domain Temporal Tension Arbitration**: Evaluates real tensions across disciplines within overlapping time windows, instructing the LLM to provide dialectical depth without forced consensus.
 
 ---
@@ -61,9 +61,9 @@ For technical honesty and architectural clarity, the table below specifies the e
 | Domain Module | ✅ Fully Implemented Capabilities | ⚠️ Simplified / Partial Capabilities | ❌ Out of Scope / Not Included |
 | :--- | :--- | :--- | :--- |
 | **Ziwei Doushu** | 12 Palaces, 108 Stars, San Fang Si Zheng, 80+ Classical Patterns (Must / Bonus / Busting conditions), 1:1 iztro differential parity testing | Decadal flow-star overlays | Flying Star 14 Mutagen Palace transformations (San He classic school prioritized) |
-| **Vedic Jyotish** | UTC Instant multi-timezone normalization, JD calculation, Moshier 9-Grahas true longitudes, Lahiri Ayanamsa, Sidereal Lagna, 27 Nakshatras & Padas, 120-Yr 3-Tier Recursive Vimshottari (9MD/81AD/729PD), 7-Chara Karakas, D1/D7/D9/D10/D12/D60 Vargas | Basic Ashtakavarga and qualitative Shadbala | Native C++ Swiss Ephemeris (`pysweph`) bindings, Full JHora 15-divisional desktop-grade calculations |
+| **Vedic Jyotish** | IANA Timezone & DST normalization, JD calculation, Moshier 9-Grahas true longitudes, Fail-Fast error assertions, Lahiri linear precession model, pure UTC Lagna, 27 Nakshatras & Padas, 120-Yr 3-Tier Recursive Vimshottari (9MD/81AD/729PD), 7-Chara Karakas, D1/D7/D9/D10/D12/D60 Vargas | Basic Ashtakavarga and qualitative Shadbala | Native C++ Swiss Ephemeris (`pysweph`) bindings, Full JHora 15-divisional desktop-grade calculations |
 | **Ni Haixia TCM** | Positive indicators, Negative contra-indicators, 5-core missing observations refusal (`insufficient_evidence`), 100% authentic *Shanghan Lun* / *Jingui Yaolüe* citations, 8 Health Standards quantification | 6-Stages candidate syndrome scoring and ranking | Medical prescriptions (System is strictly designed for traditional literature study & philosophical reasoning, never for medical advice) |
-| **Evidence & Dialectics** | Canonical Evidence Graph (CEG), Deterministic 4D confidence aggregation formula, `temporalScope` boundaries, Cross-Domain Conflict Detector, Prompt Firewall, Dynamic Relation Inference (`inferEvidenceRelations`) | Subgraph graph traversal pruning | Automated formal verification on arbitrary free-form natural language claims |
+| **Evidence & Dialectics** | Canonical Evidence Graph (CEG), Deterministic Evidence Calibration Score, `temporalScope` boundaries, Cross-Domain Conflict Detector, Prompt Firewall, Dynamic Relation Inference with Precursors & Overlap (`inferEvidenceRelations`) | Subgraph graph traversal pruning | Automated formal verification on arbitrary free-form natural language claims |
 
 ---
 
@@ -72,8 +72,8 @@ For technical honesty and architectural clarity, the table below specifies the e
 ```mermaid
 graph TD
     subgraph Layer1 [Tier A: Deterministic Facts & Ephemeris Layer]
-        Ephem["Astronomical Ephemeris: UTC Instant + JDE Julian Day + Moshier Engine + LST + Lahiri Ayanamsa"]
-        Asc["Lagna Ascendant Calculation: Geographic Coordinates + Ecliptic Obliquity"]
+        Ephem["Astronomical Ephemeris: IANA Timezone + JDE Julian Day + Moshier Engine + LST + Lahiri Model"]
+        Asc["Lagna Ascendant Calculation: Pure UTC Instant + Local Sidereal Time + Ecliptic Obliquity"]
         Iztro["iztro Astrolabe: 12 Palaces + 14 Major & Auxiliary Stars"]
         TcmStd["TCM 8 Health Standards Quantifier + Wuyun Liuqi Innate Predisposition"]
     end
@@ -85,14 +85,14 @@ graph TD
     end
 
     subgraph Layer3 [Tier C: Canonical Evidence Graph & Relation Engine]
-        CEG["Canonical Evidence Graph: 4D Confidence Aggregation + Time Windows + Semantic Relations"]
+        CEG["Canonical Evidence Graph: 4D Evidence Score + Time Windows + Semantic Relations"]
         V_Engine --> CEG
         Z_Engine --> CEG
         T_Engine --> CEG
     end
 
     subgraph Layer4 [Tier D: Cross-Domain Arbitration & AI Synthesis]
-        Arbitrator["CrossDomainConflictDetector: Temporal Overlap + Semantic Tension + Relation Inference"]
+        Arbitrator["CrossDomainConflictDetector: Temporal Overlap + Timing Precursor + Relation Inference"]
         CEG --> Arbitrator
         Arbitrator --> Firewall["Prompt Pipeline Dialectical Firewall (Anti-Consensus Rules)"]
         Firewall --> LLM["Google Gemini Multimodal Streaming Synthesis"]
@@ -104,10 +104,11 @@ graph TD
 ## Deterministic Domain Engines
 
 ### 1. Vedic Jyotish & Ephemeris Engine
-- **Astronomical Ephemeris & Multi-Timezone**: Converts any global timezone to UTC Instant, calculating real geocentric longitudes and retrograde statuses for the 9 Grahas via Moshier astronomical algorithms.
-- **Sidereal Lagna**: Uses Local Sidereal Time and Chitrapaksha (Lahiri) Ayanamsa.
+- **Astronomical Ephemeris & IANA Timezones**: Converts any global IANA timezone (e.g. `Asia/Shanghai`, `America/New_York`) and DST to UTC Instant, calculating real geocentric longitudes and retrograde statuses for the 9 Grahas via Moshier astronomical algorithms.
+- **Fail-Fast Quality Guarantees**: Rejects fake static approximations by throwing `EphemerisCalculationError` on calculation issues.
+- **Sidereal Lagna**: Uses pure UTC Instant, Local Sidereal Time, and Chitrapaksha (Lahiri) linear precession.
 - **120-Year 3-Tier Recursive Dasha**: Seamless timeline across 9 Mahadashas $\to$ 81 Antardashas $\to$ 729 Pratyantardashas.
-- **Extended Vargas**: D1 (Natal), D7 (Saptamsa), D9 (Navamsa), D10 (Dasamsa), D12 (Dwadasamsa), D60 (Shashtiamsa).
+- **Extended Vargas**: D1 (Natal), D7 (Saptamsa), D9 (Navamsa), D10 (Dasamsa), D12 (Dwadasamsa), D60 (Shashtiamsa) sign mappings.
 - **7-Chara Karakas**: Descending order from Atmakaraka (AK) to Darakaraka (DK).
 
 ### 2. Ni Haixia Differential TCM Engine
@@ -120,10 +121,10 @@ graph TD
 - **80+ Classical Patterns**: Rigorous evaluation of auspicious, neutral, and afflicted configurations.
 
 ### 4. Evidence Relation Graph & Cross-Domain Dialectics
-- **Deterministic Confidence Aggregation**:
+- **Deterministic Evidence Calibration Score**:
   $$\text{Weighted Mean} = 0.35 \times \text{Calc} + 0.25 \times \text{Input} + 0.25 \times \text{Rule} + 0.15 \times \text{Source}$$
   $$\text{Overall} = \min(\text{Weighted Mean}, \min(\text{Calc}, \text{Input}, \text{Rule}) + 0.15)$$
-- **Dynamic Semantic Relations**: Automatically populates `corroborating`, `contradicting`, `surface_vs_root`, and `timing_precursor` relation edges across evidence nodes.
+- **Dynamic Semantic Relations**: Automatically populates `corroborating`, `contradicting`, `timing_precursor`, `surface_vs_root`, and `temporally_separate` relation edges across evidence nodes.
 - **Anti-Consensus Firewall**: Guides the generative model to present honest dialectical synthesis rather than smoothing away contradictions.
 
 ---
@@ -133,7 +134,7 @@ graph TD
 Built with a 4-tier automated test harness wired directly into GitHub Actions:
 * **L1 Execution Health**: Zero runtime exceptions in pure functional units.
 * **L2 Structural Integrity**: 12 palaces, 14 major stars completeness, and 9/81/729 Dasha continuity.
-* **L3 Domain Golden Values**: Multi-timezone assertions (Beijing, New Delhi, London, New York), planetary positions, matched patterns, classical herbs, and refusal mechanics.
+* **L3 Domain Golden Values**: Multi-timezone assertions (Beijing, New Delhi, London with BST, New York), astronomical solar zodiac degrees, matched patterns, classical herbs, and refusal mechanics.
 * **L4 Differential Testing**: 1:1 parity check between Mystic adapter and raw `iztro` engine.
 
 ```bash
@@ -146,6 +147,13 @@ pnpm test:all
 # Full Typecheck & Production Build Verification
 pnpm verify
 ```
+
+---
+
+## License & Upstream Notices
+
+- Mystic core application is licensed under the [MIT License](LICENSE).
+- Detailed upstream dependency notices (e.g. `ephemeris` GPL-3.0 Moshier algorithms) are documented in [NOTICE.md](NOTICE.md).
 
 ---
 
@@ -169,9 +177,3 @@ GEMINI_API_KEY=your_gemini_api_key
 # 4. Start local development server
 pnpm dev
 ```
-
----
-
-## License
-
-This project is licensed under the [MIT License](LICENSE).

@@ -459,7 +459,7 @@ export function buildVedicChart(
 
   // Convert Tropical Longitudes to Sidereal
   const siderealAscDegree = ((tropicalAscendantLongitude - ayanamsa) % 360 + 360) % 360;
-  const ascSignIdx = Math.floor(siderealAscDegree / 30);
+  const ascSignIdx = Math.floor(siderealAscDegree / 30) % 12;
   const ascDegreeInSign = siderealAscDegree % 30;
   const ascNak = getNakshatraByDegree(siderealAscDegree);
 
@@ -467,8 +467,8 @@ export function buildVedicChart(
     name: 'Ascendant',
     cnName: '上升 (Lagna)',
     longitude: siderealAscDegree,
-    sign: VEDIC_SIGNS[ascSignIdx].name,
-    signCn: VEDIC_SIGNS[ascSignIdx].cnName,
+    sign: VEDIC_SIGNS[ascSignIdx]?.name || 'Aries',
+    signCn: VEDIC_SIGNS[ascSignIdx]?.cnName || '白羊宫 (Mesha)',
     degreeInSign: ascDegreeInSign,
     house: 1,
     nakshatra: ascNak.nakshatra.name,
@@ -478,7 +478,7 @@ export function buildVedicChart(
 
   const vedicPlanets: VedicPlanetPosition[] = tropicalPlanets.map(p => {
     const sidDeg = ((p.longitude - ayanamsa) % 360 + 360) % 360;
-    const signIdx = Math.floor(sidDeg / 30);
+    const signIdx = Math.floor(sidDeg / 30) % 12;
     const degInSign = sidDeg % 30;
     const nak = getNakshatraByDegree(sidDeg);
     // House calculation using Whole Sign (Lagna Sign = 1st House)
@@ -489,8 +489,8 @@ export function buildVedicChart(
       name: pName,
       cnName: PLANET_CN_MAP[pName] || p.name,
       longitude: sidDeg,
-      sign: VEDIC_SIGNS[signIdx].name,
-      signCn: VEDIC_SIGNS[signIdx].cnName,
+      sign: VEDIC_SIGNS[signIdx]?.name || 'Aries',
+      signCn: VEDIC_SIGNS[signIdx]?.cnName || '白羊宫 (Mesha)',
       degreeInSign: degInSign,
       house,
       nakshatra: nak.nakshatra.name,

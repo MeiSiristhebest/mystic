@@ -11,9 +11,21 @@ export function getZodiacFromLongitude(longitude: number) {
   return `${ZODIAC_SIGNS[index]} ${degrees}°${minutes}'`;
 }
 
+/**
+ * Get Sun Sign from Solar Tropical Ecliptic Longitude (Astronomical)
+ */
+export function getSunSignFromDegree(tropicalLongitude: number): string {
+  const norm = ((tropicalLongitude % 360) + 360) % 360;
+  const index = Math.floor(norm / 30) % 12;
+  return ZODIAC_SIGNS[index] || "白羊座";
+}
+
+/**
+ * Approximate Western Sun Sign from Calendar Date (Fallback only)
+ */
 export function getSunSign(date: Date): string {
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
+  const month = date.getUTCMonth() + 1;
+  const day = date.getUTCDate();
   
   if ((month === 3 && day >= 21) || (month === 4 && day <= 19)) return "白羊座";
   if ((month === 4 && day >= 20) || (month === 5 && day <= 20)) return "金牛座";
@@ -51,10 +63,11 @@ export function getRulingPlanet(sign: string): string {
 
 /**
  * 高精度计算格林威治平恒星时 (GMST) 及本地恒星时 (LST)
+ * 严格接受 UTC Instant Date
  */
-export function calculateLocalSiderealTime(date: Date, longitude: number): number {
-  // Julian Date calculation
-  const jd = (date.getTime() / 86400000) + 2440587.5;
+export function calculateLocalSiderealTime(utcDate: Date, longitude: number): number {
+  // Julian Date calculation for UTC Instant
+  const jd = (utcDate.getTime() / 86400000) + 2440587.5;
   const d = jd - 2451545.0;
   
   // GMST in degrees
@@ -67,29 +80,19 @@ export function calculateLocalSiderealTime(date: Date, longitude: number): numbe
 }
 
 /**
- * 高精度上升星座 (Ascendant) 与上升度数计算 (球面三角升交点模型)
+ * 高精度上升星座 (Ascendant) 与上升度数计算 (严格基于 UTC Instant 与球面三角反切)
  */
-export function getPreciseAscendant(
-  birthDate: Date,
-  birthTime: string,
+export function getPreciseAscendantFromUtc(
+  utcDate: Date,
   longitude = 116.40,
   latitude = 39.90
 ): { sign: string; degree: number; formatted: string; longitude: number } {
-  if (!birthTime) {
-    const defaultSign = getSunSign(birthDate);
-    return { sign: defaultSign, degree: 0, formatted: `${defaultSign} 0°0'`, longitude: ZODIAC_SIGNS.indexOf(defaultSign) * 30 };
-  }
-
-  const [hours, minutes] = birthTime.split(':').map(Number);
-  const localDate = new Date(birthDate);
-  localDate.setHours(hours, minutes, 0, 0);
-
   // Obliquity of the Ecliptic (黄赤交角, J2000 ~ 23.4393°)
   const eps = (23.4392911 * Math.PI) / 180;
   const latRad = (latitude * Math.PI) / 180;
 
   // Local Sidereal Time (RAMC in radians)
-  const ramcDeg = calculateLocalSiderealTime(localDate, longitude);
+  const ramcDeg = calculateLocalSiderealTime(utcDate, longitude);
   const ramc = (ramcDeg * Math.PI) / 180;
 
   // Ascendant formula: tan(Asc) = cos(RAMC) / -(sin(eps)*tan(lat) + cos(eps)*sin(RAMC))
@@ -112,8 +115,20 @@ export function getPreciseAscendant(
   };
 }
 
-export function getAscendant(birthDate: Date, birthTime: string, longitude = 116.40, latitude = 39.90): string {
-  return getPreciseAscendant(birthDate, birthTime, longitude, latitude).sign;
+/**
+ * Backward compatibility wrapper
+ */
+export function getPreciseAscendant(
+  birthDate: Date,
+  birthTime?: string,
+  longitude = 116.40,
+  latitude = 39.90
+): { sign: string; degree: number; formatted: string; longitude: number } {
+  return getPreciseAscendantFromUtc(birthDate, longitude, latitude);
+}
+
+export function getAscendant(birthDate: Date, birthTime?: string, longitude = 116.40, latitude = 39.90): string {
+  return getPreciseAscendantFromUtc(birthDate, longitude, latitude).sign;
 }
 
 export function getDescendant(ascendant: string): string {
@@ -125,21 +140,21 @@ export function getDescendant(ascendant: string): string {
 export interface Aspect {
   planet1: string;
   planet2: string;
-  type: 'Conjunction' | 'Opposition' | 'Trine' | 'Square' | 'Sextile';
-  typeCn: '合相 (0°)' | '对冲 (180°)' | '拱相 (120°)' | '刑相 (90°)' | '六合 (60°)';
+  type: string;
+  typeCn: string;
   angle: number;
   orb: number;
-  nature: '和谐' | '张力' | '强力重合';
+  meaning: string;
 }
 
-export function calculateAspects(planets: Array<{ name: string; longitude: number }>): Aspect[] {
+export function calculateAspects(planets: Array<{ name: string; longitude: number; symbol?: string }>): Aspect[] {
   const aspects: Aspect[] = [];
-  const definitions: Array<{ type: Aspect['type']; typeCn: Aspect['typeCn']; angle: number; orb: number; nature: Aspect['nature'] }> = [
-    { type: 'Conjunction', typeCn: '合相 (0°)', angle: 0, orb: 8, nature: '强力重合' },
-    { type: 'Opposition', typeCn: '对冲 (180°)', angle: 180, orb: 8, nature: '张力' },
-    { type: 'Trine', typeCn: '拱相 (120°)', angle: 120, orb: 7, nature: '和谐' },
-    { type: 'Square', typeCn: '刑相 (90°)', angle: 90, orb: 7, nature: '张力' },
-    { type: 'Sextile', typeCn: '六合 (60°)', angle: 60, orb: 5, nature: '和谐' },
+  const MAJOR_ASPECTS = [
+    { angle: 0, orb: 8, name: "Conjunction", nameCn: "合相 (0°)", meaning: "能量融合与强力共振" },
+    { angle: 60, orb: 6, name: "Sextile", nameCn: "六分相 (60°)", meaning: "顺畅协作与机遇萌发" },
+    { angle: 90, orb: 7, name: "Square", nameCn: "四分相 (90°)", meaning: "动能张力与成长磨砺" },
+    { angle: 120, orb: 8, name: "Trine", nameCn: "三分相 (120°)", meaning: "天赋流淌与和谐顺遂" },
+    { angle: 180, orb: 8, name: "Opposition", nameCn: "对分相 (180°)", meaning: "二元对立与关系整合" },
   ];
 
   for (let i = 0; i < planets.length; i++) {
@@ -149,19 +164,18 @@ export function calculateAspects(planets: Array<{ name: string; longitude: numbe
       const diff = Math.abs(p1.longitude - p2.longitude);
       const angle = diff > 180 ? 360 - diff : diff;
 
-      for (const def of definitions) {
-        const orb = Math.abs(angle - def.angle);
-        if (orb <= def.orb) {
+      for (const asp of MAJOR_ASPECTS) {
+        const orb = Math.abs(angle - asp.angle);
+        if (orb <= asp.orb) {
           aspects.push({
             planet1: p1.name,
             planet2: p2.name,
-            type: def.type,
-            typeCn: def.typeCn,
+            type: asp.name,
+            typeCn: asp.nameCn,
             angle,
             orb: Math.round(orb * 10) / 10,
-            nature: def.nature,
+            meaning: asp.meaning,
           });
-          break;
         }
       }
     }

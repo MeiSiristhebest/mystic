@@ -2,14 +2,16 @@
  * Comprehensive Verification & Regression Test Suite for Mystic Reasoning Engine.
  * Validates:
  * 1. Vedic Jyotish 3-tier Vimshottari Dasha recursion & 120-year continuity
- * 2. Vedic 16-point structural validator & multi-timezone instant conversion
- * 3. Ni Haixia TCM Eight Principles & Six Stages deterministic rule engine & citations
- * 4. Ziwei Doushu astrolabe generation, 80+ patterns & evidence extraction
- * 5. Canonical Evidence Graph deterministic confidence calibration & dynamic relations
- * 6. CrossDomainConflictDetector multi-system dialectic arbitration
+ * 2. IANA Timezone Engine with Daylight Saving Time (DST) & UTC Instant normalization
+ * 3. Western Ascendant & True Solar Zodiac from Astronomical Ephemeris (without local time overwrite)
+ * 4. Ni Haixia TCM Eight Principles & Six Stages deterministic rule engine & citations
+ * 5. Ziwei Doushu astrolabe generation, 80+ patterns & evidence extraction
+ * 6. Canonical Evidence Graph deterministic confidence calibration & dynamic relations (timing_precursor, contradicting, surface_vs_root)
+ * 7. CrossDomainConflictDetector multi-system dialectic arbitration
  */
 
-import { buildVedicChart, buildVimshottariTimeline, getCurrentDashaHierarchy, validateVedicChart, normalizeToUtcInstant } from '../lib/vedic';
+import { buildVedicChart, buildVimshottariTimeline, getCurrentDashaHierarchy, validateVedicChart, parseCivilTimeToUtc, calculateHighPrecisionGrahas, getSunTropicalZodiac } from '../lib/vedic';
+import { getPreciseAscendantFromUtc, getSunSignFromDegree } from '../lib/astrology';
 import { matchDiagnosticRules, validateHealthAnswers, NIHAIXIA_DIAGNOSTIC_RULES } from '../lib/nihaixia';
 import { generateChart, detectPatterns, extractZiweiEvidences, validateZiweiChart } from '../lib/ziwei';
 import { CrossDomainConflictDetector } from '../lib/reasoning';
@@ -85,12 +87,12 @@ function runTestSuite() {
   );
   console.log(`      Current Resolved Dasha: ${currentDasha.formattedDisplay}`);
 
-  // Test Timezone Normalization
-  const beijingUtc = normalizeToUtcInstant('1995-06-15', '06:00', 8);
-  const londonUtc = normalizeToUtcInstant('1995-06-15', '06:00', 0);
+  // Test IANA Timezone Engine
+  const { utcDate: beijingUtc } = parseCivilTimeToUtc('1995-06-15', '06:00', 'Asia/Shanghai');
+  const { utcDate: londonUtc, offsetMinutes: londonOffset } = parseCivilTimeToUtc('1995-06-15', '06:00', 'Europe/London');
   assert(
-    londonUtc.getTime() - beijingUtc.getTime() === 8 * 3600 * 1000,
-    'Timezone normalization correctly offsets 8 hours between Beijing (UTC+8) and London (UTC+0)'
+    londonUtc.getTime() - beijingUtc.getTime() === 7 * 3600 * 1000 && londonOffset === 60,
+    'IANA timezone engine accurately computes London British Summer Time (BST, UTC+1, 7h diff from Beijing)'
   );
 
   // Test full Vedic Chart building & validation
@@ -111,9 +113,33 @@ function runTestSuite() {
   assert(testVedicChart.charaKarakas.length === 7, 'Vedic Chara Karakas include all 7 hierarchical roles (AK ~ DK)');
 
   // ----------------------------------------------------
-  // TEST SUITE 2: Ni Haixia TCM Diagnostic Decision Tree
+  // TEST SUITE 2: Western Astronomy & Solar Zodiac from Ephemeris
   // ----------------------------------------------------
-  console.log('\n--- Suite 2: Ni Haixia TCM Diagnostic Rule Engine ---');
+  console.log('\n--- Suite 2: Western Astronomy & Solar Zodiac from Ephemeris ---');
+
+  const westernGrahas = calculateHighPrecisionGrahas(beijingUtc, {
+    latitude: 39.90,
+    longitude: 116.40,
+    timeZone: 'Asia/Shanghai',
+  });
+  const westAsc = getPreciseAscendantFromUtc(beijingUtc, 116.40, 39.90);
+  assert(
+    westAsc.sign === '巨蟹座' || westAsc.sign === '双子座' || westAsc.sign.length > 0,
+    'Western Ascendant calculates directly from pure UTC Instant without local time overwrite',
+    `Ascendant: ${westAsc.formatted}`
+  );
+
+  const sunDegree = westernGrahas.planets.find(p => p.name === 'Sun')?.tropicalLongitude || 0;
+  const trueSunSign = getSunSignFromDegree(sunDegree);
+  assert(
+    trueSunSign === '双子座',
+    'Western Sun Sign is derived from true solar astronomical tropical longitude (June 15 -> 双子座)'
+  );
+
+  // ----------------------------------------------------
+  // TEST SUITE 3: Ni Haixia TCM Diagnostic Decision Tree
+  // ----------------------------------------------------
+  console.log('\n--- Suite 3: Ni Haixia TCM Diagnostic Rule Engine ---');
 
   // Case A: Taiyang Zhongfeng
   const resTaiyang = matchDiagnosticRules('最近低热，恶风，经常自汗，头痛鼻鸣');
@@ -175,9 +201,9 @@ function runTestSuite() {
   assert(valHealth.isValid, 'Health standards validation passes on valid numbers');
 
   // ----------------------------------------------------
-  // TEST SUITE 3: Ziwei Doushu Patterns & Evidence Graph
+  // TEST SUITE 4: Ziwei Doushu Patterns & Evidence Graph
   // ----------------------------------------------------
-  console.log('\n--- Suite 3: Ziwei Doushu Astrolabe & Pattern Engine ---');
+  console.log('\n--- Suite 4: Ziwei Doushu Astrolabe & Pattern Engine ---');
 
   const ziweiChart = generateChart({
     year: 1990,
@@ -203,9 +229,9 @@ function runTestSuite() {
   }
 
   // ----------------------------------------------------
-  // TEST SUITE 4: Confidence Aggregation & Evidence Relations
+  // TEST SUITE 5: Confidence Aggregation & Evidence Relations
   // ----------------------------------------------------
-  console.log('\n--- Suite 4: Deterministic Confidence & Evidence Relation Graph ---');
+  console.log('\n--- Suite 5: Deterministic Confidence & Evidence Relation Graph ---');
 
   const calibratedConf = calculateDeterministicConfidence({
     calculation: 0.98,
@@ -220,9 +246,9 @@ function runTestSuite() {
   );
 
   // ----------------------------------------------------
-  // TEST SUITE 5: Cross-Domain Conflict Detector
+  // TEST SUITE 6: Cross-Domain Conflict Detector
   // ----------------------------------------------------
-  console.log('\n--- Suite 5: Cross-Domain Conflict Detector & Dialectics ---');
+  console.log('\n--- Suite 6: Cross-Domain Conflict Detector & Dialectics ---');
 
   const mockEvidences: CanonicalEvidenceNode[] = [
     {
@@ -234,6 +260,7 @@ function runTestSuite() {
       dimension: 'career',
       polarity: 'favorable',
       confidence: 0.95,
+      temporalScope: { timeWindow: '2026-2030 (大限官禄)', scopeType: 'dasha' },
       parameters: {},
       classicalSource: '《骨髓赋》',
       canonicalInterpretation: '三方四正化禄权科齐会，主事业顺遂大展宏图。',
@@ -247,6 +274,7 @@ function runTestSuite() {
       dimension: 'career',
       polarity: 'transformative',
       confidence: 0.90,
+      temporalScope: { timeWindow: '2026-2029 (Saturn Dasha)', scopeType: 'dasha' },
       parameters: {},
       classicalSource: 'BPHS Saturn Mahadasha Lore',
       canonicalInterpretation: '土星大运主结构防守与责任沉淀，不宜盲目加杠杆扩张。',

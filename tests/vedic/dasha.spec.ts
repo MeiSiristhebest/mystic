@@ -9,7 +9,8 @@ import {
   calculateHighPrecisionGrahas,
   calculateLahiriAyanamsa,
   calculateJulianDay,
-  normalizeToUtcInstant,
+  parseCivilTimeToUtc,
+  getSunTropicalZodiac,
   extractVedicEvidences,
   VEDIC_SIGNS
 } from "../../lib/vedic";
@@ -22,8 +23,8 @@ export function testVedicSuite() {
   let failed = 0;
 
   // 1. Astronomical Ephemeris & Ayanamsa Accuracy Test
-  const utcTestDate = normalizeToUtcInstant('1995-06-15', '06:00', 8);
-  const jd = calculateJulianDay(utcTestDate);
+  const { utcDate: beijingUtc } = parseCivilTimeToUtc('1995-06-15', '06:00', 'Asia/Shanghai');
+  const jd = calculateJulianDay(beijingUtc);
   const ayanamsa = calculateLahiriAyanamsa(jd);
   // Expected Lahiri Ayanamsa for mid-1995 is ~23.79°
   if (ayanamsa > 23.70 && ayanamsa < 23.95) {
@@ -34,31 +35,47 @@ export function testVedicSuite() {
     failed++;
   }
 
-  // 2. Timezone Normalization Test across International Locations
-  const delhiUtc = normalizeToUtcInstant('1992-05-18', '10:30', 5.5);
-  const nyUtc = normalizeToUtcInstant('2000-01-01', '18:00', -5);
-  if (delhiUtc.getUTCHours() === 5 && delhiUtc.getUTCMinutes() === 0 && nyUtc.getUTCHours() === 23) {
-    console.log(`  ✓ [L3 TIMEZONE INSTANT PASS] Normalizes +5.5 (Delhi) and -5 (NY) into exact UTC timestamps`);
+  // 2. IANA Timezone Engine & DST Verification
+  const { utcDate: delhiUtc } = parseCivilTimeToUtc('1992-05-18', '10:30', 'Asia/Kolkata');
+  const { utcDate: londonSummerUtc, offsetMinutes: londonOffset } = parseCivilTimeToUtc('1988-08-08', '12:00', 'Europe/London');
+  const { utcDate: nyUtc } = parseCivilTimeToUtc('2000-01-01', '18:00', 'America/New_York');
+
+  if (delhiUtc.getUTCHours() === 5 && delhiUtc.getUTCMinutes() === 0 && nyUtc.getUTCHours() === 23 && londonOffset === 60) {
+    console.log(`  ✓ [L3 IANA TIMEZONE & DST PASS] Correctly resolved Asia/Kolkata (+5.5), America/New_York (-5), and Europe/London BST Summer Time (+1)`);
     passed++;
   } else {
-    console.error(`  ✗ [L3 TIMEZONE INSTANT FAIL] Unexpected UTC times`);
+    console.error(`  ✗ [L3 IANA TIMEZONE FAIL] Unexpected UTC conversion`);
     failed++;
   }
 
-  const grahas = calculateHighPrecisionGrahas(utcTestDate, {
+  // 3. Astronomical Ephemeris Precision & Fail-Fast Verification
+  const grahas = calculateHighPrecisionGrahas(beijingUtc, {
     latitude: 39.90,
     longitude: 116.40,
-    timezoneOffsetHours: 8,
+    timeZone: 'Asia/Shanghai',
   });
-  if (grahas.planets.length === 9 && grahas.ascendant.sidereal >= 0 && grahas.ascendant.sidereal < 360) {
-    console.log(`  ✓ [L3 EPHEMERIS 9 GRAHAS PASS] Computed 9 planetary sidereal positions (Ascendant: ${grahas.ascendant.signName} ${grahas.ascendant.sidereal.toFixed(2)}°)`);
+  if (grahas.planets.length === 9 && grahas.calculationMethod === 'ephemeris_moshier' && grahas.ascendant.sidereal >= 0) {
+    console.log(`  ✓ [L3 EPHEMERIS 9 GRAHAS PASS] Computed 9 planetary sidereal positions (Method: ${grahas.calculationMethod}, Ascendant: ${grahas.ascendant.signName} ${grahas.ascendant.sidereal.toFixed(2)}°)`);
     passed++;
   } else {
     console.error(`  ✗ [L3 EPHEMERIS GRAHAS FAIL] Ephemeris failed to produce 9 planets`);
     failed++;
   }
 
-  // 3. Extended Varga Divisional Charts (D1, D7, D9, D10, D12, D60)
+  // Western Sun Sign Astronomical Ecliptic Degree Verification
+  const sunGraha = grahas.planets.find(p => p.name === 'Sun');
+  if (sunGraha) {
+    const sunZodiac = getSunTropicalZodiac(sunGraha.tropicalLongitude);
+    if (sunZodiac === '双子座') { // June 15 is Gemini in Tropical Zodiac
+      console.log(`  ✓ [L3 TRUE SOLAR ZODIAC PASS] 1995-06-15 Sun Longitude ${sunGraha.tropicalLongitude.toFixed(2)}° -> ${sunZodiac}`);
+      passed++;
+    } else {
+      console.error(`  ✗ [L3 TRUE SOLAR ZODIAC FAIL] Got ${sunZodiac}, expected 双子座`);
+      failed++;
+    }
+  }
+
+  // 4. Extended Varga Divisional Sign Mapping (D1, D7, D9, D10, D12, D60)
   const d7Sign = getVargaSignIndex(145.5, 7);
   const d9Sign = getVargaSignIndex(145.5, 9);
   const d10Sign = getVargaSignIndex(145.5, 10);
@@ -73,7 +90,7 @@ export function testVedicSuite() {
     failed++;
   }
 
-  // 4. Golden Cases & Recursive Dasha Tests
+  // 5. Golden Cases & Recursive Dasha Tests
   for (const gc of goldenCases) {
     const nakInfo = getNakshatraByDegree(gc.moonSiderealDegree);
     

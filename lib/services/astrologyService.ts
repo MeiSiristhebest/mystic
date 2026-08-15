@@ -1,7 +1,8 @@
 import { 
-  getPreciseAscendant, 
+  getPreciseAscendantFromUtc, 
   calculateAspects, 
-  getSunSign, 
+  getSunSign,
+  getSunSignFromDegree, 
   getZodiacFromLongitude 
 } from "@/lib/astrology";
 import { 
@@ -9,27 +10,32 @@ import {
   calculateVedicSynastry, 
   VedicChart,
   calculateHighPrecisionGrahas,
-  normalizeToUtcInstant 
+  parseCivilTimeToUtc 
 } from "@/lib/vedic";
 import { DomainEvaluationResult } from "@/lib/contracts/types";
 
 export class AstrologyService {
   /**
-   * Get Western Sun Sign from Date.
+   * Approximate Sun Sign from Date (For fast UI hints)
    */
   static getSunSign(date: Date): string {
     return getSunSign(date);
   }
 
   /**
-   * Derive standard timezone offset hours from longitude if omitted
+   * Resolve IANA timezone or numeric offset string
    */
-  static resolveTimezoneOffset(lon: number, explicitOffset?: number): number {
-    if (typeof explicitOffset === 'number' && !isNaN(explicitOffset)) {
-      return explicitOffset;
+  static resolveTimezone(lon: number, explicitTimeZone?: string): string {
+    if (explicitTimeZone && typeof explicitTimeZone === 'string') {
+      return explicitTimeZone;
     }
-    // Standard 15 degrees per timezone zone (e.g. 116.4° -> +8, -74° -> -5)
-    return Math.round(lon / 15.0);
+    // Standard longitude approximation to IANA timezone if not supplied
+    if (lon >= 100 && lon <= 135) return 'Asia/Shanghai';
+    if (lon >= 65 && lon < 100) return 'Asia/Kolkata';
+    if (lon >= -10 && lon < 40) return 'Europe/London';
+    if (lon >= -85 && lon < -60) return 'America/New_York';
+    if (lon >= -125 && lon < -85) return 'America/Los_Angeles';
+    return 'UTC';
   }
 
   /**
@@ -40,21 +46,25 @@ export class AstrologyService {
     birthTime: string, 
     lon = 116.40, 
     lat = 39.90,
-    timezoneOffsetHours?: number
+    timeZone?: string
   ) {
-    const tzOffset = this.resolveTimezoneOffset(lon, timezoneOffsetHours);
-    const utcDate = normalizeToUtcInstant(birthDate, birthTime, tzOffset);
-
-    // Compute Local Ascendant and Sun Sign
-    const ascendant = getPreciseAscendant(utcDate, birthTime, lon, lat);
-    const sunSign = getSunSign(utcDate);
+    const tz = this.resolveTimezone(lon, timeZone);
+    const { utcDate, offsetMinutes } = parseCivilTimeToUtc(birthDate, birthTime, tz);
 
     // Compute High Precision Planetary Positions via Ephemeris (Moshier engine)
     const grahaData = calculateHighPrecisionGrahas(utcDate, {
       longitude: lon,
       latitude: lat,
-      timezoneOffsetHours: tzOffset,
+      timeZone: tz,
     });
+
+    // Compute Local Ascendant directly from UTC Instant
+    const ascendant = getPreciseAscendantFromUtc(utcDate, lon, lat);
+
+    // Extract true Sun tropical longitude for accurate Sun Sign
+    const sunGraha = grahaData.planets.find(p => p.name === 'Sun');
+    const sunTropicalDeg = sunGraha ? sunGraha.tropicalLongitude : 0;
+    const sunSign = getSunSignFromDegree(sunTropicalDeg);
 
     const planetNameMap: Record<string, { name: string; symbol: string }> = {
       Sun: { name: "太阳", symbol: "☉" },
@@ -77,7 +87,7 @@ export class AstrologyService {
 
     const aspects = calculateAspects(planets);
 
-    // Placidus / Equal 12 Houses from Ascendant
+    // Equal 12 Houses from Ascendant
     const houses = Array.from({ length: 12 }, (_, i) => {
       const houseLon = (ascendant.longitude + i * 30) % 360;
       return {
@@ -97,7 +107,9 @@ export class AstrologyService {
         jd: grahaData.jd,
         ayanamsa: grahaData.ayanamsa,
         utcDate: grahaData.utcDate.toISOString(),
-        tzOffset,
+        timeZone: tz,
+        offsetMinutes,
+        calculationMethod: grahaData.calculationMethod,
       },
     };
   }
@@ -110,15 +122,15 @@ export class AstrologyService {
     birthTime: string, 
     lon = 116.40, 
     lat = 39.90,
-    timezoneOffsetHours?: number
+    timeZone?: string
   ): VedicChart {
-    const tzOffset = this.resolveTimezoneOffset(lon, timezoneOffsetHours);
-    const utcDate = normalizeToUtcInstant(birthDate, birthTime, tzOffset);
+    const tz = this.resolveTimezone(lon, timeZone);
+    const { utcDate } = parseCivilTimeToUtc(birthDate, birthTime, tz);
 
     const grahaData = calculateHighPrecisionGrahas(utcDate, {
       longitude: lon,
       latitude: lat,
-      timezoneOffsetHours: tzOffset,
+      timeZone: tz,
     });
 
     const tropicalPlanets = grahaData.planets.map(p => ({
@@ -143,9 +155,9 @@ export class AstrologyService {
     birthTime: string, 
     lon = 116.40, 
     lat = 39.90,
-    timezoneOffsetHours?: number
+    timeZone?: string
   ): DomainEvaluationResult<VedicChart> {
-    const chart = this.getVedicChart(birthDate, birthTime, lon, lat, timezoneOffsetHours);
+    const chart = this.getVedicChart(birthDate, birthTime, lon, lat, timeZone);
     return {
       domain: 'vedic',
       chart,
@@ -163,10 +175,10 @@ export class AstrologyService {
     birthDateA: string, birthTimeA: string, nameA = '命主 A',
     birthDateB: string, birthTimeB: string, nameB = '命主 B',
     lon = 116.40, lat = 39.90,
-    tzOffset?: number
+    timeZone?: string
   ) {
-    const chartA = this.getVedicChart(birthDateA, birthTimeA, lon, lat, tzOffset);
-    const chartB = this.getVedicChart(birthDateB, birthTimeB, lon, lat, tzOffset);
+    const chartA = this.getVedicChart(birthDateA, birthTimeA, lon, lat, timeZone);
+    const chartB = this.getVedicChart(birthDateB, birthTimeB, lon, lat, timeZone);
     const matrix = calculateVedicSynastry(chartA, chartB, nameA, nameB);
     return { chartA, chartB, matrix };
   }

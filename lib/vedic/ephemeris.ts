@@ -2,14 +2,14 @@
  * High-Precision Astronomical Ephemeris & Sidereal Vedic Mathematics Engine.
  * 
  * Implements:
- * 1. UTC Instant & Universal Time (UT) normalization across arbitrary timezones.
+ * 1. IANA Timezone & Civil Time to UTC Instant normalization (Intl.DateTimeFormat engine).
  * 2. Julian Day (JD) calculation.
- * 3. True Lahiri Ayanamsa computation (BPHS / Chitrapaksha standard: 23°51'25.53" at J2000).
+ * 3. Chitrapaksha (Lahiri) linear precession model (23°51'25.53" at J2000 epoch, 50.27"/yr).
  * 4. Geocentric planetary longitudes via Moshier astronomical ephemeris (npm `ephemeris`).
  * 5. Mean Lunar Nodes (Rahu & Ketu) astronomical calculations (Meeus Ch. 47).
  * 6. Accurate Ascendant (Lagna) computation using Greenwich Mean Sidereal Time (GMST),
  *    Local Sidereal Time (LST), geographic coordinates, and true obliquity of the ecliptic.
- * 7. Extended Varga Divisional charts: D1, D7 (Saptamsa), D9 (Navamsa), D10 (Dasamsa),
+ * 7. Extended Varga Divisional Sign Mapping: D1, D7 (Saptamsa), D9 (Navamsa), D10 (Dasamsa),
  *    D12 (Dwadasamsa), D60 (Shashtiamsa).
  */
 
@@ -17,11 +17,19 @@ import ephem from 'ephemeris';
 import { VedicPlanetName, VedicPlanetPosition } from './types';
 import { VEDIC_SIGNS } from './constants';
 
+export class EphemerisCalculationError extends Error {
+  constructor(message: string, public readonly originalError?: any) {
+    super(message);
+    this.name = 'EphemerisCalculationError';
+  }
+}
+
 export interface GeoLocation {
   latitude: number;
   longitude: number;
   altitude?: number;
-  timezoneOffsetHours?: number; // e.g. +8 for Beijing, +5.5 for IST, 0 for UTC, -5 for EST
+  timezoneOffsetHours?: number; // Optional numerical fallback
+  timeZone?: string;           // Standard IANA timezone (e.g. "Asia/Shanghai", "America/New_York")
 }
 
 export const DEFAULT_GEO: GeoLocation = {
@@ -29,10 +37,83 @@ export const DEFAULT_GEO: GeoLocation = {
   longitude: 116.4074,
   altitude: 50,
   timezoneOffsetHours: 8,
+  timeZone: 'Asia/Shanghai',
 };
 
 /**
- * Convert local birth date and time into a precise UTC Instant Date object
+ * Robust IANA Timezone & Civil DateTime to UTC Instant Parser
+ * Accurately accounts for Daylight Saving Time (DST) and historical timezone shifts.
+ */
+export function parseCivilTimeToUtc(
+  birthDate: string,
+  birthTime = '12:00',
+  timeZone = 'Asia/Shanghai'
+): { utcDate: Date; offsetMinutes: number; timeZone: string } {
+  const [year, month, day] = birthDate.split('-').map(Number);
+  const [hour, minute] = (birthTime || '12:00').split(':').map(Number);
+
+  // Initial candidate UTC time using civil wall-clock numbers
+  const guessUtcMs = Date.UTC(year, (month || 1) - 1, day || 1, hour || 0, minute || 0, 0, 0);
+
+  try {
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone,
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      second: 'numeric',
+      hour12: false,
+    });
+
+    const parts = formatter.formatToParts(new Date(guessUtcMs));
+    const partMap: Record<string, number> = {};
+    for (const p of parts) {
+      if (p.type !== 'literal') {
+        partMap[p.type] = parseInt(p.value, 10);
+      }
+    }
+
+    if (partMap.hour === 24) partMap.hour = 0;
+
+    const localInTzMs = Date.UTC(
+      partMap.year,
+      (partMap.month || 1) - 1,
+      partMap.day || 1,
+      partMap.hour || 0,
+      partMap.minute || 0,
+      partMap.second || 0
+    );
+
+    // offset = local - UTC
+    const offsetMs = localInTzMs - guessUtcMs;
+    const exactUtcMs = guessUtcMs - offsetMs;
+    const offsetMinutes = Math.round(offsetMs / (60 * 1000));
+
+    return {
+      utcDate: new Date(exactUtcMs),
+      offsetMinutes,
+      timeZone,
+    };
+  } catch (err) {
+    // Fallback for numeric offset string (e.g. "+8", "-5", "5.5")
+    let offsetHours = 8;
+    const num = parseFloat(timeZone);
+    if (!isNaN(num)) {
+      offsetHours = num;
+    }
+    const offsetMs = offsetHours * 3600 * 1000;
+    return {
+      utcDate: new Date(guessUtcMs - offsetMs),
+      offsetMinutes: Math.round(offsetHours * 60),
+      timeZone,
+    };
+  }
+}
+
+/**
+ * Backward-compatible helper to convert local birth date and time into a precise UTC Instant
  */
 export function normalizeToUtcInstant(birthDate: string, birthTime: string, tzOffsetHours = 8): Date {
   const [year, month, day] = birthDate.split('-').map(Number);
@@ -55,7 +136,7 @@ export function calculateJulianDay(utcDate: Date): number {
 }
 
 /**
- * Calculate Lahiri (Chitrapaksha) Ayanamsa for a Julian Day
+ * Calculate Lahiri (Chitrapaksha) linear Ayanamsa model for a Julian Day
  * Standard epoch: J2000.0 (JD 2451545.0) -> Ayanamsa = 23° 51' 25.53" (23.8570916667°)
  * Annual precession rate: 50.27" / year
  */
@@ -84,7 +165,7 @@ export function calculateGMST(jd: number): number {
 }
 
 /**
- * Calculate Ascendant (Lagna) Tropical & Sidereal Longitude
+ * Calculate Ascendant (Lagna) Tropical & Sidereal Longitude directly from UTC Date
  */
 export function calculateAscendant(
   jd: number,
@@ -151,6 +232,7 @@ export function calculateLunarNodes(
 
 /**
  * Extract High Precision 9 Grahas using Moshier-based Ephemeris and Sidereal Correction
+ * Implements strict Fail-Fast validation without fake static approximations.
  */
 export function calculateHighPrecisionGrahas(
   utcDate: Date,
@@ -159,6 +241,7 @@ export function calculateHighPrecisionGrahas(
   ayanamsa: number;
   jd: number;
   utcDate: Date;
+  calculationMethod: 'ephemeris_moshier';
   ascendant: { tropical: number; sidereal: number; signIndex: number; signName: string };
   planets: Array<{
     name: VedicPlanetName;
@@ -179,88 +262,68 @@ export function calculateHighPrecisionGrahas(
   try {
     rawEphem = ephem.getAllPlanets(utcDate, geo.longitude, geo.latitude, geo.altitude || 0);
   } catch (err) {
-    console.warn('Ephemeris query fallback to analytical models:', err);
+    throw new EphemerisCalculationError(`Failed to compute planetary positions via Moshier ephemeris for date ${utcDate.toISOString()}`, err);
   }
 
-  const planetMap: Record<string, { tropical: number; isRetro: boolean }> = {};
+  if (!rawEphem?.observed) {
+    throw new EphemerisCalculationError(`Moshier ephemeris returned empty observed planetary dataset for date ${utcDate.toISOString()}`);
+  }
 
-  if (rawEphem?.observed) {
-    const obs = rawEphem.observed;
-    const extractDeg = (key: string): { deg: number; retro: boolean } => {
-      const p = obs[key];
-      if (!p) return { deg: 0, retro: false };
-      const dLong = p.raw?.equinoxEclipticLonLat?.dLongitude;
-      let deg = 0;
-      if (dLong) {
-        deg = (dLong.degree || 0) + (dLong.minutes || 0) / 60.0 + (dLong.seconds || 0) / 3600.0;
-      } else if (p.apparentLongitudeDd !== undefined) {
-        deg = p.apparentLongitudeDd;
-      }
-      return {
-        deg: ((deg % 360) + 360) % 360,
-        retro: Boolean(p.is_retrograde),
-      };
+  const planetMap: Record<string, { deg: number; retro: boolean }> = {};
+  const obs = rawEphem.observed;
+
+  const extractDeg = (key: string): { deg: number; retro: boolean } => {
+    const p = obs[key];
+    if (!p) {
+      throw new EphemerisCalculationError(`Missing celestial body '${key}' in ephemeris observations.`);
+    }
+    let deg = 0;
+    const dLong = p.raw?.position?.equinoxEclipticLonLat?.dLongitude || p.raw?.equinoxEclipticLonLat?.dLongitude;
+    if (dLong) {
+      deg = (dLong.degree || 0) + (dLong.minutes || 0) / 60.0 + (dLong.seconds || 0) / 3600.0;
+    } else if (p.apparentLongitudeDd !== undefined) {
+      deg = p.apparentLongitudeDd;
+    } else if (p.raw?.position?.apparentLongitude !== undefined) {
+      deg = p.raw.position.apparentLongitude;
+    }
+    return {
+      deg: ((deg % 360) + 360) % 360,
+      retro: Boolean(p.is_retrograde),
     };
+  };
 
-    const s = extractDeg('sun');
-    planetMap['Sun'] = { tropical: s.deg, isRetro: false };
-    const m = extractDeg('moon');
-    planetMap['Moon'] = { tropical: m.deg, isRetro: false };
-    const me = extractDeg('mercury');
-    planetMap['Mercury'] = { tropical: me.deg, isRetro: me.retro };
-    const v = extractDeg('venus');
-    planetMap['Venus'] = { tropical: v.deg, isRetro: v.retro };
-    const ma = extractDeg('mars');
-    planetMap['Mars'] = { tropical: ma.deg, isRetro: ma.retro };
-    const j = extractDeg('jupiter');
-    planetMap['Jupiter'] = { tropical: j.deg, isRetro: j.retro };
-    const sa = extractDeg('saturn');
-    planetMap['Saturn'] = { tropical: sa.deg, isRetro: sa.retro };
-  } else {
-    // Analytical Keplerian fallback if ephemeris engine throws
-    const t = (jd - 2451545.0) / 36525.0;
-    const sunMean = 280.46646 + 36000.76983 * t;
-    const sunAnomaly = 357.52911 + 35999.05029 * t;
-    const sunEqCenter = 1.914602 * Math.sin((sunAnomaly * Math.PI) / 180.0) + 0.019993 * Math.sin((2 * sunAnomaly * Math.PI) / 180.0);
-    const sunTrop = ((sunMean + sunEqCenter) % 360 + 360) % 360;
-
-    const moonMean = 218.3164477 + 481267.88123421 * t;
-    const moonAnomaly = 134.9633964 + 477198.8675055 * t;
-    const moonEq = 6.288774 * Math.sin((moonAnomaly * Math.PI) / 180.0);
-    const moonTrop = ((moonMean + moonEq) % 360 + 360) % 360;
-
-    planetMap['Sun'] = { tropical: sunTrop, isRetro: false };
-    planetMap['Moon'] = { tropical: moonTrop, isRetro: false };
-    planetMap['Mercury'] = { tropical: ((sunTrop - 15) % 360 + 360) % 360, isRetro: false };
-    planetMap['Venus'] = { tropical: ((sunTrop + 35) % 360 + 360) % 360, isRetro: false };
-    planetMap['Mars'] = { tropical: ((sunTrop + 110) % 360 + 360) % 360, isRetro: false };
-    planetMap['Jupiter'] = { tropical: ((sunTrop + 210) % 360 + 360) % 360, isRetro: false };
-    planetMap['Saturn'] = { tropical: ((sunTrop + 290) % 360 + 360) % 360, isRetro: false };
-  }
+  planetMap['Sun'] = extractDeg('sun');
+  planetMap['Moon'] = extractDeg('moon');
+  planetMap['Mercury'] = extractDeg('mercury');
+  planetMap['Venus'] = extractDeg('venus');
+  planetMap['Mars'] = extractDeg('mars');
+  planetMap['Jupiter'] = extractDeg('jupiter');
+  planetMap['Saturn'] = extractDeg('saturn');
 
   // Lunar nodes
   const nodes = calculateLunarNodes(jd, ayanamsa);
-  planetMap['Rahu'] = { tropical: nodes.rahu.tropical, isRetro: nodes.rahu.isRetrograde };
-  planetMap['Ketu'] = { tropical: nodes.ketu.tropical, isRetro: nodes.ketu.isRetrograde };
+  planetMap['Rahu'] = { deg: nodes.rahu.tropical, retro: nodes.rahu.isRetrograde };
+  planetMap['Ketu'] = { deg: nodes.ketu.tropical, retro: nodes.ketu.isRetrograde };
 
   const orderedNames: VedicPlanetName[] = [
     'Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'
   ];
 
   const planets = orderedNames.map(name => {
-    const raw = planetMap[name] || { tropical: 0, isRetro: false };
-    const siderealLongitude = ((raw.tropical - ayanamsa) % 360 + 360) % 360;
-    const signIndex = Math.floor(siderealLongitude / 30);
+    const raw = planetMap[name] || { deg: 0, retro: false };
+    const tropicalLongitude = raw.deg;
+    const siderealLongitude = ((tropicalLongitude - ayanamsa) % 360 + 360) % 360;
+    const signIndex = Math.floor(siderealLongitude / 30) % 12;
     const degreeInSign = siderealLongitude % 30;
 
     return {
       name,
-      tropicalLongitude: raw.tropical,
+      tropicalLongitude,
       siderealLongitude,
       degreeInSign,
       signIndex,
       signName: VEDIC_SIGNS[signIndex]?.name || 'Aries',
-      isRetrograde: raw.isRetro,
+      isRetrograde: raw.retro,
     };
   });
 
@@ -268,6 +331,7 @@ export function calculateHighPrecisionGrahas(
     ayanamsa,
     jd,
     utcDate,
+    calculationMethod: 'ephemeris_moshier',
     ascendant: {
       tropical: asc.tropicalLongitude,
       sidereal: asc.siderealLongitude,
@@ -279,7 +343,21 @@ export function calculateHighPrecisionGrahas(
 }
 
 /**
- * Extended Varga Divisional Calculations:
+ * Get Western Tropical Sun Sign directly from astronomical solar tropical longitude
+ */
+export function getSunTropicalZodiac(tropicalLongitude: number): string {
+  const normDeg = ((tropicalLongitude % 360) + 360) % 360;
+  const signs = [
+    '白羊座', '金牛座', '双子座', '巨蟹座',
+    '狮子座', '处女座', '天秤座', '天蝎座',
+    '射手座', '摩羯座', '水瓶座', '双鱼座'
+  ];
+  const signIndex = Math.floor(normDeg / 30);
+  return signs[signIndex] || '白羊座';
+}
+
+/**
+ * Extended Varga Divisional Sign Mapping:
  * D1: Rasi (1)
  * D7: Saptamsa (7) - Children & Progeny
  * D9: Navamsa (9) - Dharma & Marriage
