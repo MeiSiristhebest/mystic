@@ -10,7 +10,7 @@ import { CanonicalEvidenceNode, CrossDomainConflict, CrossDomainPerspective, Dom
 export class CrossDomainConflictDetector {
   /**
    * Analyze evidence nodes across domains and detect dimensional tensions and contradictions.
-   * Incorporates time-window, confidence weight, and domain perspective scope.
+   * Incorporates time-window, multi-factor confidence, and domain perspective scope.
    */
   static detectConflicts(evidences: CanonicalEvidenceNode[]): CrossDomainConflict[] {
     const dimensions: Array<'career' | 'health' | 'wealth' | 'relationship' | 'timing'> = [
@@ -44,10 +44,10 @@ export class CrossDomainConflictDetector {
       const timeWindows: string[] = [];
 
       for (const [domain, evList] of domainMap.entries()) {
-        const topEv = evList.sort((a, b) => b.confidence - a.confidence)[0];
+        const topEv = evList.sort((a, b) => (b.confidenceBreakdown?.overall ?? b.confidence) - (a.confidenceBreakdown?.overall ?? a.confidence))[0];
         
-        // Extract time scope if present in parameters
-        const timeScope = topEv.parameters?.timeWindow || topEv.parameters?.dashaPeriod || topEv.parameters?.scope;
+        // Extract time scope if present in parameters or temporalScope
+        const timeScope = topEv.temporalScope?.timeWindow || topEv.parameters?.timeWindow || topEv.parameters?.dashaPeriod || topEv.parameters?.scope;
         if (timeScope && typeof timeScope === 'string') {
           timeWindows.push(timeScope);
         }
@@ -57,6 +57,7 @@ export class CrossDomainConflictDetector {
           dimension: dim,
           stance: topEv.polarity,
           keyClaim: `${topEv.ruleName}：${topEv.canonicalInterpretation.slice(0, 120)}...`,
+          temporalScope: topEv.temporalScope,
           evidenceIds: evList.map(e => e.id),
         });
 
@@ -120,7 +121,7 @@ export class CrossDomainConflictDetector {
 
     const sections = conflicts.map(c => {
       const perspectiveLines = c.perspectives.map(p => 
-        `  - 【${p.domain.toUpperCase()} 视角】(立场: ${p.stance}) -> ${p.keyClaim}`
+        `  - 【${p.domain.toUpperCase()} 视角】(立场: ${p.stance}${p.temporalScope?.timeWindow ? `, 时域: ${p.temporalScope.timeWindow}` : ''}) -> ${p.keyClaim}`
       ).join('\n');
 
       return `### 维度: ${c.dimension.toUpperCase()} ${c.hasConflict ? '⚠️ [检测到体系张力/分歧]' : '✅ [多体系共振]'}

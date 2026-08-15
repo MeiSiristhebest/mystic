@@ -4,7 +4,12 @@ import {
   getSunSign, 
   getZodiacFromLongitude 
 } from "@/lib/astrology";
-import { buildVedicChart, calculateVedicSynastry, VedicChart } from "@/lib/vedic";
+import { 
+  buildVedicChart, 
+  calculateVedicSynastry, 
+  VedicChart,
+  calculateHighPrecisionGrahas 
+} from "@/lib/vedic";
 import { DomainEvaluationResult } from "@/lib/contracts/types";
 
 export class AstrologyService {
@@ -16,7 +21,7 @@ export class AstrologyService {
   }
 
   /**
-   * Calculate complete western astrology star chart with planets, houses, ascendant and aspects.
+   * Calculate complete western astrology star chart with high-precision astronomical ephemeris.
    */
   static getStarChart(birthDate: string, birthTime: string, lon = 116.40, lat = 39.90) {
     const d = new Date(birthDate);
@@ -26,25 +31,31 @@ export class AstrologyService {
     const ascendant = getPreciseAscendant(d, birthTime, lon, lat);
     const sunSign = getSunSign(d);
 
-    // Approximate classical planets longitudes
-    const dayOfYear = Math.floor((d.getTime() - new Date(d.getFullYear(), 0, 0).getTime()) / 86400000);
-    const sunLon = ((dayOfYear - 80) * 0.9856 + 360) % 360;
-    const moonLon = (sunLon + 120 + (d.getDate() * 13.176)) % 360;
-    const mercuryLon = (sunLon + Math.sin(dayOfYear / 10) * 22 + 360) % 360;
-    const venusLon = (sunLon + Math.cos(dayOfYear / 15) * 44 + 360) % 360;
-    const marsLon = (sunLon * 0.524 + 180) % 360;
-    const jupiterLon = (d.getFullYear() * 30.35) % 360;
-    const saturnLon = (d.getFullYear() * 12.22) % 360;
+    // Compute High Precision Planetary Positions via Ephemeris / VSOP87
+    const grahaData = calculateHighPrecisionGrahas(d, {
+      longitude: lon,
+      latitude: lat,
+      timezoneOffsetHours: 8,
+    });
 
-    const planets = [
-      { name: "太阳", symbol: "☉", longitude: sunLon, sign: getZodiacFromLongitude(sunLon) },
-      { name: "月亮", symbol: "☽", longitude: moonLon, sign: getZodiacFromLongitude(moonLon) },
-      { name: "水星", symbol: "☿", longitude: mercuryLon, sign: getZodiacFromLongitude(mercuryLon) },
-      { name: "金星", symbol: "♀", longitude: venusLon, sign: getZodiacFromLongitude(venusLon) },
-      { name: "火星", symbol: "♂", longitude: marsLon, sign: getZodiacFromLongitude(marsLon) },
-      { name: "木星", symbol: "♃", longitude: jupiterLon, sign: getZodiacFromLongitude(jupiterLon) },
-      { name: "土星", symbol: "♄", longitude: saturnLon, sign: getZodiacFromLongitude(saturnLon) },
-    ];
+    const planetNameMap: Record<string, { name: string; symbol: string }> = {
+      Sun: { name: "太阳", symbol: "☉" },
+      Moon: { name: "月亮", symbol: "☽" },
+      Mercury: { name: "水星", symbol: "☿" },
+      Venus: { name: "金星", symbol: "♀" },
+      Mars: { name: "火星", symbol: "♂" },
+      Jupiter: { name: "木星", symbol: "♃" },
+      Saturn: { name: "土星", symbol: "♄" },
+    };
+
+    const planets = grahaData.planets
+      .filter(p => planetNameMap[p.name])
+      .map(p => ({
+        name: planetNameMap[p.name].name,
+        symbol: planetNameMap[p.name].symbol,
+        longitude: p.tropicalLongitude,
+        sign: getZodiacFromLongitude(p.tropicalLongitude),
+      }));
 
     const aspects = calculateAspects(planets);
 
@@ -64,27 +75,39 @@ export class AstrologyService {
       planets,
       houses,
       aspects,
+      ephemerisInfo: {
+        jd: grahaData.jd,
+        ayanamsa: grahaData.ayanamsa,
+      },
     };
   }
 
   /**
-   * Calculate Vedic astrology chart with sidereal ayanamsa & 27 nakshatras.
+   * Calculate Vedic astrology chart with high precision sidereal ayanamsa & 27 nakshatras.
    */
   static getVedicChart(birthDate: string, birthTime: string, lon = 116.40, lat = 39.90): VedicChart {
-    const starChart = this.getStarChart(birthDate, birthTime, lon, lat);
-    const tropicalPlanets = [
-      { name: 'Sun', longitude: starChart.planets[0].longitude },
-      { name: 'Moon', longitude: starChart.planets[1].longitude },
-      { name: 'Mars', longitude: starChart.planets[4].longitude },
-      { name: 'Mercury', longitude: starChart.planets[2].longitude },
-      { name: 'Jupiter', longitude: starChart.planets[5].longitude },
-      { name: 'Venus', longitude: starChart.planets[3].longitude },
-      { name: 'Saturn', longitude: starChart.planets[6].longitude },
-      { name: 'Rahu', longitude: (starChart.planets[6].longitude + 180) % 360 },
-      { name: 'Ketu', longitude: starChart.planets[6].longitude },
-    ];
+    const d = new Date(birthDate);
+    const [h, m] = (birthTime || "12:00").split(":").map(Number);
+    d.setHours(h, m, 0, 0);
 
-    return buildVedicChart(birthDate, birthTime, tropicalPlanets, starChart.ascendant.longitude);
+    const grahaData = calculateHighPrecisionGrahas(d, {
+      longitude: lon,
+      latitude: lat,
+      timezoneOffsetHours: 8,
+    });
+
+    const tropicalPlanets = grahaData.planets.map(p => ({
+      name: p.name,
+      longitude: p.tropicalLongitude,
+    }));
+
+    return buildVedicChart(
+      birthDate, 
+      birthTime, 
+      tropicalPlanets, 
+      grahaData.ascendant.tropical,
+      grahaData.ayanamsa
+    );
   }
 
   /**

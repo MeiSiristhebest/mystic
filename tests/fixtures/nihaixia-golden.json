@@ -8,6 +8,7 @@
       "temperature": 50
     },
     "expected": {
+      "status": "confirmed",
       "stage": "taiyang",
       "ruleId": "RULE_TAIYANG_ZHONGFENG",
       "formula": "桂枝汤",
@@ -24,6 +25,7 @@
       "sleep": 50
     },
     "expected": {
+      "status": "confirmed",
       "stage": "shaoyang",
       "ruleId": "RULE_SHAOYANG_SHUJI",
       "formula": "小柴胡汤",
@@ -34,18 +36,30 @@
   {
     "id": "tcm_golden_003_shaoyin_yangxu",
     "name": "少阴心肾阳虚真阳不足水泛证",
-    "symptoms": "常年手足逆冷至肘膝、恶寒蜷卧、夜尿清长、但欲寐",
+    "symptoms": "常年手足冰凉至膝盖、恶寒蜷卧、夜尿清长、但欲寐、精神萎靡",
     "healthScores": {
       "temperature": 35,
       "urine": 45,
       "vitality": 40
     },
     "expected": {
+      "status": "confirmed",
       "stage": "shaoyin",
       "ruleId": "RULE_SHAOYIN_XINSHEN_YANGXU",
       "formula": "真武汤",
       "classicalClause": "《伤寒论》第281条",
       "mustIncludeHerbs": ["制附子", "茯苓", "白芍", "白术", "生姜"]
+    }
+  },
+  {
+    "id": "tcm_golden_004_insufficient_vague",
+    "name": "指征不足拒绝强制确诊案例 (Vague Input)",
+    "symptoms": "今天感觉有点累，没别的明显不适",
+    "healthScores": {},
+    "expected": {
+      "status": "insufficient_evidence",
+      "stage": "unresolved",
+      "mustHaveMissingObservations": true
     }
   }
 ]

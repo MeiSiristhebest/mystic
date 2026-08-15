@@ -146,6 +146,21 @@ function runTestSuite() {
     'Diagnostic engine retrieves matching clinical cases as few-shot evidence anchors'
   );
 
+  // Case D: Refusal on Vague Input (No dangerous Xiaochaihu fallback)
+  const resVague = matchDiagnosticRules('今天有点累，喝了点水');
+  assert(
+    resVague.status === 'insufficient_evidence',
+    'Vague symptom input refuses false diagnosis (status === insufficient_evidence)'
+  );
+  assert(
+    resVague.matchedRules.length === 0,
+    'Refusal does not trigger false default formula fallback'
+  );
+  assert(
+    (resVague.missingObservations || []).length > 0,
+    'Diagnostic engine returns missing clinical observations checklist'
+  );
+
   // Validation
   const valHealth = validateHealthAnswers({ sleep: 80, temperature: 60, bowel: 75 });
   assert(valHealth.isValid, 'Health standards validation passes on valid numbers');

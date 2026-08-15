@@ -11,47 +11,9 @@ import {
 import { getNakshatraByDegree, NAKSHATRAS } from './nakshatras';
 import { validateVedicChart } from './validation';
 import { CanonicalEvidenceNode } from '../contracts/types';
+import { VEDIC_SIGNS, PLANET_CN_MAP, DASHA_ORDER } from './constants';
 
-export const VEDIC_SIGNS: { name: VedicSignName; cnName: string; element: string; ruler: VedicPlanetName }[] = [
-  { name: 'Aries', cnName: '白羊宫 (Mesha)', element: 'Fire', ruler: 'Mars' },
-  { name: 'Taurus', cnName: '金牛宫 (Vrishabha)', element: 'Earth', ruler: 'Venus' },
-  { name: 'Gemini', cnName: '双子宫 (Mithuna)', element: 'Air', ruler: 'Mercury' },
-  { name: 'Cancer', cnName: '巨蟹宫 (Karka)', element: 'Water', ruler: 'Moon' },
-  { name: 'Leo', cnName: '狮子宫 (Simha)', element: 'Fire', ruler: 'Sun' },
-  { name: 'Virgo', cnName: '处女宫 (Kanya)', element: 'Earth', ruler: 'Mercury' },
-  { name: 'Libra', cnName: '天秤宫 (Tula)', element: 'Air', ruler: 'Venus' },
-  { name: 'Scorpio', cnName: '天蝎宫 (Vrishchika)', element: 'Water', ruler: 'Mars' },
-  { name: 'Sagittarius', cnName: '射手宫 (Dhanu)', element: 'Fire', ruler: 'Jupiter' },
-  { name: 'Capricorn', cnName: '摩羯宫 (Makara)', element: 'Earth', ruler: 'Saturn' },
-  { name: 'Aquarius', cnName: '水瓶宫 (Kumbha)', element: 'Air', ruler: 'Saturn' },
-  { name: 'Pisces', cnName: '双鱼宫 (Meena)', element: 'Water', ruler: 'Jupiter' },
-];
-
-export const PLANET_CN_MAP: Record<VedicPlanetName, string> = {
-  Sun: '太阳 (Surya)',
-  Moon: '月亮 (Chandra)',
-  Mars: '火星 (Mangala)',
-  Mercury: '水星 (Budha)',
-  Jupiter: '木星 (Guru)',
-  Venus: '金星 (Shukra)',
-  Saturn: '土星 (Shani)',
-  Rahu: '罗睺 (Rahu)',
-  Ketu: '计都 (Ketu)',
-  Ascendant: '上升命度 (Lagna)',
-};
-
-// Vimsottari Dasha planetary sequence and fixed years (Total: 120 years)
-export const DASHA_ORDER: { planet: VedicPlanetName; years: number }[] = [
-  { planet: 'Ketu', years: 7 },
-  { planet: 'Venus', years: 20 },
-  { planet: 'Sun', years: 6 },
-  { planet: 'Moon', years: 10 },
-  { planet: 'Mars', years: 7 },
-  { planet: 'Rahu', years: 18 },
-  { planet: 'Jupiter', years: 16 },
-  { planet: 'Saturn', years: 19 },
-  { planet: 'Mercury', years: 17 },
-];
+export { VEDIC_SIGNS, PLANET_CN_MAP, DASHA_ORDER };
 
 const MS_PER_YEAR = 365.25 * 24 * 3600 * 1000;
 
@@ -327,6 +289,16 @@ export function extractVedicEvidences(
       dimension: 'personality',
       polarity: 'neutral',
       confidence: 0.95,
+      confidenceBreakdown: {
+        calculation: 0.99,
+        inputCompleteness: 0.95,
+        ruleMatch: 1.0,
+        sourceAuthority: 0.98,
+        overall: 0.95,
+      },
+      temporalScope: {
+        scopeType: 'natal',
+      },
       parameters: {
         nakshatra: chart.moonNakshatra.name,
         ruler: chart.moonNakshatra.ruler,
@@ -350,6 +322,16 @@ export function extractVedicEvidences(
       dimension: 'spiritual',
       polarity: 'transformative',
       confidence: 0.92,
+      confidenceBreakdown: {
+        calculation: 0.98,
+        inputCompleteness: 0.95,
+        ruleMatch: 0.95,
+        sourceAuthority: 0.95,
+        overall: 0.92,
+      },
+      temporalScope: {
+        scopeType: 'natal',
+      },
       parameters: { planet: ak.planet, degree: ak.degree },
       classicalSource: 'Jaimini Sutras Upadesha Ch. 1',
       canonicalInterpretation: `命主在此生中最高度数行星为${ak.planetCn} (${ak.degree.toFixed(2)}°)。代表灵魂最核心的进化课题与必须克服的执念原型。`,
@@ -368,6 +350,16 @@ export function extractVedicEvidences(
       dimension: 'career',
       polarity: 'favorable',
       confidence: 0.88,
+      confidenceBreakdown: {
+        calculation: 0.98,
+        inputCompleteness: 0.95,
+        ruleMatch: 0.90,
+        sourceAuthority: 0.92,
+        overall: 0.88,
+      },
+      temporalScope: {
+        scopeType: 'natal',
+      },
       parameters: { planet: amk.planet, degree: amk.degree },
       classicalSource: 'Jaimini Sutras Upadesha Ch. 1',
       canonicalInterpretation: `事业谋略与社会执行力由${amk.planetCn}主导，指示命主在现实社会竞争与资源运作中最擅长的策略路径。`,
@@ -387,6 +379,19 @@ export function extractVedicEvidences(
     dimension: 'timing',
     polarity: md.planet === 'Saturn' || md.planet === 'Rahu' || md.planet === 'Ketu' ? 'transformative' : 'favorable',
     confidence: 0.96,
+    confidenceBreakdown: {
+      calculation: 0.99,
+      inputCompleteness: 0.95,
+      ruleMatch: 0.98,
+      sourceAuthority: 0.99,
+      overall: 0.96,
+    },
+    temporalScope: {
+      timeWindow: `${md.startDate.slice(0, 4)}~${md.endDate.slice(0, 4)} (${md.planet} MD)`,
+      startDate: md.startDate,
+      endDate: md.endDate,
+      scopeType: 'dasha',
+    },
     parameters: {
       mahaLord: md.planet,
       antarLord: ad.planet,
@@ -416,6 +421,17 @@ export function extractVedicEvidences(
           dimension: 'timing',
           polarity: 'transformative',
           confidence: 0.85,
+          confidenceBreakdown: {
+            calculation: 0.95,
+            inputCompleteness: 0.90,
+            ruleMatch: 0.88,
+            sourceAuthority: 0.90,
+            overall: 0.85,
+          },
+          temporalScope: {
+            timeWindow: '7.5年土星过境照月周期',
+            scopeType: 'transit',
+          },
           parameters: { moonHouse, saturnHouse, phase },
           classicalSource: 'Phaladeepika & Classic Jyotish Transit Lore',
           canonicalInterpretation: `土星当前行运与本命月亮构成 7.5 年 Sade Sati 紧密周期，处于${phase}。主心智淬炼、责任担当与人生底层结构重构。`,
@@ -434,10 +450,12 @@ export function buildVedicChart(
   birthDate: string,
   birthTime: string,
   tropicalPlanets: Array<{ name: string; longitude: number; isRetrograde?: boolean }>,
-  tropicalAscendantLongitude: number
+  tropicalAscendantLongitude: number,
+  customAyanamsa?: number
 ): VedicChart {
   const [year, month, day] = birthDate.split('-').map(Number);
-  const ayanamsa = getLahiriAyanamsa(year, month || 1, day || 1);
+  const ayanamsa = customAyanamsa !== undefined ? customAyanamsa : getLahiriAyanamsa(year, month || 1, day || 1);
+
 
   // Convert Tropical Longitudes to Sidereal
   const siderealAscDegree = ((tropicalAscendantLongitude - ayanamsa) % 360 + 360) % 360;

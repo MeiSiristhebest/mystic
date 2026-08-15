@@ -1135,7 +1135,7 @@ export function extractZiweiEvidences(chart: ZiweiChart, patterns: Pattern[]): i
       : p.level === 'caution' ? 'warning'
       : 'support';
 
-    const confidence = p.level === 'excellent' ? 0.95 : p.level === 'caution' ? 0.90 : 0.82;
+    const overallConf = p.level === 'excellent' ? 0.95 : p.level === 'caution' ? 0.90 : 0.85;
 
     return {
       id: `ziwei_pattern_${idx}_${p.name.replace(/\s+/g, '_')}`,
@@ -1145,7 +1145,17 @@ export function extractZiweiEvidences(chart: ZiweiChart, patterns: Pattern[]): i
       level: evidenceLevel,
       dimension,
       polarity,
-      confidence,
+      confidence: overallConf,
+      confidenceBreakdown: {
+        calculation: 1.0, // Exact iztro discrete calendar & star positions
+        inputCompleteness: 0.95,
+        ruleMatch: p.level === 'excellent' ? 0.98 : 0.90,
+        sourceAuthority: 0.95,
+        overall: overallConf,
+      },
+      temporalScope: {
+        scopeType: 'natal',
+      },
       parameters: {
         palaces: p.palaces,
         level: p.level,
@@ -1156,4 +1166,5 @@ export function extractZiweiEvidences(chart: ZiweiChart, patterns: Pattern[]): i
     };
   });
 }
+
 

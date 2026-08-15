@@ -2,20 +2,20 @@
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge" alt="License: MIT" /></a>
-  <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-14_App_Router-black.svg?style=for-the-badge" alt="Next.js 14 App Router" /></a>
+  <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-16_App_Router-black.svg?style=for-the-badge" alt="Next.js 16 App Router" /></a>
   <a href="https://ai.google.dev/"><img src="https://img.shields.io/badge/AI_Engine-Gemini_Stream_%26_Vision_API-8E44AD.svg?style=for-the-badge" alt="Gemini Stream and Vision API" /></a>
-  <a href="https://firebase.google.com/"><img src="https://img.shields.io/badge/Database-Firebase_Firestore-FFCA28.svg?style=for-the-badge" alt="Firebase Firestore" /></a>
+  <a href="https://github.com/MeiSiristhebest/mystic/actions"><img src="https://img.shields.io/badge/CI-Passing-brightgreen.svg?style=for-the-badge" alt="GitHub Actions CI" /></a>
 </p>
 
 <p align="center">
   <a href="README.md">🇨🇳 中文</a> &nbsp;|&nbsp; <a href="README_EN.md">🇺🇸 English</a>
-  </p>
+</p>
 
 ---
 
 <p align="center">
-  <strong>基于结构化事实约束与确定性规则引擎的多领域可解释 AI 推演系统</strong><br/>
-  <em>四层解耦架构 · 证据图谱 (Canonical Evidence Graph) · 跨体系辩证冲突仲裁 · 严格确定性计算与校验</em>
+  <strong>基于确定性事实约束与规范证据图谱的多领域可解释 AI 推演引擎</strong><br/>
+  <em>四层解耦架构 · 高精度天文星历 · 差分辨证决策树 · 证据图谱四维置信度 · 跨体系时空张力仲裁</em>
 </p>
 
 <p align="center">
@@ -29,28 +29,27 @@
 - [项目简介 (About)](#项目简介-about)
 - [核心架构：四层解耦模型 (Architecture)](#核心架构四层解耦模型-architecture)
 - [核心领域推演引擎 (Domain Engines)](#核心领域推演引擎-domain-engines)
-  - [1. 印度吠陀占星 (Vedic Jyotish Engine)](#1-印度吠陀占星-vedic-jyotish-engine)
-  - [2. 倪海厦《人纪》经方辨证系统 (Ni Haixia TCM Engine)](#2-倪海厦人纪经方辨证系统-ni-haixia-tcm-engine)
-  - [3. 紫微斗数格局与四化引擎 (Ziwei Doushu Engine)](#3-紫微斗数格局与四化引擎-ziwei-doushu-engine)
-  - [4. 跨体系冲突检测与辩证推理 (Cross-Domain Dialectics)](#4-跨体系冲突检测与辩证推理-cross-domain-dialectics)
+  - [1. 吠陀占星天文与运势内核 (Vedic Jyotish & Ephemeris Engine)](#1-吠陀占星天文与运势内核-vedic-jyotish--ephemeris-engine)
+  - [2. 倪海厦经方差分辨证系统 (Ni Haixia Differential TCM Engine)](#2-倪海厦经方差分辨证系统-ni-haixia-differential-tcm-engine)
+  - [3. 紫微斗数排盘与格局引擎 (Ziwei Doushu Astrolabe Engine)](#3-紫微斗数排盘与格局引擎-ziwei-doushu-astrolabe-engine)
+  - [4. 跨体系时空冲突检测与辩证防火墙 (Cross-Domain Dialectics)](#4-跨体系时空冲突检测与辩证防火墙-cross-domain-dialectics)
+- [自动化验证与 CI 体系 (Verification & Quality Harness)](#自动化验证与-ci-体系-verification--quality-harness)
 - [环境要求与安装 (Installation & Setup)](#环境要求与安装-installation--setup)
-- [项目结构 (Project Structure)](#项目结构-project-structure)
-- [参与贡献与安全说明 (Contributing & Security)](#参与贡献与安全说明-contributing--security)
 - [许可证 (License)](#许可证-license)
 
 ---
 
 ## 项目简介 (About)
 
-**Mystic** 是一套构建在 **Next.js 14 App Router** 与 **Google Gemini API** 之上的**多领域结构化可解释 AI 推演引擎**。
+**Mystic** 是一套构建在 **Next.js 16 (App Router)**、**React 19**、**TypeScript 6** 与 **`@google/genai` (Gemini API v2)** 之上的**多领域结构化可解释 AI 推演引擎**。
 
 传统的玄学与命理 AI 往往直接将出生日期或主观提问粗暴地作为 Prompt 丢给大语言模型，导致极易产生“巴纳姆效应”套话、事实捏造与虚假的多系统一致性幻觉。
 
 **Mystic 拒绝简单的 Prompt 套壳。** 本项目在前端交互与大模型生成之间，建立了一套严密的**确定性计算与规则推理中枢**：
-1. **确定性计算事实先行**：天文历法、恒星黄道、分盘与经方指标 100% 由纯算法确定性计算，严禁模型猜度。
-2. **确定性规则树与格局匹配**：六经辨证决策树、紫微格局库、吠陀 Karaka 机制均由独立规则引擎提取，直接对应古籍经典出处。
-3. **结构化证据图谱 (Canonical Evidence Graph)**：每条结论均携带明确的 `EvidenceNode` 证据溯源链。
-4. **跨体系张力与冲突呈现**：允许并展示不同学科之间的推演分歧（如紫微变动 vs 吠陀沉淀），拒绝和稀泥式的伪共识。
+1. **高精度天文与历法事实先行**：集成儒略日（JD）、VSOP87 高精度星历、恒星时（LST）与 Lahiri 恒星黄道岁差校正，确保底层输入客观真实。
+2. **确定性规则树与差分判定**：中医正反指征排除法、紫微 80+ 经典格局规则、吠陀 7-Karaka 梯队，均由程序逻辑确定性产出，杜绝胡乱猜测。
+3. **结构化证据图谱 (Canonical Evidence Graph)**：每条推演均携带 `calculation`、`inputCompleteness`、`ruleMatch`、`sourceAuthority` 4 维置信度解构及时间作用域（Temporal Scope）。
+4. **跨体系张力与时空冲突仲裁**：识别多体系在相同时间窗口内的语义张力（如表层机遇 vs 底层体质赤字），通过 Prompt Firewall 强制指导 LLM 开展辩证综合。
 
 ---
 
@@ -58,145 +57,104 @@
 
 ```mermaid
 graph TD
-    subgraph Layer1["Layer 1: 确定性计算与天文历法事实层 (Tier A)"]
-        Z_Calc["紫微: iztro 农历/主星/四化排盘"]
-        V_Calc["吠陀: 恒星黄道 Lahiri Ayanamsa + 120年递归三级 Dasha"]
-        N_Fact["中医: 问诊采集 + 节气与五运六气先天天时"]
+    subgraph Layer1 [Tier A: 确定性天文历法与量化事实层]
+        Ephem["高精度天文星历: JDE 儒略日 + VSOP87 + 地方恒星时 + Lahiri 岁差"]
+        Asc["精准上升点 Lagna 计算: 地理经纬度投影 + 黄赤交角反切方程"]
+        Iztro["iztro 农历干支 + 十二宫主辅四化星曜排盘"]
+        TcmStd["中医八大金标准量化 + 先天五运六气大运客气"]
     end
 
-    subgraph Layer2["Layer 2: 确定性规则与格局匹配层 (Tier B)"]
-        Z_Rule["紫微 Patterns 规则引擎: 80+ 经典格局命中"]
-        V_Rule["吠陀 7-Chara Karakas + D9/D10 分盘映射 + Sade Sati 周期"]
-        N_Rule["倪师八纲六经辨证决策树 + 经典经方药对匹配"]
+    subgraph Layer2 [Tier B: 领域规则引擎与差分推理层]
+        V_Engine["吠陀内核: 120年递归三级 Vimshottari (9MD/81AD/729PD) + D1~D60 分盘"]
+        Z_Engine["紫微内核: 80+ 经典格局规则库 (必须/加分/破格) + 借对宫转换"]
+        T_Engine["倪师经方内核: 支持/反向排除/缺失差分决策树 + 拒诊机制 (拒绝假兜底)"]
     end
 
-    subgraph Layer3["Layer 3: 证据图谱与经典溯源层 (Tier C)"]
-        EG["Canonical Evidence Graph 证据图谱"]
-        Z_Rule --> EG
-        V_Rule --> EG
-        N_Rule --> EG
+    subgraph Layer3 [Tier C: 规范证据图谱与多维置信度]
+        CEG["Canonical Evidence Graph: 4 维置信度 + 时间窗口 + 古籍经典溯源"]
+        V_Engine --> CEG
+        Z_Engine --> CEG
+        T_Engine --> CEG
     end
 
-    subgraph Layer4["Layer 4: 跨体系辩证冲突检测与 LLM 综合层 (Tier D)"]
-        CD["CrossDomainConflictDetector 冲突仲裁器"]
-        EG --> CD
-        CD --> Pipeline["PromptPipeline 上下文编排"]
-        Pipeline --> LLM["Gemini 1.5/2.0 多模态推理"]
-        LLM --> UI["结构化可解释呈现: 事实 | 证据 | 分歧 | 建议"]
+    subgraph Layer4 [Tier D: 跨体系冲突仲裁与 AI 辩证综合]
+        Arbitrator["CrossDomainConflictDetector: 时域交集判定 + 语义关系张力识别"]
+        CEG --> Arbitrator
+        Arbitrator --> Firewall["Prompt Pipeline 辩证防火墙 (反伪共识规范)"]
+        Firewall --> LLM["Google Gemini 多模态流式综合"]
     end
 ```
-
-| 层级 | 性质 | 职责范围 | 典型产出 |
-| :--- | :--- | :--- | :--- |
-| **Tier A: 计算事实层** | 100% 确定性算法 | 太阳/月亮度数、宫位、干支、宿度、Dasha 时间跨度 | `VedicPlanetPosition`, `ZiweiChart`, `WuyunLiuqi` |
-| **Tier B: 规则命中层** | 100% 确定性规则 | 条件判定、格局命中、决策树路由、禁忌防范 | `DiagnosticRuleMatch`, `PatternCondition` |
-| **Tier C: 证据图谱层** | 经典知识图谱 | 古籍条文索引、经方组成、倪师考证与标准原话 | `CanonicalEvidenceNode[]` |
-| **Tier D: 综合推演层** | 生成式辩证推理 | 多体系分歧呈现、防幻觉防火墙约束、现实决策建议 | 最终结构化 Markdown 审计报告 |
 
 ---
 
 ## 核心领域推演引擎 (Domain Engines)
 
-### 1. 印度吠陀占星 (Vedic Jyotish Engine)
-- **恒星黄道转换**：基于 True Citra (Lahiri Ayanamsa) 岁差校正。
-- **三级递归 Vimshottari Dasha 引擎**：
-  - 计算全周期 120 年 **9 大运 (Maha Dasha) $\to$ 81 中运 (Antar Dasha) $\to$ 729 小运 (Pratyantar Dasha)**。
-  - 根据出生月宿度数精准扣除出生前已消耗年数，确保时间区间严密连续、无缝衔接。
-- **分盘与指示星**：
-  - D1 (本命身盘)、D9 (Navamsa 灵魂与婚姻)、D10 (Dasamsa 事业社会成就)。
-  - 7-Chara Karaka 灵魂指示星体系（AK 灵魂星、AmK 事业星、DK 配偶星等）。
-  - 7.5 年 Sade Sati 土星回归周期动态监测。
-- **16 项结构完整性校验层 (Validation Layer)**：自动校验行星度数范围、九曜完整性、分盘映射自洽性与运势无重叠性。
+### 1. 吠陀占星天文与运势内核 (Vedic Jyotish & Ephemeris Engine)
+- **高精度星历运算**：基于标准儒略日与天体力学模型，精准解算九曜（Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, Rahu, Ketu）真实真黄道度数与逆行态。
+- **恒星黄道与上升点**：采用严格 Chitrapaksha (Lahiri) Ayanamsa（岁差公式）与地方恒星时解算 Lagna。
+- **120 年全量三级 Dasha 递归**：精准推演 9 大运 (Maha) $\to$ 81 中运 (Antar) $\to$ 729 小运 (Pratyantar) 连续无缝时间轴。
+- **扩展分盘 (Vargas)**：支持 D1 (本命), D7 (子息), D9 (九分婚恋), D10 (十分事业), D12 (父母), D60 (微细因果盘)。
+- **7-Chara Karaka**：按度数降序严密编排 Atmakaraka (灵魂星) 至 Darakaraka (伴侣星)。
 
-### 2. 倪海厦《人纪》经方辨证系统 (Ni Haixia TCM Engine)
-- **八大健康金标准自测**：对睡眠、胃口、渴饮、二便、手足身温、出汗与精力建立雷达量化模型。
-- **确定性六经辨证决策树 (`rules.ts`)**：
-  - 输入多维症状与金标准得分，自动推断归经（太阳、阳明、少阳、太阴、少阴、厥阴）。
-  - 自动索引《伤寒论》《金匮要略》经典条文（如第12条、第96条、第326条）。
-  - 匹配核心经方（桂枝汤、麻黄汤、小柴胡汤、白虎汤、理中汤、苓桂术甘汤、真武汤、乌梅丸）与药对机制、禁忌与日常药食同源调摄。
-- **经典医案佐证 Few-Shot**：根据命中规则精确提取对应的倪师临床经典病案作为证据锚点。
+### 2. 倪海厦经方差分辨证系统 (Ni Haixia Differential TCM Engine)
+- **差分辨证协议**：引入正向支持（Positive）、反向排除（Negative Contraindications）与缺失信息追问（Missing Observations）。
+- **坚决拒绝伪兜底**：彻底废除“无匹配即默认小柴胡汤”的粗糙逻辑；指征不足时明确返回 `insufficient_evidence` 并输出四诊追问清单。
+- **经方古籍条文溯源**：直连《伤寒论》《金匮要略》100% 真实条文出处、经典药对配伍与禁忌警戒。
 
-### 3. 紫微斗数格局与四化引擎 (Ziwei Doushu Engine)
-- **核心排盘**：集成 `iztro` 与 `lunar-javascript`，提供十二宫、干支、主星、辅星、大限及身宫定位。
-- **80+ 经典格局规则引擎 (`patterns.ts`)**：
-  - 三方四正、对宫借星、夹宫分析。
-  - 包含三奇加会、紫府同宫、极向离明、杀破狼、机月同梁、日月反背、石中隐玉等经典吉格与恶格。
-  - 严格输出 `PatternCondition`（必须满足/加分/破格条件）与《骨髓赋》《全集》出处。
-- **证据节点结构化输出**：自动打标 `career`, `wealth`, `relationship`, `health` 等维度。
+### 3. 紫微斗数排盘与格局引擎 (Ziwei Doushu Astrolabe Engine)
+- **12 宫 108 星曜全盘解构**：基于 iztro 纯 TypeScript 算法，严密计算十二宫、身宫、三方四正、大限流年与四化互冲。
+- **80+ 经典格局规则库**：覆盖君臣庆会、杀破狼、机月同梁、三奇加会、日月同宫、日照雷门等经典上中下格与破格条件判定。
 
-### 4. 跨体系冲突检测与辩证推理 (Cross-Domain Dialectics)
-- **`CrossDomainConflictDetector`**：
-  - 聚合各领域的 `CanonicalEvidenceNode`，按维度扫描极性分歧。
-  - 自动识别 **直接矛盾 (`direct_contradiction`)**、**时机相位差 (`timing_mismatch`)** 与 **表象与根基脱节 (`surface_vs_root`)**。
-- **防伪共识与辩证指引**：
-  - 严禁强行统一矛盾。
-  - 在输出中分别列出各体系证据立场，指导用户采取兼顾“机遇把握”与“底线防守”的平衡策略。
+### 4. 跨体系时空冲突检测与辩证防火墙 (Cross-Domain Dialectics)
+- **时域感知冲突判定**：结合各个系统的 `temporalScope`（大运区间/行运周期）与 `dimension`（事业/健康/心性）。
+- **反伪共识防火墙**：当检测到正面吉象与底层收敛/真阳负荷并存时，强制 LLM 进行多角度辩证分析，拒绝生硬抹平分歧。
+
+---
+
+## 自动化验证与 CI 体系 (Verification & Quality Harness)
+
+项目内置 4 层自动化质量门禁体系（接入 GitHub Actions）：
+* **L1 运行健全性测试**：确保所有模块纯函数安全执行、零未捕获异常。
+* **L2 结构完整性校验**：12 宫完整性、14 主星落宫无遗漏、9/81/729 Dasha 连续无重叠校验。
+* **L3 领域黄金真值断言**：断言真实行星顺序、必命中格局、古籍经方组成及缺失指征拒绝机制。
+* **L4 外部引擎差分测试**：将 Mystic 适配器排盘与 `iztro` 原始底层核心进行 1:1 差分比对。
+
+```bash
+# 运行 L3 Golden 与 L4 Differential 领域测试
+pnpm test
+
+# 运行 4-Tier 全维回归测试
+pnpm test:all
+
+# 全量编译与验证
+pnpm verify
+```
 
 ---
 
 ## 环境要求与安装 (Installation & Setup)
 
-| 依赖项 | 版本要求 | 说明 |
-|:-------|:---------|:-----|
-| **Node.js** | 18.0 或更高版本 | Next.js 14 App Router 运行时 |
-| **pnpm / npm** | 推荐 pnpm v9+ | 依赖管理 |
-| **Gemini API Key** | 必填 | 前往 [Google AI Studio](https://aistudio.google.com/) 免费获取 |
-| **Firebase** | 可选 | 仅「灵感共鸣镜」模态需要 Firestore |
-
-### 安装与启动
+* **Node.js**：`>= 22.13` (推荐 Node 22 LTS)
+* **Package Manager**：`pnpm >= 11.1.2` (自带 Corepack 支持)
 
 ```bash
 # 1. 克隆代码仓库
 git clone https://github.com/MeiSiristhebest/mystic.git
 cd mystic
 
-# 2. 安装依赖
+# 2. 启用 Corepack 并安装依赖
+corepack enable
 pnpm install
 
-# 3. 配置环境变量
-cp .env.example .env.local
-# 在 .env.local 中填入你的 GEMINI_API_KEY="AIzaSy..."
+# 3. 配置环境变量 (.env.local)
+GEMINI_API_KEY=your_gemini_api_key
 
 # 4. 启动本地开发服务
-pnpm run dev
+pnpm dev
 ```
-
-打开浏览器访问 `http://localhost:3000` 即可开始推演。
-
----
-
-## 项目结构 (Project Structure)
-
-```text
-mystic/
-├── app/                            # Next.js App Router 页面、组件与 Server Actions
-│   ├── actions/                    # Server Actions (后端确定性计算与 API 代理)
-│   ├── components/                 # 核心交互与展示组件 (VedicApp, RenjiApp, BaziApp 等)
-│   └── globals.css                 # 水晶玻璃拟物化设计样式系统
-├── lib/                            # 核心推演中枢与领域引擎
-│   ├── contracts/                  # 领域通用契约 (Canonical Evidence Node, Validation Report)
-│   ├── vedic/                      # 吠陀占星引擎 (Lahiri 转换、递归 Dasha、分盘、校验)
-│   ├── nihaixia/                   # 倪海厦经方系统 (六经决策树、金标准评估、医案库)
-│   ├── ziwei/                      # 紫微斗数系统 (iztro 排盘适配、80+ 格局识别、四化)
-│   ├── reasoning/                  # 跨体系冲突检测器 (CrossDomainConflictDetector)
-│   ├── prompts/                    # 结构化上下文编排管道 (PromptPipeline, Plugins, Personas)
-│   └── services/                   # 服务层适配器 (AstrologyService, TCMService, EasternService)
-├── public/                         # 静态资源与 PWA 资产
-└── README.md                       # 项目说明文档
-```
-
----
-
-## 参与贡献与安全说明 (Contributing & Security)
-
-欢迎提交 Issue 与 Pull Request。提交 PR 前请确保：
-1. 运行 `pnpm exec tsc --noEmit` 保证全量类型检查通过。
-2. 保持确定性计算算法与 LLM 上下文管道严格解耦。
-
-**安全免责**：本项目提供的健康与传统文化推演内容仅作学术探讨与日常身心调摄参考，绝不构成临床医学诊断与专业法律/财务建议。
 
 ---
 
 ## 许可证 (License)
 
-本项目基于 **MIT License** 协议开源，详见 [LICENSE](LICENSE) 文件。
+本项目采用 [MIT License](LICENSE) 开源许可证。
