@@ -1,6 +1,6 @@
 import { Solar } from "lunar-javascript";
 import { BirthContext, ValidationReport } from "../contracts/types";
-import { BaziCalculationError, BaziPillars, HiddenStem, VisibleElementDistribution, BaziTenGodInfo, BaziConvention, DEFAULT_BAZI_CONVENTION, BaziTimeContext, BranchInteraction, DayMasterStrengthEvaluation, DaYunTimeline } from "./types";
+import { BaziCalculationError, BaziPillars, HiddenStem, VisibleElementDistribution, BaziTenGodInfo, BaziConvention, DEFAULT_BAZI_CONVENTION, BaziTimeContext, BaziCalculationProvenance, BranchInteraction, DayMasterStrengthEvaluation, DaYunTimeline } from "./types";
 import { calculateAstronomicalTrueSolarTime } from "./solar-time";
 import { analyzeInteractions } from "./interactions";
 import { evaluateDayMasterStrength } from "./strength";
@@ -133,6 +133,7 @@ export function calculateBaziCore(
     usedTrueSolarTime: boolean;
   };
   convention: BaziConvention;
+  calculationProvenance: BaziCalculationProvenance;
   validation: ValidationReport;
 } {
   const convention: BaziConvention = {
@@ -302,6 +303,7 @@ export function calculateBaziCore(
   };
 
   const timeContext: BaziTimeContext = {
+    civilLocalDate: context.birthDate, // YYYY-MM-DD civil date (separate from time)
     civilLocalTime: solarTimeResult.civilLocalTime,
     utcInstant: solarTimeResult.utcInstant,
     trueSolarTime: solarTimeResult.trueSolarTime,
@@ -311,6 +313,14 @@ export function calculateBaziCore(
     eotMinutes: solarTimeResult.eotMinutes,
     longitudeOffsetMinutes: solarTimeResult.longitudeOffsetMinutes,
     convention,
+  };
+
+  const calculationProvenance: BaziCalculationProvenance = {
+    calendar: 'lunar_javascript_deterministic',
+    solarTime: 'meeus_eot_approximation',
+    strength: 'mystic_heuristic_v1',
+    interactions: 'structural_pattern_detector_v1',
+    daYunDates: 'lunar_javascript_solar_arithmetic',
   };
 
   return {
@@ -337,6 +347,7 @@ export function calculateBaziCore(
       longitudeOffsetMinutes: solarTimeResult.longitudeOffsetMinutes,
       usedTrueSolarTime: convention.useTrueSolarTime,
     },
+    calculationProvenance,
     convention,
     validation,
   };

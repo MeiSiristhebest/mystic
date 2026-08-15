@@ -119,13 +119,14 @@ export function analyzeInteractions(pillars: BaziPillars): BranchInteraction[] {
       matchedFullHarmonies.push(th.branches);
       interactions.push({
         type: 'branch_three_harmony',
-        name: th.name,
+        // Name uses 关系(候选) when not established — avoids implying 合化 already occurred
+        name: `地支三合关系: ${th.branches.join('')}（${th.element}局候选）`,
         pillarsInvolved: branches.filter(b => th.branches.includes(b.branch)).map(b => `${b.pillar}(${b.branch})`),
         elementsInvolved: th.branches,
         resultElement: th.element,
         transformationEstablished: false,
         structuralWeight: 9,
-        description: `四柱地支齐备${th.branches.join('')}三合局组合，强化${th.element}五行气机。`,
+        description: `四柱地支齐备${th.branches.join('')}三合关系，具备${th.element}局合化条件（候选），是否化局尚需月令引化验证。`,
       });
     }
   }
@@ -178,13 +179,14 @@ export function analyzeInteractions(pillars: BaziPillars): BranchInteraction[] {
     if (hasAll) {
       interactions.push({
         type: 'branch_three_meeting',
-        name: tm.name,
+        // Name uses 关系(候选) when not established
+        name: `地支三会关系: ${tm.branches.join('')}（${tm.element}局候选）`,
         pillarsInvolved: branches.filter(b => tm.branches.includes(b.branch)).map(b => `${b.pillar}(${b.branch})`),
         elementsInvolved: tm.branches,
         resultElement: tm.element,
         transformationEstablished: false,
         structuralWeight: 10,
-        description: `四柱地支齐备${tm.branches.join('')}三会局，汇聚一方${tm.element}之气。`,
+        description: `四柱地支齐备${tm.branches.join('')}三会方局关系，具备${tm.element}局合化条件（候选），方位完整但是否化局仍需月令引化验证。`,
       });
     }
   }
@@ -226,12 +228,13 @@ export function analyzeInteractions(pillars: BaziPillars): BranchInteraction[] {
       if (b1.branch === b2.branch && SELF_PUNISHMENTS.includes(b1.branch)) {
         interactions.push({
           type: 'branch_punishment',
-          name: `地支自刑: ${b1.branch}${b1.branch}自刑`,
+          // Explicitly 候选: same branch appearing twice is a necessary but not sufficient condition
+          name: `地支自刑候选: ${b1.branch}${b1.branch}同支（自刑待验证）`,
           pillarsInvolved: [`${b1.pillar}(${b1.branch})`, `${b2.pillar}(${b2.branch})`],
           elementsInvolved: [b1.branch, b2.branch],
           transformationEstablished: false,
           structuralWeight: 7,
-          description: `【自刑】同支相见气机重叠自扰。`,
+          description: `同一地支${b1.branch}出现两次，具备自刑条件（候选）。自刑成立尚需命局环境与组合条件确认。`,
         });
       }
     }

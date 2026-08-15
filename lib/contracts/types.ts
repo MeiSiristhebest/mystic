@@ -16,8 +16,10 @@ export interface BirthContext {
   latitude: number;         // Geocentric Latitude (-90 ~ +90), default: 39.90
   altitude?: number;        // Optional meters above sea level
   gender?: 'male' | 'female';
-  targetDate?: string;      // Optional ISO String or YYYY-MM-DD for dynamic dasha/transit evaluation (defaults to birthDate)
+  // NOTE: targetDate is intentionally NOT here. BirthContext describes birth facts only.
+  // Pass targetDate as a separate argument to evaluateBazi() or via CaseInput.targetDate.
 }
+
 
 export interface CaseInput {
   subjectName?: string;

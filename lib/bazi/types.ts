@@ -147,8 +147,17 @@ export interface DaYunTimeline {
   periods: DaYunPeriod[];
 }
 
+export interface BaziCalculationProvenance {
+  calendar: string;        // e.g. 'lunar_javascript_deterministic'
+  solarTime: string;       // e.g. 'meeus_eot_approximation'
+  strength: string;        // e.g. 'mystic_heuristic_v1'
+  interactions: string;    // e.g. 'structural_pattern_detector_v1'
+  daYunDates: string;      // e.g. 'lunar_javascript_solar_arithmetic'
+}
+
 export interface BaziTimeContext {
-  civilLocalTime: string;
+  civilLocalDate: string;  // YYYY-MM-DD (civil local date, separate from time)
+  civilLocalTime: string;  // HH:mm
   utcInstant: string;
   trueSolarTime: string;
   standardOffsetMinutes: number;
@@ -188,8 +197,7 @@ export interface BaziChart {
     longitudeOffsetMinutes: number;
     usedTrueSolarTime: boolean;
   };
-  calculationStatus: 'exact' | 'degraded';
-  calculationMethod: string;
+  calculationProvenance: BaziCalculationProvenance;
   validation: ValidationReport;
   evidences: CanonicalEvidenceNode[];
   summaryTags: string[];
