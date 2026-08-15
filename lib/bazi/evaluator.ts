@@ -1,7 +1,11 @@
-import { CanonicalEvidenceNode } from '../contracts/types';
-import { BaziChart } from './types';
+import { CanonicalEvidenceNode, BirthContext, DomainEvaluationResult } from '../contracts/types';
+import { BaziChart, BaziConvention } from './types';
+import { STEM_ELEMENT_MAP, BRANCH_ELEMENT_MAP } from './calculator';
 
-export function extractBaziEvidences(chart: BaziChart): CanonicalEvidenceNode[] {
+export function extractBaziEvidences(
+  chart: BaziChart,
+  targetDate?: string
+): CanonicalEvidenceNode[] {
   const evidences: CanonicalEvidenceNode[] = [];
 
   // 1. Day Master Deterministic Fact (Decontaminated Fact Node)
@@ -33,7 +37,7 @@ export function extractBaziEvidences(chart: BaziChart): CanonicalEvidenceNode[] 
     },
   });
 
-  // 2. Day Master Classical Lore Interpretation
+  // 2. Day Master Classical Lore Interpretation (Neutral Personality Archetype)
   evidences.push({
     id: 'bazi_daymaster_lore',
     domain: 'bazi',
@@ -43,15 +47,15 @@ export function extractBaziEvidences(chart: BaziChart): CanonicalEvidenceNode[] 
     evidenceType: 'classical_interpretation',
     sourceTier: 'secondary_lore',
     dimension: 'personality',
-    polarity: 'favorable',
-    valence: 'positive',
+    polarity: 'neutral',
+    valence: 'neutral',
     dynamicMode: 'stable',
-    confidence: 0.85,
+    confidence: 0.80,
     parameters: {
       dayMaster: chart.dayMaster,
     },
     classicalSource: '《滴天髓》论天干',
-    canonicalInterpretation: `【${chart.dayMaster}】禀性刚健，具有本五行核心志向与禀赋特征。`,
+    canonicalInterpretation: `【${chart.dayMaster}】在传统子平象意中代表本五行先天禀赋心性特征。`,
     temporalScope: {
       scopeType: 'natal',
       isNatalBaseline: true,
@@ -59,7 +63,7 @@ export function extractBaziEvidences(chart: BaziChart): CanonicalEvidenceNode[] 
     },
   });
 
-  // 3. Day Master Seasonality & Strength Evaluation
+  // 3. Day Master Seasonality & Heuristic Strength Evaluation
   const strength = chart.strengthEvaluation;
   if (strength) {
     evidences.push({
@@ -68,14 +72,15 @@ export function extractBaziEvidences(chart: BaziChart): CanonicalEvidenceNode[] 
       ruleId: 'BAZI_STRENGTH_EVALUATION',
       ruleName: `命局气机强弱: ${strength.overallState}`,
       level: 'core',
-      evidenceType: 'derived_rule',
-      sourceTier: 'primary_canon',
+      evidenceType: 'heuristic_inference',
+      sourceTier: 'derived_model',
       dimension: 'structural',
       polarity: 'neutral',
       valence: 'neutral',
       dynamicMode: 'stable',
-      confidence: 0.92,
+      confidence: 0.85,
       parameters: {
+        modelName: strength.modelName,
         overallState: strength.overallState,
         totalScore: strength.scores.totalScore,
         deLing: strength.seasonality.deLing,
@@ -83,7 +88,7 @@ export function extractBaziEvidences(chart: BaziChart): CanonicalEvidenceNode[] 
         favoredElements: strength.favoredElements,
         unfavoredElements: strength.unfavoredElements,
       },
-      classicalSource: '《子平真诠》论月令用神与得地得势',
+      classicalSource: '《子平真诠》论月令用神与得地得势量化模型',
       canonicalInterpretation: strength.academicRationale,
       temporalScope: {
         scopeType: 'natal',
@@ -101,20 +106,20 @@ export function extractBaziEvidences(chart: BaziChart): CanonicalEvidenceNode[] 
       ruleId: 'BAZI_TEN_GOD_SIGNAL',
       ruleName: `月干十神: ${chart.tenGods.monthGan}`,
       level: 'support',
-      evidenceType: 'derived_rule',
-      sourceTier: 'primary_canon',
+      evidenceType: 'classical_interpretation',
+      sourceTier: 'secondary_lore',
       dimension: 'structural',
       polarity: 'neutral',
       valence: 'neutral',
       dynamicMode: 'stable',
-      confidence: 0.88,
+      confidence: 0.82,
       parameters: {
         monthGan: chart.monthGanZhi.charAt(0),
         tenGod: chart.tenGods.monthGan,
         monthZhi: chart.monthGanZhi.charAt(1),
       },
       classicalSource: '《三命通会》卷五论十神',
-      canonicalInterpretation: `月干透出【${chart.tenGods.monthGan}】，主导青年期外显心性与社会互动风格。`,
+      canonicalInterpretation: `月干透出【${chart.tenGods.monthGan}】，代表原局月柱青年期显露心性与社会互动风格。`,
       temporalScope: {
         scopeType: 'natal',
         isNatalBaseline: true,
@@ -123,9 +128,13 @@ export function extractBaziEvidences(chart: BaziChart): CanonicalEvidenceNode[] 
     });
   }
 
-  // 5. Branch Interactions (合冲刑害)
+  // 5. Prioritized Branch Interactions (Prioritized by structuralWeight)
   if (chart.interactions && chart.interactions.length > 0) {
-    chart.interactions.slice(0, 3).forEach((inter, idx) => {
+    // Include all structurally significant interactions (weight >= 5)
+    const significantInteractions = chart.interactions.filter(i => i.structuralWeight >= 5);
+    const toInclude = significantInteractions.length > 0 ? significantInteractions : chart.interactions.slice(0, 4);
+
+    toInclude.forEach((inter, idx) => {
       evidences.push({
         id: `bazi_interaction_${idx + 1}`,
         domain: 'bazi',
@@ -135,34 +144,55 @@ export function extractBaziEvidences(chart: BaziChart): CanonicalEvidenceNode[] 
         evidenceType: 'derived_rule',
         sourceTier: 'primary_canon',
         dimension: 'structural',
-        polarity: inter.type.includes('clash') || inter.type.includes('punishment') || inter.type.includes('harm') ? 'unfavorable' : 'favorable',
-        valence: inter.type.includes('clash') || inter.type.includes('punishment') || inter.type.includes('harm') ? 'negative' : 'positive',
+        polarity: 'neutral',
+        valence: 'neutral',
         dynamicMode: 'transformative',
-        confidence: 0.90,
+        confidence: 0.88,
         parameters: {
           type: inter.type,
           pillarsInvolved: inter.pillarsInvolved,
           elementsInvolved: inter.elementsInvolved,
           resultElement: inter.resultElement,
+          transformationEstablished: inter.transformationEstablished,
+          structuralWeight: inter.structuralWeight,
         },
-        classicalSource: '《三命通会》论支中刑冲破害',
+        classicalSource: '《三命通会》论支中刑冲会合',
         canonicalInterpretation: inter.description,
         temporalScope: {
           scopeType: 'natal',
           isNatalBaseline: true,
-          timeWindow: '命局地支交互网络',
+          timeWindow: '命局干支交互网络',
         },
       });
     });
   }
 
-  // 6. Active Da Yun Dynamic Temporal Evidence
+  // 6. Active Da Yun Dynamic Temporal Evidence (Strict targetDate driven, NO silent fallback)
   if (chart.daYun && chart.daYun.periods.length > 0) {
-    const currentYear = new Date().getFullYear();
-    const activePeriod = chart.daYun.periods.find(p => currentYear >= p.startYear && currentYear <= p.endYear) || chart.daYun.periods[0];
+    const queryDate = targetDate || chart.timeContext.civilLocalTime.split('T')[0] || chart.daYun.periods[0].startDate;
+    const activePeriod = chart.daYun.periods.find(p => queryDate >= p.startDate && queryDate <= p.endDate);
 
     if (activePeriod) {
-      const isFavored = strength?.favoredElements.some(e => activePeriod.ganZhi.includes(e));
+      const dyGan = activePeriod.ganZhi.charAt(0);
+      const dyZhi = activePeriod.ganZhi.charAt(1);
+      const dyGanElement = STEM_ELEMENT_MAP[dyGan]?.element;
+      const dyZhiElement = BRANCH_ELEMENT_MAP[dyZhi];
+      const dyElements = [dyGanElement, dyZhiElement].filter(Boolean) as Array<'木' | '火' | '土' | '金' | '水'>;
+
+      const hasFavored = dyElements.some(e => strength?.favoredElements.includes(e));
+      const hasUnfavored = dyElements.some(e => strength?.unfavoredElements.includes(e));
+
+      let dyPolarity: 'favorable' | 'unfavorable' | 'neutral' = 'neutral';
+      let dyValence: 'positive' | 'negative' | 'neutral' = 'neutral';
+
+      if (hasFavored && !hasUnfavored) {
+        dyPolarity = 'favorable';
+        dyValence = 'positive';
+      } else if (hasUnfavored && !hasFavored) {
+        dyPolarity = 'unfavorable';
+        dyValence = 'negative';
+      }
+
       evidences.push({
         id: 'bazi_dayun_active',
         domain: 'bazi',
@@ -172,31 +202,34 @@ export function extractBaziEvidences(chart: BaziChart): CanonicalEvidenceNode[] 
         evidenceType: 'derived_rule',
         sourceTier: 'primary_canon',
         dimension: 'career',
-        polarity: isFavored ? 'favorable' : 'unfavorable',
-        valence: isFavored ? 'positive' : 'negative',
+        polarity: dyPolarity,
+        valence: dyValence,
         dynamicMode: 'transformative',
-        confidence: 0.90,
+        confidence: 0.88,
         parameters: {
           step: activePeriod.step,
           ganZhi: activePeriod.ganZhi,
+          dyGanElement,
+          dyZhiElement,
           startAge: activePeriod.startAge,
           endAge: activePeriod.endAge,
           shiShen: activePeriod.shiShen,
           naYin: activePeriod.naYin,
+          targetDate: queryDate,
         },
         classicalSource: '《子平真诠》论行运得失',
-        canonicalInterpretation: `当前行【${activePeriod.ganZhi}】大运（${activePeriod.startAge}~${activePeriod.endAge}岁），天干主气为【${activePeriod.shiShen}】，纳音为【${activePeriod.naYin}】。`,
+        canonicalInterpretation: `查询日期【${queryDate}】正值【${activePeriod.ganZhi}】大运（${activePeriod.startDate} ~ ${activePeriod.endDate}，${activePeriod.startAge}~${activePeriod.endAge}岁），天干主气为【${activePeriod.shiShen}】（五行属${dyGanElement}），地支为【${dyZhi}】（五行属${dyZhiElement}），纳音为【${activePeriod.naYin}】。`,
         temporalScope: {
           scopeType: 'dasha',
           startDate: activePeriod.startDate,
           endDate: activePeriod.endDate,
-          timeWindow: `${activePeriod.startYear}~${activePeriod.endYear} (第${activePeriod.step}步大运)`,
+          timeWindow: `${activePeriod.startDate} ~ ${activePeriod.endDate} (第${activePeriod.step}步大运)`,
         },
       });
     }
   }
 
-  // 7. NaYin Heuristic Inference (Tertiary lore capped at 0.60)
+  // 7. NaYin Heuristic Inference (Tertiary lore capped at 0.55)
   if (chart.yearNaYin) {
     evidences.push({
       id: 'bazi_nayin_signal',
@@ -228,9 +261,10 @@ export function extractBaziEvidences(chart: BaziChart): CanonicalEvidenceNode[] 
 }
 
 export function evaluateBazi(
-  context: import('../contracts/types').BirthContext,
-  conventionOptions?: Partial<import('./types').BaziConvention>
-): import('../contracts/types').DomainEvaluationResult<BaziChart> {
+  context: BirthContext,
+  conventionOptions?: Partial<BaziConvention>,
+  targetDate?: string
+): DomainEvaluationResult<BaziChart> {
   const { calculateBaziCore } = require('./calculator');
   const core = calculateBaziCore(context, conventionOptions);
 
@@ -269,7 +303,8 @@ export function evaluateBazi(
     ],
   };
 
-  const evidences = extractBaziEvidences(baziChart);
+  const queryDate = targetDate || context.targetDate;
+  const evidences = extractBaziEvidences(baziChart, queryDate);
   baziChart.evidences = evidences;
 
   return {
@@ -281,4 +316,3 @@ export function evaluateBazi(
     calculatedAt: new Date().toISOString(),
   };
 }
-

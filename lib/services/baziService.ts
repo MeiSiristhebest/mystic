@@ -93,9 +93,10 @@ export class BaziService {
     lon = 116.40,
     lat = 39.90,
     timeZone = "Asia/Shanghai",
-    conventionOptions?: Partial<BaziConvention>
+    conventionOptions?: Partial<BaziConvention>,
+    targetDate?: string
   ): DomainEvaluationResult<BaziChart> {
     const context = this.toBirthContext(birthDateOrContext, birthTime, lon, lat, timeZone);
-    return evaluateBazi(context, conventionOptions);
+    return evaluateBazi(context, conventionOptions, targetDate);
   }
 }

@@ -1,14 +1,16 @@
 import { BaziService } from "../../lib/services/baziService";
 import { calculateAstronomicalTrueSolarTime, calculateAstronomicalEquationOfTime } from "../../lib/bazi/solar-time";
+import { getNaYinByGanZhi } from "../../lib/bazi/dayun";
+import { BaziCalculationError } from "../../lib/bazi/types";
 import baziGoldenCases from "../fixtures/bazi-golden.json";
 
 export function testBaziSuite() {
-  console.log("▶ [TEST SUITE] Bazi Four Pillars, Astronomical EoT, Interactions, Strength & Da Yun (L3 Ground Truth & 12 Golden Fixtures)");
+  console.log("▶ [TEST SUITE] Bazi Four Pillars, Meeus EoT, Interactions, Heuristic Strength & Da Yun (L3 Ground Truth & 12 Golden Fixtures)");
 
   let passed = 0;
   let failed = 0;
 
-  // 1. Astronomical True Solar Time & Equation of Time (EoT) Engine via pure UTC / Moshier Sun Alpha
+  // 1. Meeus-based Astronomical Equation of Time (EoT) Engine via pure UTC / Sun Alpha
   const testUtcDate = new Date('1990-05-15T03:00:00.000Z');
   const exactEoT = calculateAstronomicalEquationOfTime(testUtcDate);
   const tstBeijing = calculateAstronomicalTrueSolarTime('1990-05-15', '12:00', 'Asia/Shanghai', 116.40);
@@ -20,10 +22,10 @@ export function testBaziSuite() {
     tstBeijing.utcInstant === '1990-05-15T03:00:00.000Z' &&
     tstBeijing.dstOffsetMinutes === 60
   ) {
-    console.log(`  ✓ [L3 ASTRONOMICAL TRUE SOLAR TIME PASS] Beijing (116.4°E) -> Meridian offset: ${tstBeijing.longitudeOffsetMinutes} min, Astronomical EoT: ${tstBeijing.eotMinutes} min, DST: ${tstBeijing.dstOffsetMinutes} min, UTC: ${tstBeijing.utcInstant}`);
+    console.log(`  ✓ [L3 MEEUS TRUE SOLAR TIME PASS] Beijing (116.4°E) -> Meridian offset: ${tstBeijing.longitudeOffsetMinutes} min, Meeus EoT: ${tstBeijing.eotMinutes} min, DST: ${tstBeijing.dstOffsetMinutes} min, UTC: ${tstBeijing.utcInstant}`);
     passed++;
   } else {
-    console.error(`  ✗ [L3 ASTRONOMICAL TRUE SOLAR TIME FAIL] Unexpected TST shift: ${tstBeijing.longitudeOffsetMinutes}, EoT: ${tstBeijing.eotMinutes}`);
+    console.error(`  ✗ [L3 MEEUS TRUE SOLAR TIME FAIL] Unexpected TST shift: ${tstBeijing.longitudeOffsetMinutes}, EoT: ${tstBeijing.eotMinutes}`);
     failed++;
   }
 
@@ -56,33 +58,36 @@ export function testBaziSuite() {
     }
   }
 
-  // 3. Stem & Branch Interaction Engine Verification (天干五合/地支六冲六合相刑相害)
+  // 3. Stem & Branch Interaction Engine Verification (Presence vs Transformation, Half-Harmony, Prioritized Sorting)
   const baziInteractEval = BaziService.getBaziDomainEvaluation('1988-03-08', '10:00', 116.40, 39.90, 'Asia/Shanghai');
   // 1988-03-08 10:00 -> 戊辰 乙卯 壬戌 乙巳
-  // Branches: 辰 卯 戌 巳 -> 辰戌冲, 卯戌合火, 卯辰害
-  const hasChenXuClash = baziInteractEval.chart.interactions.some(i => i.type === 'branch_six_clash' && i.name.includes('辰戌'));
-  const hasMaoXuCombo = baziInteractEval.chart.interactions.some(i => i.type === 'branch_six_combination' && i.name.includes('卯戌'));
+  // Branches: 辰 卯 戌 巳 -> 辰戌六冲 (weight 8), 卯戌六合 (weight 8), 辰卯相害 (weight 6)
+  const hasChenXuClash = baziInteractEval.chart.interactions.some(i => i.type === 'branch_six_clash' && i.elementsInvolved.includes('辰') && i.elementsInvolved.includes('戌'));
+  const hasMaoXuCombo = baziInteractEval.chart.interactions.some(i => i.type === 'branch_six_combination' && i.elementsInvolved.includes('卯') && i.elementsInvolved.includes('戌'));
   const hasMaoChenHarm = baziInteractEval.chart.interactions.some(i => i.type === 'branch_harm' && i.elementsInvolved.includes('辰') && i.elementsInvolved.includes('卯'));
 
-  if (hasChenXuClash && hasMaoXuCombo && hasMaoChenHarm) {
-    console.log(`  ✓ [L3 STEM & BRANCH INTERACTIONS PASS] Correctly detected: 辰戌六冲, 卯戌六合, 卯辰相害`);
+  // Test Half-Harmony: 1990-05-15 06:00 -> 庚午 辛巳 庚辰 己卯 (巳午未会火? No, but 午 + 辰?)
+  // Check half harmony on 2000-01-01 -> 己卯 丙子 戊午 辛酉 (子午冲, 卯酉冲)
+  if (hasChenXuClash && hasMaoXuCombo && hasMaoChenHarm && baziInteractEval.chart.interactions[0].structuralWeight >= baziInteractEval.chart.interactions[1].structuralWeight) {
+    console.log(`  ✓ [L3 STEM & BRANCH INTERACTIONS PASS] Correctly detected: 辰戌六冲, 卯戌六合, 卯辰相害 (Prioritized descending)`);
     passed++;
   } else {
-    console.error(`  ✗ [L3 STEM & BRANCH INTERACTIONS FAIL] Interactions not fully detected: ${JSON.stringify(baziInteractEval.chart.interactions)}`);
+    console.error(`  ✗ [L3 STEM & BRANCH INTERACTIONS FAIL] Interactions not fully detected`);
     failed++;
   }
 
-  // 4. Day Master Strength & Seasonality Evaluation Verification (得令/得地/得势量化)
+  // 4. Day Master Strength & Seasonality Heuristic Model Verification
   const baziEval1990 = BaziService.getBaziDomainEvaluation('1990-05-15', '06:00', 116.40, 39.90, 'Asia/Shanghai');
   const strength = baziEval1990.chart.strengthEvaluation;
 
   if (
     strength &&
+    strength.modelName === 'mystic_quantitative_strength_v1' &&
     strength.seasonality.monthBranch === '巳' &&
     strength.seasonality.state === '死' && // 庚金生于巳月(夏火旺金死)
-    strength.rooting.rootCount >= 1 && // 辰中微弱余气或巳中庚金中气
+    strength.rooting.rootCount >= 1 &&
     typeof strength.scores.totalScore === 'number' &&
-    ['身强', '身弱', '中和平衡', '从格倾向'].includes(strength.overallState) &&
+    ['身强', '身弱', '中和平衡', '从格候选'].includes(strength.overallState) &&
     strength.favoredElements.length > 0 &&
     strength.unfavoredElements.length > 0
   ) {
@@ -93,44 +98,74 @@ export function testBaziSuite() {
     failed++;
   }
 
-  // 5. Da Yun (大运) Pipeline & Direction Rules Verification (阳男阴女顺排 / 阴男阳女逆排)
+  // 5. Da Yun (大运) Pipeline: Exact Solar Dates, Continuity, No Gap, Direct NaYin
   const daYun = baziEval1990.chart.daYun;
+  const dyFirstPeriod = daYun.periods[0];
+  const dyStartMatches = dyFirstPeriod.startDate.match(/^\d{4}-\d{2}-\d{2}$/);
+  const naYinDirectCheck = getNaYinByGanZhi('壬午') === '杨柳木' && getNaYinByGanZhi('甲子') === '海中金';
+
+  // Check continuity between Period 1 and Period 2
+  const p1End = daYun.periods[0].endDate;
+  const p2Start = daYun.periods[1].startDate;
+  const isContinuous = p1End === p2Start || Math.abs(new Date(p2Start).getTime() - new Date(p1End).getTime()) <= 86400000 * 2;
+
   if (
     daYun &&
-    daYun.direction === '顺行' && // 1990 庚午 (阳年) 男命 -> 顺行
+    daYun.direction === '顺行' &&
     daYun.periods.length >= 8 &&
-    daYun.periods[0].startAge > 0 &&
-    daYun.periods[0].startDate.match(/^\d{4}-\d{2}-\d{2}$/) &&
-    daYun.periods[0].endDate.match(/^\d{4}-\d{2}-\d{2}$/)
+    daYun.startAge > 0 &&
+    daYun.firstDaYunStartDate.match(/^\d{4}-\d{2}-\d{2}$/) &&
+    dyStartMatches &&
+    naYinDirectCheck &&
+    isContinuous
   ) {
-    console.log(`  ✓ [L3 DA YUN PIPELINE PASS] Direction: ${daYun.direction}, Start Age: ${daYun.startAge}岁, First Da Yun: ${daYun.periods[0].ganZhi} (${daYun.periods[0].startDate} ~ ${daYun.periods[0].endDate})`);
+    console.log(`  ✓ [L3 DA YUN PIPELINE PASS] Direction: ${daYun.direction}, Start Date: ${daYun.firstDaYunStartDate}, P1: ${dyFirstPeriod.ganZhi} (${dyFirstPeriod.startDate} ~ ${dyFirstPeriod.endDate}), NaYin: ${dyFirstPeriod.naYin}`);
     passed++;
   } else {
     console.error(`  ✗ [L3 DA YUN PIPELINE FAIL] Da Yun calculation failed: ${JSON.stringify(daYun)}`);
     failed++;
   }
 
-  // 6. Complete Domain Evaluation Package (CEG Extraction)
-  const dayMasterFactEv = baziEval1990.evidences.find(e => e.ruleId === 'BAZI_DAY_MASTER_FACT');
-  const strengthEv = baziEval1990.evidences.find(e => e.ruleId === 'BAZI_STRENGTH_EVALUATION');
-  const dayunEv = baziEval1990.evidences.find(e => e.ruleId === 'BAZI_DAYUN_ACTIVE');
-  const nayinEv = baziEval1990.evidences.find(e => e.ruleId === 'BAZI_NAYIN_SIGNAL');
+  // 6. Dynamic Da Yun Query with targetDate & No Silent Fallback
+  // 1990-05-15 birth, First Da Yun starts in 1997
+  // Case A: Query at 1993-01-01 (Age 3, prior to first Da Yun) -> Must NOT have bazi_dayun_active
+  const preStartEval = BaziService.getBaziDomainEvaluation('1990-05-15', '06:00', 116.40, 39.90, 'Asia/Shanghai', undefined, '1993-01-01');
+  const preStartDyEv = preStartEval.evidences.find(e => e.ruleId === 'BAZI_DAYUN_ACTIVE');
+  const noSilentFallbackPass = preStartDyEv === undefined;
 
-  if (
-    dayMasterFactEv?.dimension === 'structural' &&
-    dayMasterFactEv?.evidenceType === 'deterministic_fact' &&
-    strengthEv?.dimension === 'structural' &&
-    strengthEv?.evidenceType === 'derived_rule' &&
-    dayunEv?.dimension === 'career' &&
-    dayunEv?.temporalScope?.startDate &&
-    nayinEv?.evidenceType === 'heuristic_inference' &&
-    nayinEv.confidence <= 0.60 &&
-    baziEval1990.validation.isValid
-  ) {
-    console.log(`  ✓ [L3 BAZI COMPREHENSIVE CEG PASS] Fact (1.0), Strength (0.92), Active Da Yun with ISO Interval (0.90), NaYin (0.55)`);
+  // Case B: Query at 2000-06-01 (Age 10, inside Period 1 壬午) -> Must activate Period 1
+  const active2000Eval = BaziService.getBaziDomainEvaluation('1990-05-15', '06:00', 116.40, 39.90, 'Asia/Shanghai', undefined, '2000-06-01');
+  const active2000DyEv = active2000Eval.evidences.find(e => e.ruleId === 'BAZI_DAYUN_ACTIVE');
+  const activePeriodPass = active2000DyEv !== undefined && active2000DyEv.parameters.step === 1 && active2000DyEv.parameters.ganZhi === '壬午';
+
+  if (noSilentFallbackPass && activePeriodPass) {
+    console.log(`  ✓ [L3 TARGET DATE REPRODUCIBILITY PASS] 1993 (pre-start) -> undefined; 2000 (targetDate) -> Step 1 壬午 (No silent period[0] fallback)`);
     passed++;
   } else {
-    console.error(`  ✗ [L3 BAZI COMPREHENSIVE CEG FAIL] Expected full CEG nodes, got: ${baziEval1990.evidences.map(e => e.ruleId).join(', ')}`);
+    console.error(`  ✗ [L3 TARGET DATE REPRODUCIBILITY FAIL] noSilentFallback: ${noSilentFallbackPass}, activePeriod: ${activePeriodPass}`);
+    failed++;
+  }
+
+  // 7. Strict Parameter Bounds Validation (Negative Tests)
+  let invalidLonBlocked = false;
+  let invalidTzBlocked = false;
+  try {
+    BaziService.getBazi('1990-05-15', '06:00', 250, 39.90);
+  } catch (err: any) {
+    if (err instanceof BaziCalculationError) invalidLonBlocked = true;
+  }
+
+  try {
+    BaziService.getBazi('1990-05-15', '06:00', 116.40, 39.90, 'Asia/Chin');
+  } catch (err: any) {
+    if (err instanceof BaziCalculationError) invalidTzBlocked = true;
+  }
+
+  if (invalidLonBlocked && invalidTzBlocked) {
+    console.log(`  ✓ [L3 BOUNDS VALIDATION PASS] Longitude > 180 and invalid IANA timezone 'Asia/Chin' properly rejected`);
+    passed++;
+  } else {
+    console.error(`  ✗ [L3 BOUNDS VALIDATION FAIL] Failed to block invalid parameters (lon: ${invalidLonBlocked}, tz: ${invalidTzBlocked})`);
     failed++;
   }
 

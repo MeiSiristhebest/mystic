@@ -103,7 +103,7 @@ export function calculateTenGod(dayGan: string, targetGan: string): string {
 }
 
 /**
- * Core Bazi Calculation with Fail-Fast Validation, IANA Timezone, Interactions, Strength, and Da Yun
+ * Core Bazi Calculation with Strict Input Validation, IANA Timezone, Interactions, Strength, and Da Yun
  */
 export function calculateBaziCore(
   context: BirthContext,
@@ -138,12 +138,31 @@ export function calculateBaziCore(
   const convention: BaziConvention = {
     ...DEFAULT_BAZI_CONVENTION,
     ...conventionOptions,
+    strengthModelConfig: {
+      ...DEFAULT_BAZI_CONVENTION.strengthModelConfig,
+      ...(conventionOptions?.strengthModelConfig || {}),
+    },
   };
 
-  const { birthDate, birthTime = '12:00', timeZone = 'Asia/Shanghai', longitude = 116.40, gender = 'male' } = context;
+  const { birthDate, birthTime = '12:00', timeZone = 'Asia/Shanghai', longitude = 116.40, latitude = 39.90, gender = 'male' } = context;
 
+  // Strict Parameter Bounds Validation
   if (!birthDate || !birthDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
     throw new BaziCalculationError(`Invalid birthDate format '${birthDate}'. Expected 'YYYY-MM-DD'.`);
+  }
+
+  if (typeof longitude !== 'number' || isNaN(longitude) || longitude < -180 || longitude > 180) {
+    throw new BaziCalculationError(`Invalid longitude '${longitude}'. Must be a number between -180 and +180.`);
+  }
+
+  if (typeof latitude !== 'number' || isNaN(latitude) || latitude < -90 || latitude > 90) {
+    throw new BaziCalculationError(`Invalid latitude '${latitude}'. Must be a number between -90 and +90.`);
+  }
+
+  try {
+    new Intl.DateTimeFormat('en-US', { timeZone });
+  } catch (tzErr) {
+    throw new BaziCalculationError(`Invalid IANA timeZone '${timeZone}'. Must be a valid IANA timezone identifier.`);
   }
 
   const [y, m, d] = birthDate.split('-').map(Number);
@@ -173,7 +192,7 @@ export function calculateBaziCore(
     targetSecond = solarTimeResult.trueSolarComponents.second;
   }
 
-  let solar: any;
+  let solar: InstanceType<typeof Solar>;
   try {
     solar = Solar.fromYmdHms(
       targetYear,
@@ -271,8 +290,8 @@ export function calculateBaziCore(
   // 1. Analyze Stem/Branch Interactions
   const interactions = analyzeInteractions(pillars);
 
-  // 2. Evaluate Day Master Seasonality & Root Strength
-  const strengthEvaluation = evaluateDayMasterStrength(pillars, dayMaster, dmInfo.element, hiddenStems);
+  // 2. Evaluate Day Master Seasonality & Root Strength with config
+  const strengthEvaluation = evaluateDayMasterStrength(pillars, dayMaster, dmInfo.element, hiddenStems, convention.strengthModelConfig);
 
   // 3. Compute Da Yun Timeline
   const daYun = calculateDaYunTimeline(solar, gender, dayGan);

@@ -16,6 +16,7 @@ export interface BirthContext {
   latitude: number;         // Geocentric Latitude (-90 ~ +90), default: 39.90
   altitude?: number;        // Optional meters above sea level
   gender?: 'male' | 'female';
+  targetDate?: string;      // Optional ISO String or YYYY-MM-DD for dynamic dasha/transit evaluation (defaults to birthDate)
 }
 
 export interface CaseInput {
@@ -42,6 +43,7 @@ export type SourceTier =
   | 'primary_canon'    // 一级原典 (《黄帝内经》《伤寒论》BPHS) -> 参与主冲突仲裁
   | 'secondary_lore'   // 二级专著 (《三命通会》《渊海子平》《骨髓赋》《滴天髓》) -> 参与主冲突仲裁
   | 'tertiary_branch'  // 三级分支/经验典籍 (《五行精纪》《神峰通考》) -> 仅作为辅助背景 (置信度硬顶 0.65)
+  | 'derived_model'    // 衍生模型/预测算法 -> 辅助校验模型
   | 'school_notes';    // 现代讲义与心得考证 -> 仅作为辅助背景 (置信度硬顶 0.60)
 
 export type EvidenceValence = 'positive' | 'negative' | 'neutral';
