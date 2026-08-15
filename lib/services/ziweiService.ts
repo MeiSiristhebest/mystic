@@ -1,23 +1,51 @@
 import { generateChart, detectPatterns, ZiweiChart, extractZiweiEvidences, validateZiweiChart, Pattern } from "@/lib/ziwei";
-import { DomainEvaluationResult } from "@/lib/contracts/types";
+import { BirthContext, DomainEvaluationResult } from "@/lib/contracts/types";
 
 export class ZiweiService {
   /**
+   * Helper to normalize arguments into unified BirthContext
+   */
+  static toBirthContext(
+    birthDateOrContext: string | BirthContext,
+    hour: number = 12,
+    gender: '男' | '女' = '男'
+  ): { birthDate: string; hour: number; gender: '男' | '女' } {
+    if (typeof birthDateOrContext === 'object') {
+      const h = parseInt((birthDateOrContext.birthTime || '12:00').split(':')[0], 10) || 12;
+      return {
+        birthDate: birthDateOrContext.birthDate,
+        hour: h,
+        gender: birthDateOrContext.gender === 'female' ? '女' : '男',
+      };
+    }
+    return {
+      birthDate: birthDateOrContext,
+      hour,
+      gender,
+    };
+  }
+
+  /**
    * Calculate Ziwei chart and detect 80+ classical patterns based on Ni Haixia's Tianji system.
    */
-  static getZiwei(birthDate: string, hour: number, gender: '男' | '女'): {
+  static getZiwei(
+    birthDateOrContext: string | BirthContext, 
+    hour = 12, 
+    gender: '男' | '女' = '男'
+  ): {
     chart: ZiweiChart;
     patterns: Pattern[];
     detectedPatterns: Pattern[];
   } {
-    const [year, month, day] = birthDate.split('-').map(Number);
+    const ctx = this.toBirthContext(birthDateOrContext, hour, gender);
+    const [year, month, day] = ctx.birthDate.split('-').map(Number);
 
     const chart = generateChart({
       year,
       month,
       day,
-      hour,
-      gender: gender === '女' ? 'female' : 'male',
+      hour: ctx.hour,
+      gender: ctx.gender === '女' ? 'female' : 'male',
     });
     
     const patterns = chart.patterns || detectPatterns(chart);
@@ -33,17 +61,19 @@ export class ZiweiService {
    * Complete Domain Evaluation Package for Ziwei Doushu.
    */
   static getZiweiDomainEvaluation(
-    birthDate: string,
-    hour: number,
-    gender: '男' | '女'
+    birthDateOrContext: string | BirthContext,
+    hour = 12,
+    gender: '男' | '女' = '男'
   ): DomainEvaluationResult<ZiweiChart> {
-    const [year, month, day] = birthDate.split('-').map(Number);
+    const ctx = this.toBirthContext(birthDateOrContext, hour, gender);
+    const [year, month, day] = ctx.birthDate.split('-').map(Number);
+
     const chart = generateChart({
       year,
       month,
       day,
-      hour,
-      gender: gender === '女' ? 'female' : 'male',
+      hour: ctx.hour,
+      gender: ctx.gender === '女' ? 'female' : 'male',
     });
 
     const patterns = chart.patterns || detectPatterns(chart);

@@ -5,8 +5,9 @@
  * temporal scope mismatches, and polarity disagreements across Ziwei, Vedic, TCM (Nihaixia), and Bazi.
  * 
  * Features:
- * - Temporal Scope Intersection & Precursor Analysis
+ * - Semantic Eligibility & Temporal Scope Intersection Analysis
  * - Dynamic Evidence Relation Inference (corroborating, contradicting, timing_precursor, surface_vs_root, temporally_separate)
+ * - Epistemic SourceTier filtering (prevents heuristic inferences from contaminating core conflict arbitration)
  * - Multi-factor confidence-weighted perspective resolution
  */
 
@@ -67,6 +68,15 @@ export class CrossDomainConflictDetector {
   }
 
   /**
+   * Check if an evidence node is semantically eligible for primary structural relation inference
+   */
+  static isEligibleForStructuralRelation(node: CanonicalEvidenceNode): boolean {
+    if (node.level === 'optional') return false;
+    if (node.evidenceType === 'heuristic_inference') return false;
+    return true;
+  }
+
+  /**
    * Infer semantic relations across evidence nodes and populate evidence.relations
    */
   static inferEvidenceRelations(evidences: CanonicalEvidenceNode[]): void {
@@ -88,7 +98,10 @@ export class CrossDomainConflictDetector {
           const careerNode = nodeA.dimension === 'career' ? nodeA : nodeB;
           
           // Surface vs Root only triggers if health has deficit/warning and career has active drive
-          if (healthNode.polarity === 'unfavorable' || healthNode.polarity === 'transformative') {
+          const isHealthDeficit = healthNode.polarity === 'unfavorable' || (healthNode.level === 'warning' || healthNode.level === 'contraindication');
+          const isCareerActive = careerNode.polarity === 'favorable' || careerNode.polarity === 'transformative';
+
+          if (isHealthDeficit && isCareerActive && this.isEligibleForStructuralRelation(healthNode) && this.isEligibleForStructuralRelation(careerNode)) {
             nodeA.relations.push({
               targetEvidenceId: nodeB.id,
               relationType: 'surface_vs_root',
@@ -105,31 +118,35 @@ export class CrossDomainConflictDetector {
 
         // Same Dimension Relations
         if (nodeA.dimension === nodeB.dimension) {
-          // Timing Precursor Relation
-          if (timing.aPrecedesB) {
-            nodeA.relations.push({
-              targetEvidenceId: nodeB.id,
-              relationType: 'timing_precursor',
-              description: `【时机前驱】${nodeA.ruleName}为前期运势奠基，承接后续${nodeB.ruleName}的发展阶段。`,
-            });
-            nodeB.relations.push({
-              targetEvidenceId: nodeA.id,
-              relationType: 'complementary',
-              description: `【时运承接】受前期${nodeA.ruleName}阶段的能量积蓄与结构塑形影响。`,
-            });
-            continue;
-          } else if (timing.bPrecedesA) {
-            nodeB.relations.push({
-              targetEvidenceId: nodeA.id,
-              relationType: 'timing_precursor',
-              description: `【时机前驱】${nodeB.ruleName}为前期运势奠基，承接后续${nodeA.ruleName}的发展阶段。`,
-            });
-            nodeA.relations.push({
-              targetEvidenceId: nodeB.id,
-              relationType: 'complementary',
-              description: `【时运承接】受前期${nodeB.ruleName}阶段的能量积蓄与结构塑形影响。`,
-            });
-            continue;
+          const bothEligible = this.isEligibleForStructuralRelation(nodeA) && this.isEligibleForStructuralRelation(nodeB);
+
+          // Timing Precursor Relation (Strict semantic eligibility: both must be core/support structural nodes)
+          if (bothEligible && !timing.hasOverlap) {
+            if (timing.aPrecedesB) {
+              nodeA.relations.push({
+                targetEvidenceId: nodeB.id,
+                relationType: 'timing_precursor',
+                description: `【时机前驱】${nodeA.ruleName}处于前期发展周期，为后续${nodeB.ruleName}之阶段演进奠定基础。`,
+              });
+              nodeB.relations.push({
+                targetEvidenceId: nodeA.id,
+                relationType: 'complementary',
+                description: `【时运承接】承接前期${nodeA.ruleName}阶段的能量积蓄与结构塑形。`,
+              });
+              continue;
+            } else if (timing.bPrecedesA) {
+              nodeB.relations.push({
+                targetEvidenceId: nodeA.id,
+                relationType: 'timing_precursor',
+                description: `【时机前驱】${nodeB.ruleName}处于前期发展周期，为后续${nodeA.ruleName}之阶段演进奠定基础。`,
+              });
+              nodeA.relations.push({
+                targetEvidenceId: nodeB.id,
+                relationType: 'complementary',
+                description: `【时运承接】承接前期${nodeB.ruleName}阶段的能量积蓄与结构塑形。`,
+              });
+              continue;
+            }
           }
 
           // Polarity Match -> Corroborating
@@ -151,17 +168,17 @@ export class CrossDomainConflictDetector {
           const isOpposing = (nodeA.polarity === 'favorable' && (nodeB.polarity === 'unfavorable' || nodeB.polarity === 'transformative')) ||
                              (nodeB.polarity === 'favorable' && (nodeA.polarity === 'unfavorable' || nodeA.polarity === 'transformative'));
 
-          if (isOpposing) {
+          if (isOpposing && bothEligible) {
             if (timing.hasOverlap) {
               nodeA.relations.push({
                 targetEvidenceId: nodeB.id,
                 relationType: 'contradicting',
-                description: `【时域交集分歧】在相同活跃周期内，与【${nodeB.ruleName}】对【${nodeA.dimension}】吉凶定性存在直接张力。`,
+                description: `【时域交集分歧】在重叠活跃周期内，与【${nodeB.ruleName}】对【${nodeA.dimension}】吉凶定性存在直接张力。`,
               });
               nodeB.relations.push({
                 targetEvidenceId: nodeA.id,
                 relationType: 'contradicting',
-                description: `【时域交集分歧】在相同活跃周期内，与【${nodeA.ruleName}】对【${nodeB.dimension}】吉凶定性存在直接张力。`,
+                description: `【时域交集分歧】在重叠活跃周期内，与【${nodeA.ruleName}】对【${nodeB.dimension}】吉凶定性存在直接张力。`,
               });
             } else {
               nodeA.relations.push({
@@ -196,7 +213,7 @@ export class CrossDomainConflictDetector {
 
   /**
    * Analyze evidence nodes across domains and detect dimensional tensions and contradictions.
-   * Incorporates time-window, multi-factor confidence, and domain perspective scope.
+   * Incorporates time-window, epistemic filtering, and domain perspective scope.
    */
   static detectConflicts(evidences: CanonicalEvidenceNode[]): CrossDomainConflict[] {
     // 1. Populate semantic relation edges
@@ -209,7 +226,8 @@ export class CrossDomainConflictDetector {
     const conflicts: CrossDomainConflict[] = [];
 
     for (const dim of dimensions) {
-      const dimEvidences = evidences.filter(e => e.dimension === dim);
+      // Filter out optional/heuristic nodes from causing primary domain conflict
+      const dimEvidences = evidences.filter(e => e.dimension === dim && this.isEligibleForStructuralRelation(e));
       if (dimEvidences.length === 0) continue;
 
       // Group by domain
@@ -255,7 +273,7 @@ export class CrossDomainConflictDetector {
         else if (topEv.polarity === 'transformative') transformativeCount++;
       }
 
-      // Conflict logic: has opposing stances
+      // Conflict logic: has opposing stances across active eligible nodes
       const hasConflict = favorableCount > 0 && (unfavorableCount > 0 || transformativeCount > 0);
 
       let conflictType: CrossDomainConflict['conflictType'] = undefined;

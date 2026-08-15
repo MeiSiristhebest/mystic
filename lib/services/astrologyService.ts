@@ -12,9 +12,32 @@ import {
   calculateHighPrecisionGrahas,
   parseCivilTimeToUtc 
 } from "@/lib/vedic";
-import { DomainEvaluationResult } from "@/lib/contracts/types";
+import { BirthContext, DomainEvaluationResult } from "@/lib/contracts/types";
 
 export class AstrologyService {
+  /**
+   * Helper to normalize arguments into unified BirthContext
+   */
+  static toBirthContext(
+    birthDateOrContext: string | BirthContext,
+    birthTime = "12:00",
+    lon = 116.40,
+    lat = 39.90,
+    timeZone?: string
+  ): BirthContext {
+    if (typeof birthDateOrContext === 'object') {
+      return birthDateOrContext;
+    }
+    const tz = this.resolveTimezone(lon, timeZone);
+    return {
+      birthDate: birthDateOrContext,
+      birthTime,
+      longitude: lon,
+      latitude: lat,
+      timeZone: tz,
+    };
+  }
+
   /**
    * Approximate Sun Sign from Date (For fast UI hints)
    */
@@ -42,24 +65,24 @@ export class AstrologyService {
    * Calculate complete western astrology star chart with high-precision astronomical ephemeris.
    */
   static getStarChart(
-    birthDate: string, 
-    birthTime: string, 
+    birthDateOrContext: string | BirthContext, 
+    birthTime = "12:00", 
     lon = 116.40, 
     lat = 39.90,
     timeZone?: string
   ) {
-    const tz = this.resolveTimezone(lon, timeZone);
-    const { utcDate, offsetMinutes } = parseCivilTimeToUtc(birthDate, birthTime, tz);
+    const ctx = this.toBirthContext(birthDateOrContext, birthTime, lon, lat, timeZone);
+    const { utcDate, offsetMinutes } = parseCivilTimeToUtc(ctx.birthDate, ctx.birthTime, ctx.timeZone);
 
-    // Compute High Precision Planetary Positions via Ephemeris (Moshier engine)
+    // Compute Planetary Positions via Moshier Ephemeris
     const grahaData = calculateHighPrecisionGrahas(utcDate, {
-      longitude: lon,
-      latitude: lat,
-      timeZone: tz,
+      longitude: ctx.longitude,
+      latitude: ctx.latitude,
+      timeZone: ctx.timeZone,
     });
 
     // Compute Local Ascendant directly from UTC Instant
-    const ascendant = getPreciseAscendantFromUtc(utcDate, lon, lat);
+    const ascendant = getPreciseAscendantFromUtc(utcDate, ctx.longitude, ctx.latitude);
 
     // Extract true Sun tropical longitude for accurate Sun Sign
     const sunGraha = grahaData.planets.find(p => p.name === 'Sun');
@@ -107,7 +130,7 @@ export class AstrologyService {
         jd: grahaData.jd,
         ayanamsa: grahaData.ayanamsa,
         utcDate: grahaData.utcDate.toISOString(),
-        timeZone: tz,
+        timeZone: ctx.timeZone,
         offsetMinutes,
         calculationMethod: grahaData.calculationMethod,
       },
@@ -118,19 +141,19 @@ export class AstrologyService {
    * Calculate Vedic astrology chart with high precision sidereal ayanamsa & 27 nakshatras.
    */
   static getVedicChart(
-    birthDate: string, 
-    birthTime: string, 
+    birthDateOrContext: string | BirthContext, 
+    birthTime = "12:00", 
     lon = 116.40, 
     lat = 39.90,
     timeZone?: string
   ): VedicChart {
-    const tz = this.resolveTimezone(lon, timeZone);
-    const { utcDate } = parseCivilTimeToUtc(birthDate, birthTime, tz);
+    const ctx = this.toBirthContext(birthDateOrContext, birthTime, lon, lat, timeZone);
+    const { utcDate } = parseCivilTimeToUtc(ctx.birthDate, ctx.birthTime, ctx.timeZone);
 
     const grahaData = calculateHighPrecisionGrahas(utcDate, {
-      longitude: lon,
-      latitude: lat,
-      timeZone: tz,
+      longitude: ctx.longitude,
+      latitude: ctx.latitude,
+      timeZone: ctx.timeZone,
     });
 
     const tropicalPlanets = grahaData.planets.map(p => ({
@@ -139,8 +162,8 @@ export class AstrologyService {
     }));
 
     return buildVedicChart(
-      birthDate, 
-      birthTime, 
+      ctx.birthDate, 
+      ctx.birthTime, 
       tropicalPlanets, 
       grahaData.ascendant.tropical,
       grahaData.ayanamsa
@@ -151,13 +174,13 @@ export class AstrologyService {
    * Complete Domain Evaluation Package for Vedic Jyotish
    */
   static getVedicDomainEvaluation(
-    birthDate: string, 
-    birthTime: string, 
+    birthDateOrContext: string | BirthContext, 
+    birthTime = "12:00", 
     lon = 116.40, 
     lat = 39.90,
     timeZone?: string
   ): DomainEvaluationResult<VedicChart> {
-    const chart = this.getVedicChart(birthDate, birthTime, lon, lat, timeZone);
+    const chart = this.getVedicChart(birthDateOrContext, birthTime, lon, lat, timeZone);
     return {
       domain: 'vedic',
       chart,

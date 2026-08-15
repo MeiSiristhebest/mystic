@@ -7,35 +7,51 @@ import { BaziService, BaziCalculationResult, BaziChart } from "./baziService";
 import { ZiweiService } from "./ziweiService";
 import { QiMenService, QiMenResult } from "./qimenService";
 import { ZiweiChart, Pattern } from "@/lib/ziwei";
-import { DomainEvaluationResult } from "@/lib/contracts/types";
+import { BirthContext, DomainEvaluationResult } from "@/lib/contracts/types";
 
 export class EasternService {
   static getZodiac(year: number): string {
     return BaziService.getZodiac(year);
   }
 
-  static getBazi(birthDate: string, birthTime: string): BaziCalculationResult {
-    return BaziService.getBazi(birthDate, birthTime);
+  static getBazi(
+    birthDateOrContext: string | BirthContext, 
+    birthTime = "12:00",
+    lon = 116.40,
+    lat = 39.90,
+    timeZone = "Asia/Shanghai"
+  ): BaziCalculationResult {
+    return BaziService.getBazi(birthDateOrContext, birthTime, lon, lat, timeZone);
   }
 
-  static getBaziDomainEvaluation(birthDate: string, birthTime: string): DomainEvaluationResult<BaziChart> {
-    return BaziService.getBaziDomainEvaluation(birthDate, birthTime);
+  static getBaziDomainEvaluation(
+    birthDateOrContext: string | BirthContext, 
+    birthTime = "12:00",
+    lon = 116.40,
+    lat = 39.90,
+    timeZone = "Asia/Shanghai"
+  ): DomainEvaluationResult<BaziChart> {
+    return BaziService.getBaziDomainEvaluation(birthDateOrContext, birthTime, lon, lat, timeZone);
   }
 
-  static getZiwei(birthDate: string, hour: number, gender: '男' | '女'): {
+  static getZiwei(
+    birthDateOrContext: string | BirthContext, 
+    hour = 12, 
+    gender: '男' | '女' = '男'
+  ): {
     chart: ZiweiChart;
     patterns: Pattern[];
     detectedPatterns: Pattern[];
   } {
-    return ZiweiService.getZiwei(birthDate, hour, gender);
+    return ZiweiService.getZiwei(birthDateOrContext, hour, gender);
   }
 
   static getZiweiDomainEvaluation(
-    birthDate: string,
-    hour: number,
-    gender: '男' | '女'
+    birthDateOrContext: string | BirthContext,
+    hour = 12,
+    gender: '男' | '女' = '男'
   ): DomainEvaluationResult<ZiweiChart> {
-    return ZiweiService.getZiweiDomainEvaluation(birthDate, hour, gender);
+    return ZiweiService.getZiweiDomainEvaluation(birthDateOrContext, hour, gender);
   }
 
   static getQiMen(date: Date): QiMenResult {

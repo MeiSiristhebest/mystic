@@ -1,0 +1,177 @@
+[
+  {
+    "id": "bazi_001_standard_beijing",
+    "name": "北京标准命例 (1990-05-15 06:00)",
+    "birthDate": "1990-05-15",
+    "birthTime": "06:00",
+    "timeZone": "Asia/Shanghai",
+    "longitude": 116.40,
+    "latitude": 39.90,
+    "expected": {
+      "yearGanZhi": "庚午",
+      "monthGanZhi": "辛巳",
+      "dayGanZhi": "庚辰",
+      "timeGanZhi": "己卯",
+      "dayMaster": "庚金",
+      "dayMasterElement": "金",
+      "yearNaYin": "路旁土"
+    }
+  },
+  {
+    "id": "bazi_002_pre_lichun_1995",
+    "name": "1995立春前命例 (1995-01-15 12:00 -> 属于1994甲戌年)",
+    "birthDate": "1995-01-15",
+    "birthTime": "12:00",
+    "timeZone": "Asia/Shanghai",
+    "longitude": 116.40,
+    "latitude": 39.90,
+    "expected": {
+      "yearGanZhi": "甲戌",
+      "monthGanZhi": "丁丑",
+      "dayMaster": "戊土",
+      "dayMasterElement": "土"
+    }
+  },
+  {
+    "id": "bazi_003_post_lichun_1995",
+    "name": "1995立春后命例 (1995-02-06 12:00 -> 属于1995乙亥年戊寅月)",
+    "birthDate": "1995-02-06",
+    "birthTime": "12:00",
+    "timeZone": "Asia/Shanghai",
+    "longitude": 116.40,
+    "latitude": 39.90,
+    "expected": {
+      "yearGanZhi": "乙亥",
+      "monthGanZhi": "戊寅",
+      "dayMaster": "庚金",
+      "dayMasterElement": "金"
+    }
+  },
+  {
+    "id": "bazi_004_jingzhe_month_switch",
+    "name": "惊蛰节气交节后换月 (1988-03-08 10:00 -> 乙卯月)",
+    "birthDate": "1988-03-08",
+    "birthTime": "10:00",
+    "timeZone": "Asia/Shanghai",
+    "longitude": 116.40,
+    "latitude": 39.90,
+    "expected": {
+      "yearGanZhi": "戊辰",
+      "monthGanZhi": "乙卯",
+      "dayMaster": "丙火",
+      "dayMasterElement": "火"
+    }
+  },
+  {
+    "id": "bazi_005_qingming_month_switch",
+    "name": "清明节气交节后换月 (1992-04-08 08:00 -> 甲辰月)",
+    "birthDate": "1992-04-08",
+    "birthTime": "08:00",
+    "timeZone": "Asia/Shanghai",
+    "longitude": 116.40,
+    "latitude": 39.90,
+    "expected": {
+      "yearGanZhi": "壬申",
+      "monthGanZhi": "甲辰",
+      "dayMaster": "戊土",
+      "dayMasterElement": "土"
+    }
+  },
+  {
+    "id": "bazi_006_midnight_zi_early",
+    "name": "子初 23:30 换日测试 (1990-05-15 23:30)",
+    "birthDate": "1990-05-15",
+    "birthTime": "23:30",
+    "timeZone": "Asia/Shanghai",
+    "longitude": 116.40,
+    "latitude": 39.90,
+    "expected": {
+      "yearGanZhi": "庚午",
+      "monthGanZhi": "辛巳",
+      "timeGanZhi": "戊子"
+    }
+  },
+  {
+    "id": "bazi_007_urumqi_true_solar",
+    "name": "乌鲁木齐高经度真太阳时偏移测试 (经度 87.6°E)",
+    "birthDate": "1990-05-15",
+    "birthTime": "13:00",
+    "timeZone": "Asia/Shanghai",
+    "longitude": 87.60,
+    "latitude": 43.80,
+    "expected": {
+      "yearGanZhi": "庚午",
+      "monthGanZhi": "辛巳"
+    }
+  },
+  {
+    "id": "bazi_008_newyork_est",
+    "name": "纽约西五区命例 (2000-01-01 18:00, America/New_York)",
+    "birthDate": "2000-01-01",
+    "birthTime": "18:00",
+    "timeZone": "America/New_York",
+    "longitude": -74.00,
+    "latitude": 40.71,
+    "expected": {
+      "yearGanZhi": "己卯",
+      "monthGanZhi": "丙子",
+      "dayMaster": "戊土"
+    }
+  },
+  {
+    "id": "bazi_009_london_bst",
+    "name": "伦敦夏令时命例 (1988-08-08 12:00, Europe/London)",
+    "birthDate": "1988-08-08",
+    "birthTime": "12:00",
+    "timeZone": "Europe/London",
+    "longitude": 0.0,
+    "latitude": 51.50,
+    "expected": {
+      "yearGanZhi": "戊辰",
+      "monthGanZhi": "庚申",
+      "dayMaster": "甲木"
+    }
+  },
+  {
+    "id": "bazi_010_jiazi_epoch",
+    "name": "甲子年立春后基准 (1984-02-10 12:00 -> 甲子年丙寅月)",
+    "birthDate": "1984-02-10",
+    "birthTime": "12:00",
+    "timeZone": "Asia/Shanghai",
+    "longitude": 116.40,
+    "latitude": 39.90,
+    "expected": {
+      "yearGanZhi": "甲子",
+      "monthGanZhi": "丙寅",
+      "dayMaster": "甲木"
+    }
+  },
+  {
+    "id": "bazi_011_mangzhong_month",
+    "name": "芒种节气换月 (1996-06-10 15:00 -> 甲午月)",
+    "birthDate": "1996-06-10",
+    "birthTime": "15:00",
+    "timeZone": "Asia/Shanghai",
+    "longitude": 116.40,
+    "latitude": 39.90,
+    "expected": {
+      "yearGanZhi": "丙子",
+      "monthGanZhi": "甲午",
+      "dayMaster": "己土"
+    }
+  },
+  {
+    "id": "bazi_012_bailu_month",
+    "name": "白露节气换月 (2002-09-10 10:00 -> 己酉月)",
+    "birthDate": "2002-09-10",
+    "birthTime": "10:00",
+    "timeZone": "Asia/Shanghai",
+    "longitude": 116.40,
+    "latitude": 39.90,
+    "expected": {
+      "yearGanZhi": "壬午",
+      "monthGanZhi": "己酉",
+      "dayMaster": "辛金"
+    }
+  }
+]
