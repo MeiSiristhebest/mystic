@@ -2,7 +2,7 @@
  * Cross-Domain Conflict Detector and Multi-Domain Dialectical Synthesizer.
  * 
  * Prevents "pseudo-consensus hallucination" by detecting real tensions,
- * timing mismatches, and polarity disagreements across Ziwei, Vedic, TCM (Nihaixia), and Bazi.
+ * temporal scope mismatches, and polarity disagreements across Ziwei, Vedic, TCM (Nihaixia), and Bazi.
  */
 
 import { CanonicalEvidenceNode, CrossDomainConflict, CrossDomainPerspective, DomainType } from '../contracts/types';
@@ -10,6 +10,7 @@ import { CanonicalEvidenceNode, CrossDomainConflict, CrossDomainPerspective, Dom
 export class CrossDomainConflictDetector {
   /**
    * Analyze evidence nodes across domains and detect dimensional tensions and contradictions.
+   * Incorporates time-window, confidence weight, and domain perspective scope.
    */
   static detectConflicts(evidences: CanonicalEvidenceNode[]): CrossDomainConflict[] {
     const dimensions: Array<'career' | 'health' | 'wealth' | 'relationship' | 'timing'> = [
@@ -39,8 +40,18 @@ export class CrossDomainConflictDetector {
       let unfavorableCount = 0;
       let transformativeCount = 0;
 
+      // Time window tracking
+      const timeWindows: string[] = [];
+
       for (const [domain, evList] of domainMap.entries()) {
         const topEv = evList.sort((a, b) => b.confidence - a.confidence)[0];
+        
+        // Extract time scope if present in parameters
+        const timeScope = topEv.parameters?.timeWindow || topEv.parameters?.dashaPeriod || topEv.parameters?.scope;
+        if (timeScope && typeof timeScope === 'string') {
+          timeWindows.push(timeScope);
+        }
+
         perspectives.push({
           domain,
           dimension: dim,
@@ -54,7 +65,7 @@ export class CrossDomainConflictDetector {
         else if (topEv.polarity === 'transformative') transformativeCount++;
       }
 
-      // Conflict logic: has both favorable and unfavorable/transformative stances
+      // Conflict logic: has opposing stances
       const hasConflict = favorableCount > 0 && (unfavorableCount > 0 || transformativeCount > 0);
 
       let conflictType: CrossDomainConflict['conflictType'] = undefined;
@@ -68,7 +79,8 @@ export class CrossDomainConflictDetector {
           synthesisStrategy = `严禁强行统一或模棱两可；必须向用户客观呈现两方的立论依据（如表面机会 vs 底层暗礁），指导用户采取“防守型进取”策略。`;
         } else if (dim === 'timing' || transformativeCount > 0) {
           conflictType = 'timing_mismatch';
-          tensionDescription = `在【${dim}】时机节奏上，短期格局与底层长期运势存在相位差（如表面变动窗口已开，但底层深层大运尚未就位）。`;
+          const windowNote = timeWindows.length > 0 ? ` (涉及时间窗口: ${timeWindows.join(' vs ')})` : '';
+          tensionDescription = `在【${dim}】时机节奏上，短期格局与底层长期运势存在相位差${windowNote}（如表面变动窗口已开，但底层深层大运尚未就位）。`;
           synthesisStrategy = `区分“表层趋势”与“深层运律”，建议用户在微观上试水、在宏观重资产决策上保持定力。`;
         } else {
           conflictType = 'surface_vs_root';

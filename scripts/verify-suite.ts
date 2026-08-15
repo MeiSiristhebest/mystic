@@ -168,7 +168,8 @@ function runTestSuite() {
   
   const patterns = detectPatterns(ziweiChart);
   const ziweiEvidences = extractZiweiEvidences(ziweiChart, patterns);
-  assert(patterns.length >= 0, `Ziwei pattern detection executed (${patterns.length} patterns matched)`);
+  assert(patterns.length > 0, `Ziwei pattern detection executed and matched real patterns (${patterns.length} patterns matched)`);
+  assert(patterns.some(p => p.name.includes('机月同梁') || p.name.includes('日月同宫')), 'Matched verified classical pattern (机月同梁 / 日月同宫) for 1990-05-15');
   assert(ziweiEvidences.length === patterns.length, 'Every detected pattern maps to a CanonicalEvidenceNode');
   if (ziweiEvidences.length > 0) {
     assert(

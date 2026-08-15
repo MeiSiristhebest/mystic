@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint .",
     "test": "tsx scripts/run-all-tests.ts",
-    "test:all": "tsx scripts/run-all-tests.ts && tsx scripts/verify-suite.ts"
+    "test:all": "tsx scripts/run-all-tests.ts && tsx scripts/verify-suite.ts",
+    "verify": "pnpm exec tsc --noEmit && tsx scripts/run-all-tests.ts && tsx scripts/verify-suite.ts && next build"
   },
   "dependencies": {
     "@google/genai": "^2.0.1",

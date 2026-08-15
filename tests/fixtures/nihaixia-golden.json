@@ -1,7 +1,7 @@
 [
   {
     "id": "tcm_golden_001_taiyang_zhongfeng",
-    "name": "太阳中风表虚证",
+    "name": "太阳中风营卫不和证",
     "symptoms": "恶风、自汗出、发热、头痛脉浮缓",
     "healthScores": {
       "sweat": 45,
@@ -11,25 +11,30 @@
       "stage": "taiyang",
       "ruleId": "RULE_TAIYANG_ZHONGFENG",
       "formula": "桂枝汤",
-      "classicalClause": "《伤寒论》第12条"
+      "classicalClause": "《伤寒论》第12条",
+      "mustIncludeHerbs": ["桂枝", "白芍", "生姜", "大枣", "炙甘草"]
     }
   },
   {
     "id": "tcm_golden_002_shaoyang_shuji",
-    "name": "少阳枢机不利证",
+    "name": "少阳枢机不利胆热脾寒证",
     "symptoms": "胸胁苦满、口苦咽干、偏头痛、目眩心烦喜呕",
-    "healthScores": {},
+    "healthScores": {
+      "appetite": 55,
+      "sleep": 50
+    },
     "expected": {
       "stage": "shaoyang",
       "ruleId": "RULE_SHAOYANG_SHUJI",
       "formula": "小柴胡汤",
-      "classicalClause": "《伤寒论》第96条"
+      "classicalClause": "《伤寒论》第96条",
+      "mustIncludeHerbs": ["柴胡", "黄芩", "人参", "半夏"]
     }
   },
   {
     "id": "tcm_golden_003_shaoyin_yangxu",
-    "name": "少阴心肾阳虚证",
-    "symptoms": "常年手足逆冷至肘膝、恶寒蜷卧、夜尿清长",
+    "name": "少阴心肾阳虚真阳不足水泛证",
+    "symptoms": "常年手足逆冷至肘膝、恶寒蜷卧、夜尿清长、但欲寐",
     "healthScores": {
       "temperature": 35,
       "urine": 45,
@@ -37,8 +42,10 @@
     },
     "expected": {
       "stage": "shaoyin",
+      "ruleId": "RULE_SHAOYIN_XINSHEN_YANGXU",
       "formula": "真武汤",
-      "classicalClause": "《伤寒论》第281条"
+      "classicalClause": "《伤寒论》第281条",
+      "mustIncludeHerbs": ["制附子", "茯苓", "白芍", "白术", "生姜"]
     }
   }
 ]

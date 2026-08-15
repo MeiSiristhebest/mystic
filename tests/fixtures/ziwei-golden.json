@@ -1,7 +1,7 @@
 [
   {
-    "id": "ziwei_golden_001_shapolang",
-    "name": "杀破狼格局标准盘",
+    "id": "ziwei_golden_001_jiyue_tongliang",
+    "name": "机月同梁与日月同宫盘 (1990-05-15 06:00 男)",
     "input": {
       "year": 1990,
       "month": 5,
@@ -11,15 +11,16 @@
     },
     "expected": {
       "palacesCount": 12,
-      "mingGongBranch": 6,
-      "wuxingJu": 3,
-      "isValid": true,
-      "mustIncludeStarTypes": ["major", "lucky", "sha"]
+      "mingGongBranch": 11,
+      "wuxingJuName": "木三局",
+      "majorStarsInMing": ["天梁"],
+      "expectedPatterns": ["机月同梁三星会", "日月同宫", "化禄入财"],
+      "isValid": true
     }
   },
   {
-    "id": "ziwei_golden_002_ziwei_wuxing",
-    "name": "紫微天府格局基准盘",
+    "id": "ziwei_golden_002_shapolang_ziwei",
+    "name": "紫微贪狼杀破狼君臣庆会盘 (1988-08-08 10:00 女)",
     "input": {
       "year": 1988,
       "month": 8,
@@ -29,12 +30,15 @@
     },
     "expected": {
       "palacesCount": 12,
+      "mingGongBranch": 9,
+      "majorStarsInMing": ["紫微", "贪狼"],
+      "expectedPatterns": ["君臣庆会", "杀破狼", "紫微入命", "双禄朝垣"],
       "isValid": true
     }
   },
   {
-    "id": "ziwei_golden_003_jiyue_tongliang",
-    "name": "机月同梁基准盘",
+    "id": "ziwei_golden_003_kuiyue_tonghui",
+    "name": "魁钺辅弼同会盘 (1995-11-20 02:00 男)",
     "input": {
       "year": 1995,
       "month": 11,
@@ -44,6 +48,8 @@
     },
     "expected": {
       "palacesCount": 12,
+      "mingGongBranch": 8,
+      "expectedPatterns": ["太阴化忌入迁", "辅弼同会", "魁钺同会"],
       "isValid": true
     }
   }

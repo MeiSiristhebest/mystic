@@ -1,0 +1,44 @@
+name: CI Quality & Correctness Verification
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  verify:
+    name: Domain Engine & Regression Verification
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 11.1.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: TypeScript Typecheck
+        run: pnpm exec tsc --noEmit
+
+      - name: Run L3 Golden & L4 Differential Tests
+        run: pnpm test
+
+      - name: Run 4-Tier Regression Test Suite
+        run: pnpm test:all
+
+      - name: Build Next.js Production App
+        run: pnpm build
+        env:
+          NEXT_TELEMETRY_DISABLED: 1

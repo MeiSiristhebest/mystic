@@ -285,6 +285,21 @@ export function getCurrentDashaHierarchy(
 }
 
 /**
+ * @deprecated Use buildVimshottariTimeline and getCurrentDashaHierarchy instead.
+ * Retained strictly for backward compatibility; internally delegates to the 3-tier recursive engine.
+ */
+export function calculateVimsottariDasha(
+  birthDateStr: string,
+  moonSiderealDegree: number,
+  targetDate = new Date()
+): CurrentDashaHierarchy {
+  const timeline = buildVimshottariTimeline(birthDateStr, moonSiderealDegree);
+  return getCurrentDashaHierarchy(timeline, targetDate);
+}
+
+
+
+/**
  * Extract Deterministic Evidence Nodes from Vedic Chart
  */
 export function extractVedicEvidences(
