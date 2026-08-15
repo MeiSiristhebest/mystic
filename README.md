@@ -152,14 +152,14 @@ pnpm verify
 
 ---
 
-## 开源许可证与致谢 (License & Acknowledgments)
+## 开源许可证与引用致谢 (License & Acknowledgments)
 
 - 本项目核心代码采用 [MIT License](LICENSE) 开源许可证。
 - 详细第三方依赖（如 `ephemeris` GPL-3.0 Moshier 算法）与古籍公共文献声明，请参见 [NOTICE.md](NOTICE.md)。
-- **灵感与致谢 (Inspirations)**：Mystic 的领域适配器在概念与知识建模上吸取了开源社区优秀项目的启发：
-  - [`nihaixia`](https://github.com/jangviktor-web/nihaixia)：倪海厦先生经方医学体系与六经辨证整理思路。
-  - [`vedic-astro-skills`](https://github.com/CNWU16/vedic-astro-skills)：吠陀占星天文计算与 Agent 化技能体系设计理念。
-  - [`ziwei-doushu`](https://github.com/Renhuai123/ziwei-doushu)：紫微斗数排盘规则与经典格局知识工程建模。
+- **开源复用与参考声明 (Avoiding Reinventing the Wheel)**：Mystic 的多领域确定性推演框架、规范证据图谱（CEG）与跨体系冲突仲裁模型均为本项目原创设计。为避免重复造轮子，本项目在各具体领域的规则基准与数据整理中参考并复用了以下优秀的开源项目资产：
+  - [`nihaixia`](https://github.com/jangviktor-web/nihaixia)：经方医学体系的部分条文整理与医案分类。
+  - [`vedic-astro-skills`](https://github.com/CNWU16/vedic-astro-skills)：印占天文计算与 Dasha 递归算法基础。
+  - [`ziwei-doushu`](https://github.com/Renhuai123/ziwei-doushu)：紫微斗数排盘规则与部分经典格局条件定义。
 
 ---
 

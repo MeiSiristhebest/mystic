@@ -155,10 +155,10 @@ pnpm verify
  
 - The core codebase is licensed under the [MIT License](LICENSE).
 - For third-party ephemeris dependencies (e.g. `ephemeris` GPL-3.0) and classical public domain literature notices, please refer to [NOTICE.md](NOTICE.md).
-- **Inspirations & Acknowledgments**: Mystic's domain adapters draw conceptual and engineering inspiration from several open-source traditional knowledge projects:
-  - [`nihaixia`](https://github.com/jangviktor-web/nihaixia): Ni Haixia classical formula systems and 6-stages differential logic modeling.
-  - [`vedic-astro-skills`](https://github.com/CNWU16/vedic-astro-skills): Jyotish ephemeris precision workflows and agentic skill architectural patterns.
-  - [`ziwei-doushu`](https://github.com/Renhuai123/ziwei-doushu): Classical astrolabe rules, mutagen interactions, and Chinese astrology knowledge engineering.
+- **Open Source Reuse & Reference (Avoiding Reinventing the Wheel)**: Mystic's multi-domain deterministic reasoning architecture, Canonical Evidence Graph (CEG), and cross-system tension arbitration are original designs of the Mystic project. To avoid reinventing the wheel on domain rule bases and classical data assets, Mystic references and adapts components from:
+  - [`nihaixia`](https://github.com/jangviktor-web/nihaixia): Classical formula datasets and 6-stages symptom mappings.
+  - [`vedic-astro-skills`](https://github.com/CNWU16/vedic-astro-skills): Vedic astronomical Dasha recursive calculation workflows.
+  - [`ziwei-doushu`](https://github.com/Renhuai123/ziwei-doushu): Classical astrolabe rules and Si Hua mutagen rule definitions.
 
 ---
 

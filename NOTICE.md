@@ -21,12 +21,14 @@
 
 ---
 
-## 3. Inspirations & Conceptual Heritage
+## 3. Upstream Open Source References & Reuse (Avoiding Reinventing the Wheel)
 
-Mystic's domain adapters draw conceptual and engineering inspiration from several open-source traditional knowledge projects:
-- **`nihaixia`**: Inspiration for structured Ni Haixia classical formulas, 6-stages differential logic, and clinical case paradigms.
-- **`vedic-astro-skills`**: Inspiration for Jyotish astronomical precision workflows, Dasha timelines, and agentic domain calculation structures.
-- **`ziwei-doushu`**: Inspiration for classical astrolabe patterns, Si Hua mutagen rules, and structured Chinese astrology knowledge modeling.
+Mystic's multi-domain deterministic reasoning framework, Canonical Evidence Graph (CEG), and cross-system tension arbitration architecture are original designs of the Mystic project. 
+
+To avoid reinventing the wheel on domain-specific rule collections and classical data assets, Mystic references and adapts components from the following open-source projects:
+- **[`nihaixia`](https://github.com/jangviktor-web/nihaixia)**: Reused classical formula dataset formatting, 6-stages symptom mappings, and case categorization.
+- **[`vedic-astro-skills`](https://github.com/CNWU16/vedic-astro-skills)**: Referenced Vedic astronomical Dasha recursive algorithms and mathematical calculation workflows.
+- **[`ziwei-doushu`](https://github.com/Renhuai123/ziwei-doushu)**: Referenced classical astrolabe patterns and Si Hua mutagen rule definitions.
 
 ---
 
