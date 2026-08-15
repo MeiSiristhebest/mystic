@@ -166,11 +166,20 @@ export function calculateBaziCore(
     throw new BaziCalculationError(`Invalid IANA timeZone '${timeZone}'. Must be a valid IANA timezone identifier.`);
   }
 
+  // Strict calendar date validity (rejects impossible dates like 2026-02-31, 2026-04-31, etc.)
   const [y, m, d] = birthDate.split('-').map(Number);
-  const [h, min] = (birthTime || '12:00').split(':').map(Number);
-
   if (isNaN(y) || isNaN(m) || isNaN(d) || m < 1 || m > 12 || d < 1 || d > 31) {
     throw new BaziCalculationError(`Invalid calendar date: ${birthDate}`);
+  }
+  // Round-trip validity check: Date object rejects invalid days (e.g. Feb 31 → Mar 3)
+  const calCheck = new Date(Date.UTC(y, m - 1, d));
+  if (calCheck.getUTCFullYear() !== y || calCheck.getUTCMonth() + 1 !== m || calCheck.getUTCDate() !== d) {
+    throw new BaziCalculationError(`Non-existent calendar date: ${birthDate} (e.g. Feb 31 does not exist).`);
+  }
+
+  const [h, min] = (birthTime || '12:00').split(':').map(Number);
+  if (isNaN(h) || isNaN(min) || h < 0 || h > 23 || min < 0 || min > 59) {
+    throw new BaziCalculationError(`Invalid birthTime '${birthTime}'. Must be HH:mm within 00:00~23:59.`);
   }
 
   // Calculate Astronomical True Solar Time via IANA / Ephemeris EoT
@@ -236,6 +245,26 @@ export function calculateBaziCore(
   validatePillar('month', monthGanZhi);
   validatePillar('day', dayGanZhi);
   validatePillar('time', timeGanZhi);
+
+  // P2: Geo-completeness check — warn when geographic defaults were used.
+  // When longitude/latitude/timeZone are missing from the original call, the service fills in
+  // Beijing defaults (116.40E / 39.90N / Asia/Shanghai). This silently shifts true solar time
+  // for non-Beijing births. Mark with a warning so downstream evidence can degrade confidence.
+  const DEFAULT_LON = 116.40;
+  const DEFAULT_LAT = 39.90;
+  const DEFAULT_TZ = 'Asia/Shanghai';
+  const geoDefaulted =
+    Math.abs(longitude - DEFAULT_LON) < 0.001 &&
+    Math.abs(latitude - DEFAULT_LAT) < 0.001 &&
+    timeZone === DEFAULT_TZ;
+  if (geoDefaulted) {
+    issues.push({
+      field: 'location',
+      severity: 'warning',
+      message: 'Geographic inputs (longitude/latitude/timeZone) not explicitly provided; defaulting to Beijing (116.40E, 39.90N, Asia/Shanghai). True Solar Time may be incorrect for non-Beijing births.',
+      code: 'GEO_DEFAULT_USED',
+    });
+  }
 
   if (issues.some(i => i.severity === 'error')) {
     throw new BaziCalculationError(`Bazi validation failed: ${issues.map(i => i.message).join('; ')}`);

@@ -27,11 +27,23 @@ export const DEFAULT_STRENGTH_MODEL_CONFIG: StrengthModelConfig = {
 
 export interface BaziConvention {
   useTrueSolarTime: boolean;            // 是否使用星历真太阳时校正
-  dayBoundary: 'midnight' | 'zi_early'; // 'zi_early': 子初(23:00)换日; 'midnight': 00:00换日
+  /**
+   * 日界线规则 (Day Boundary Convention)
+   *
+   * IMPLEMENTATION NOTE: Currently only 'zi_early' (子初换日, 23:00~00:59 belong to next day)
+   * is actually enforced by pre-processing the birth hour before passing to lunar-javascript.
+   * 'midnight' is NOT separately enforced at the library level — lunar-javascript uses its
+   * own internal day boundary logic which aligns with the 'zi_early' convention by default.
+   *
+   * If your use case strictly requires 'midnight' (午夜换日), treat this as a known limitation
+   * and do NOT rely on this field alone to guarantee correctness.
+   */
+  dayBoundary: 'midnight' | 'zi_early';
   yearBoundary: 'lichun';                // 严格以立春作为年柱分界
   monthBoundary: 'jie';                  // 严格以二十四节气交节日换月
   strengthModelConfig: StrengthModelConfig; // 启发式强弱打分参数
 }
+
 
 export const DEFAULT_BAZI_CONVENTION: BaziConvention = {
   useTrueSolarTime: true,

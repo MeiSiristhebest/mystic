@@ -239,20 +239,29 @@ export function testBaziSuite() {
     failed++;
   }
 
-  // ── 11. Strict Parameter Bounds Validation (negative tests) ──────────────
+  // ── 11. Strict Parameter Bounds & Date/Time Validation (negative tests) ─
   let invalidLonBlocked = false;
   let invalidTzBlocked = false;
+  let invalidCalDateBlocked = false;   // P2-1: 2026-02-31 must be rejected
+  let invalidTimeBlocked = false;      // P2-2: 25:99 must be rejected
+
   try { BaziService.getBazi('1990-05-15', '06:00', 250, 39.90); }
   catch (err: any) { if (err instanceof BaziCalculationError) invalidLonBlocked = true; }
 
   try { BaziService.getBazi('1990-05-15', '06:00', 116.40, 39.90, 'Asia/Chin'); }
   catch (err: any) { if (err instanceof BaziCalculationError) invalidTzBlocked = true; }
 
-  if (invalidLonBlocked && invalidTzBlocked) {
-    console.log(`  ✓ [L3 BOUNDS VALIDATION PASS] Longitude > 180 and invalid IANA timezone 'Asia/Chin' properly rejected`);
+  try { BaziService.getBazi('2026-02-31', '12:00', 116.40, 39.90, 'Asia/Shanghai'); }
+  catch (err: any) { if (err instanceof BaziCalculationError) invalidCalDateBlocked = true; }
+
+  try { BaziService.getBazi('1990-05-15', '25:99', 116.40, 39.90, 'Asia/Shanghai'); }
+  catch (err: any) { if (err instanceof BaziCalculationError) invalidTimeBlocked = true; }
+
+  if (invalidLonBlocked && invalidTzBlocked && invalidCalDateBlocked && invalidTimeBlocked) {
+    console.log(`  ✓ [L3 BOUNDS VALIDATION PASS] lon>180, invalid IANA tz, 2026-02-31, 25:99 all correctly rejected`);
     passed++;
   } else {
-    console.error(`  ✗ [L3 BOUNDS VALIDATION FAIL] lon=${invalidLonBlocked}, tz=${invalidTzBlocked}`);
+    console.error(`  ✗ [L3 BOUNDS VALIDATION FAIL] lon=${invalidLonBlocked}, tz=${invalidTzBlocked}, calDate=${invalidCalDateBlocked}, time=${invalidTimeBlocked}`);
     failed++;
   }
 
@@ -274,8 +283,38 @@ export function testBaziSuite() {
     failed++;
   }
 
-  // ── 13. BirthContext has no targetDate field (compile-time enforced) ──────
-  // This is verified by tsc --noEmit; at runtime we just check the chart's timeContext has civilLocalDate
+  // ── 13. Geo default warning in validation (P2-3) ─────────────────────────
+  // When lat/lon/tz are all Beijing defaults, validation.issues must contain GEO_DEFAULT_USED warning
+  const geoDefaultEval = BaziService.getBaziDomainEvaluation('1990-05-15', '06:00');
+  const geoWarning = geoDefaultEval.validation.issues.find(
+    (i: any) => i.code === 'GEO_DEFAULT_USED' && i.severity === 'warning'
+  );
+  if (geoWarning) {
+    console.log(`  ✓ [L3 GEO DEFAULT WARNING PASS] Validation correctly emits GEO_DEFAULT_USED warning for Beijing-defaulted inputs`);
+    passed++;
+  } else {
+    console.error(`  ✗ [L3 GEO DEFAULT WARNING FAIL] Expected GEO_DEFAULT_USED warning, got: ${JSON.stringify(geoDefaultEval.validation.issues)}`);
+    failed++;
+  }
+
+  // ── 14. DST 12-month scan: Sydney summer DST correctly identified ─────────
+  // Australia/Sydney: UTC+11 (AEDT) in January (summer), UTC+10 (AEST) in July (winter)
+  // Old Jan/Jul min() would give min(-660,-600)=-660 → standard=-660 (WRONG: DST in Jan)
+  // New 12-month mode() → 8 months at -600, 4 months at -660 → standard=-600 (CORRECT)
+  const sydneyEval = BaziService.getBaziDomainEvaluation(
+    '1990-01-15', '12:00', 151.21, -33.87, 'Australia/Sydney'
+  );
+  // In January, Sydney is in AEDT (UTC+11 = +660min), so DST should be +60min
+  const sydneyDst = sydneyEval.chart.timeContext.dstOffsetMinutes;
+  if (sydneyDst === 60) {
+    console.log(`  ✓ [L3 DST 12-MONTH SCAN PASS] Australia/Sydney Jan 1990: dstOffset=${sydneyDst}min (standard=600=AEST, total=660=AEDT, DST=60)`);
+    passed++;
+  } else {
+    console.error(`  ✗ [L3 DST 12-MONTH SCAN FAIL] Expected DST=60 for Sydney Jan, got dstOffset=${sydneyDst}`);
+    failed++;
+  }
+
+  // ── 15. civilLocalDate in timeContext (separate from time string) ─────────
   if (baziEval1990.chart.timeContext.civilLocalDate === '1990-05-15') {
     console.log(`  ✓ [L3 CIVIL LOCAL DATE PASS] timeContext.civilLocalDate correctly populated: ${baziEval1990.chart.timeContext.civilLocalDate}`);
     passed++;

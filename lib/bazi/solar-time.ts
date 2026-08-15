@@ -86,23 +86,29 @@ export function resolveTimezoneDetails(utcDate: Date, timeZone: string): {
   const localMs = Date.UTC(pMap.year, (pMap.month || 1) - 1, pMap.day || 1, pMap.hour || 0, pMap.minute || 0, pMap.second || 0);
   const totalOffsetMinutes = Math.round((localMs - utcDate.getTime()) / 60000);
 
-  // Sample January and July to find standard baseline offset (non-DST)
-  const probeDateJan = new Date(Date.UTC(utcDate.getUTCFullYear(), 0, 15, 12, 0, 0));
-  const probeDateJul = new Date(Date.UTC(utcDate.getUTCFullYear(), 6, 15, 12, 0, 0));
+  // Scan all 12 mid-month UTC instants and take Math.min() as the standard offset.
+  //
+  // Why Math.min() is always correct:
+  //   DST always ADDS to the base offset (e.g. UTC+10 → UTC+11, UTC-5 → UTC-4).
+  //   Therefore standard offset = minimum observed offset across all months of the year.
+  //   This handles: Northern Hemisphere, Southern Hemisphere, historical transitions,
+  //   and fixed-offset zones (all 12 values identical → min = that value, DST = 0).
+  //
+  // Why 12 months instead of Jan+Jul:
+  //   Historical timezone rules may not follow a Jan=winter / Jul=summer pattern.
+  //   Scanning all 12 mid-month points is cheap and robust.
+  const yearOffsets: number[] = [];
+  for (let mo = 0; mo < 12; mo++) {
+    const probe = new Date(Date.UTC(utcDate.getUTCFullYear(), mo, 15, 12, 0, 0));
+    const pts = formatter.formatToParts(probe);
+    const mp: Record<string, number> = {};
+    for (const p of pts) if (p.type !== 'literal') mp[p.type] = parseInt(p.value, 10);
+    if (mp.hour === 24) mp.hour = 0;
+    const lms = Date.UTC(mp.year, (mp.month || 1) - 1, mp.day || 1, mp.hour || 0, mp.minute || 0, mp.second || 0);
+    yearOffsets.push(Math.round((lms - probe.getTime()) / 60000));
+  }
 
-  const getOffset = (d: Date) => {
-    const pts = formatter.formatToParts(d);
-    const m: Record<string, number> = {};
-    for (const p of pts) if (p.type !== 'literal') m[p.type] = parseInt(p.value, 10);
-    if (m.hour === 24) m.hour = 0;
-    const l = Date.UTC(m.year, (m.month || 1) - 1, m.day || 1, m.hour || 0, m.minute || 0, m.second || 0);
-    return Math.round((l - d.getTime()) / 60000);
-  };
-
-  const janOffset = getOffset(probeDateJan);
-  const julOffset = getOffset(probeDateJul);
-
-  const standardOffsetMinutes = Math.min(janOffset, julOffset);
+  const standardOffsetMinutes = Math.min(...yearOffsets);
   const dstOffsetMinutes = totalOffsetMinutes - standardOffsetMinutes;
   const standardMeridian = standardOffsetMinutes / 4.0;
 
@@ -113,6 +119,7 @@ export function resolveTimezoneDetails(utcDate: Date, timeZone: string): {
     standardMeridian,
   };
 }
+
 
 export interface TrueSolarTimeResult {
   utcInstant: string;
