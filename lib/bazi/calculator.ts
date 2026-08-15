@@ -1,4 +1,4 @@
-import { Solar } from "lunar-javascript";
+import { Solar, LunarUtil } from "lunar-javascript";
 import { BirthContext, ValidationReport } from "../contracts/types";
 import { BaziCalculationError, BaziPillars, HiddenStem, VisibleElementDistribution, BaziTenGodInfo, BaziConvention, DEFAULT_BAZI_CONVENTION, BaziTimeContext, BaziCalculationProvenance, BranchInteraction, DayMasterStrengthEvaluation, DaYunTimeline } from "./types";
 import { calculateAstronomicalTrueSolarTime } from "./solar-time";
@@ -45,62 +45,13 @@ export const VALID_STEMS = Object.keys(STEM_ELEMENT_MAP);
 export const VALID_BRANCHES = Object.keys(BRANCH_ELEMENT_MAP);
 
 /**
- * Calculate Ten God name between Day Master and Target Stem
+ * Calculate Ten God name between Day Master and Target Stem via LunarUtil.SHI_SHEN
  */
 export function calculateTenGod(dayGan: string, targetGan: string): string {
-  const dm = STEM_ELEMENT_MAP[dayGan];
-  const target = STEM_ELEMENT_MAP[targetGan];
-  if (!dm || !target) return '未知';
-
-  const sameYinYang = dm.yinYang === target.yinYang;
-
-  // 同我者 (比肩/劫财)
-  if (dm.element === target.element) {
-    return sameYinYang ? '比肩' : '劫财';
-  }
-
-  // 生我者 (正印/偏印/枭神)
-  const isParent = (dm.element === '木' && target.element === '水') ||
-                   (dm.element === '火' && target.element === '木') ||
-                   (dm.element === '土' && target.element === '火') ||
-                   (dm.element === '金' && target.element === '土') ||
-                   (dm.element === '水' && target.element === '金');
-  if (isParent) {
-    return sameYinYang ? '偏印' : '正印';
-  }
-
-  // 我生者 (食神/伤官)
-  const isChild = (dm.element === '木' && target.element === '火') ||
-                  (dm.element === '火' && target.element === '土') ||
-                  (dm.element === '土' && target.element === '金') ||
-                  (dm.element === '金' && target.element === '水') ||
-                  (dm.element === '水' && target.element === '木');
-  if (isChild) {
-    return sameYinYang ? '食神' : '伤官';
-  }
-
-  // 克我者 (正官/七杀)
-  const isOfficer = (dm.element === '木' && target.element === '金') ||
-                    (dm.element === '火' && target.element === '水') ||
-                    (dm.element === '土' && target.element === '木') ||
-                    (dm.element === '金' && target.element === '火') ||
-                    (dm.element === '水' && target.element === '土');
-  if (isOfficer) {
-    return sameYinYang ? '七杀' : '正官';
-  }
-
-  // 我克者 (正财/偏财)
-  const isWealth = (dm.element === '木' && target.element === '土') ||
-                   (dm.element === '火' && target.element === '金') ||
-                   (dm.element === '土' && target.element === '水') ||
-                   (dm.element === '金' && target.element === '木') ||
-                   (dm.element === '水' && target.element === '火');
-  if (isWealth) {
-    return sameYinYang ? '偏财' : '正财';
-  }
-
-  return '未知';
+  if (!dayGan || !targetGan) return '未知';
+  return (LunarUtil.SHI_SHEN as Record<string, string>)[`${dayGan}${targetGan}`] || '未知';
 }
+
 
 /**
  * Core Bazi Calculation with Strict Input Validation, IANA Timezone, Interactions, Strength, and Da Yun
