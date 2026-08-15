@@ -81,25 +81,41 @@ export interface EvidenceRelation {
   description: string;
 }
 
-export interface CanonicalEvidenceNode {
+/**
+ * 细粒度接口隔离层次 (Interface Segregation Hierarchy)
+ */
+export interface BaseEvidenceNode {
   id: string;
   domain: DomainType;
   ruleId: string;
   ruleName: string;
   level: EvidenceLevel;
+  dimension: 'personality' | 'career' | 'relationship' | 'health' | 'wealth' | 'spiritual' | 'timing' | 'structural';
+  polarity: 'favorable' | 'unfavorable' | 'transformative' | 'neutral';
+  canonicalInterpretation: string; // Direct domain meaning without LLM hallucination
+  parameters: Record<string, any>;
+  classicalSource?: string;
+}
+
+export interface TemporalEvidenceNode extends BaseEvidenceNode {
+  temporalScope?: EvidenceTemporalScope;
+  relations?: EvidenceRelation[];
+}
+
+export interface EpistemicEvidenceNode extends BaseEvidenceNode {
   evidenceType?: EvidenceType;
   sourceTier?: SourceTier;
   valence?: EvidenceValence;
   dynamicMode?: EvidenceDynamicMode;
-  dimension: 'personality' | 'career' | 'relationship' | 'health' | 'wealth' | 'spiritual' | 'timing' | 'structural';
-  polarity: 'favorable' | 'unfavorable' | 'transformative' | 'neutral'; // Retained for backward-compat
-  confidence: number; // Deterministic Evidence Calibration Score (0.0 ~ 1.0)
+  confidence: number;
   confidenceBreakdown?: EvidenceConfidenceBreakdown;
-  temporalScope?: EvidenceTemporalScope;
-  relations?: EvidenceRelation[];
-  parameters: Record<string, any>;
-  classicalSource?: string; // e.g. 《伤寒论》第12条, 《骨髓赋》, Brihat Parashara Hora Shastra
-  canonicalInterpretation: string; // Direct domain meaning without LLM hallucination
+}
+
+/**
+ * 完整规范证据节点 (Composite Canonical Evidence Node)
+ */
+export interface CanonicalEvidenceNode extends BaseEvidenceNode, TemporalEvidenceNode, EpistemicEvidenceNode {
+  // Inherits all properties seamlessly
 }
 
 export interface ValidationIssue {
