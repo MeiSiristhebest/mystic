@@ -8,21 +8,20 @@ on:
 
 jobs:
   test:
-    name: Test & Build (${{ matrix.os }}, Node ${{ matrix.node-version }})
+    name: Test & Build (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        node-version: [20.x, 22.x]
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node.js ${{ matrix.node-version }}
+      - name: Setup Node.js 22.x (LTS for pnpm v11)
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 22.x
 
       - name: Enable Corepack
         run: corepack enable
@@ -30,13 +29,13 @@ jobs:
       - name: Install Dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: Typecheck & Lint
-        run: pnpm run lint --if-present
+      - name: TypeScript Validation
+        run: pnpm exec tsc --noEmit
 
       - name: Run Tests
         run: pnpm run test --if-present
 
-      - name: Build Check
+      - name: Build Production Bundle
         run: pnpm run build --if-present
         env:
           NEXT_TELEMETRY_DISABLED: 1
