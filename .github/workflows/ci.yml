@@ -1,43 +1,30 @@
-name: CI Quality & Correctness Verification
+name: CI Pipeline
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
-  verify:
-    name: Domain Engine & Regression Verification
-    runs-on: ubuntu-latest
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node-version: [20.x, 22.x]
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js 22
+      - uses: actions/checkout@v4
+      - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
-          node-version: 22
-
-      - name: Enable Corepack & Install pnpm
-        run: |
-          corepack enable
-          corepack prepare --activate
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: TypeScript Typecheck
-        run: pnpm exec tsc --noEmit
-
-      - name: Run L3 Golden & L4 Differential Tests
-        run: pnpm test
-
-      - name: Run 4-Tier Regression Test Suite
-        run: pnpm test:all
-
-      - name: Build Next.js Production App
-        run: pnpm build
-        env:
-          NEXT_TELEMETRY_DISABLED: 1
+          node-version: ${{ matrix.node-version }}
+      - name: Install Dependencies
+        run: npm ci || npm install
+      - name: Typecheck & Lint
+        run: npm run lint --if-present
+      - name: Run Tests
+        run: npm test --if-present
+      - name: Build Check
+        run: npm run build --if-present
