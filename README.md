@@ -1,3 +1,7 @@
+<!-- 
+  Designed & Built with ❤️ by MeiSiristhebest (https://github.com/MeiSiristhebest)
+  If this repository helps your learning or engineering, please consider dropping a ⭐ Star!
+-->
 # 🔮 Mystic - Multi-Domain AI Wisdom & Interpretable Reasoning Suite
 
 <p align="center">
@@ -183,3 +187,13 @@ GEMINI_API_KEY=your_gemini_api_key
 # 4. 启动本地开发服务
 pnpm dev
 ```
+
+
+
+---
+
+## ⭐ Star & Support
+
+If you find this project useful or inspiring, please consider giving it a ⭐ **Star** on GitHub! It helps more developers discover the work and supports continuous maintenance.
+
+[![Star History Chart](https://api.star-history.com/svg?repos=MeiSiristhebest/mystic&type=Date)](https://star-history.com/#MeiSiristhebest/mystic&Date)
