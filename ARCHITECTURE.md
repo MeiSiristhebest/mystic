@@ -1,5 +1,9 @@
 # 🔮 Mystic Architecture Blueprint
 
+<p align="center">
+  <b>English | <a href="./ARCHITECTURE_zh.md">简体中文</a></b>
+</p>
+
 This document explains the 4-tier decoupled AI reasoning engine and Canonical Evidence Graph (CEG) architecture powering **Mystic**.
 
 ```mermaid
