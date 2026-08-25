@@ -12,9 +12,13 @@
     "verify": "pnpm exec tsc --noEmit && tsx scripts/run-all-tests.ts && tsx scripts/verify-suite.ts && next build"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^4.0.42",
+    "@ai-sdk/google": "^4.0.51",
+    "@ai-sdk/openai": "^4.0.47",
     "@google/genai": "^2.0.1",
     "@serwist/next": "^9.5.11",
     "@vercel/analytics": "^2.0.1",
+    "ai": "^7.0.79",
     "ephemeris": "^2.2.0",
     "firebase": "^12.13.0",
     "firebase-admin": "^13.9.0",

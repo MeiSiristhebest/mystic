@@ -24,7 +24,7 @@ graph TD
 
     subgraph "Tier 3: Reasoning & LLM Grounding"
         ScoredGraph --> ContextPacker[Constraint & Fact Extractor]
-        ContextPacker --> LLM[Google Gemini API v2 / Flash 2.0]
+        ContextPacker --> LLM[Universal Multi-Model Engine (Vercel AI SDK · DeepSeek / Claude / GPT / Gemini)]
     end
 
     subgraph "Tier 4: Verification & Audit"

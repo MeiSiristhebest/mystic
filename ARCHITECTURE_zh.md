@@ -22,9 +22,9 @@ graph TD
         Arbiter --> ScoredGraph[(规范证据图 CEG)]
     end
 
-    subgraph "第 3 层：大模型约束落地与生成"
-        ScoredGraph --> ContextPacker[约束与事实切片提取器]
-        ContextPacker --> LLM[Google Gemini API v2 / Flash 2.0]
+    subgraph "Tier 3: 推理约束与大模型接地 (Reasoning & Grounding)"
+        ScoredGraph --> ContextPacker[约束与事实提取器 (ContextPacker)]
+        ContextPacker --> LLM[全模型统一引擎 (Vercel AI SDK · DeepSeek / Claude / GPT / Gemini)]
     end
 
     subgraph "第 4 层：零幻觉事实验证门禁"

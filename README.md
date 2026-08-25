@@ -19,7 +19,7 @@
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg?style=flat" alt="License: MIT" /></a>
   <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-16_App_Router-black.svg?style=flat&logo=nextdotjs&logoColor=white" alt="Next.js 16" /></a>
-  <a href="https://ai.google.dev/"><img src="https://img.shields.io/badge/Gemini_API-v2_Stream_%26_Vision-8E44AD.svg?style=flat&logo=googlegemini&logoColor=white" alt="Gemini API" /></a>
+  <a href="https://sdk.vercel.ai/"><img src="https://img.shields.io/badge/Vercel_AI_SDK-Multi--Model_Engine-000000.svg?style=flat&logo=vercel&logoColor=white" alt="Vercel AI SDK" /></a>
 </p>
 
 ---
@@ -53,7 +53,7 @@
 
 ## About the Project
 
-**Mystic** is a **multi-domain structured and interpretable AI reasoning engine** built on **Next.js 16 (App Router)**, **React 19**, **TypeScript 6**, and **`@google/genai` (Gemini API v2)**.
+**Mystic** is a **multi-domain structured and interpretable AI reasoning engine** built on **Next.js 16 (App Router)**, **React 19**, **TypeScript 6**, and **Vercel AI SDK (Multi-Model Engine supporting DeepSeek, Claude, GPT-4o, Gemini, Ollama & Custom BYOK)**.
 
 Traditional metaphysical/astrology AI applications dump raw birth information or subjective user questions directly into an LLM prompt, inevitably causing Barnum-effect platitudes, hallucinations, and false cross-domain consensus.
 
