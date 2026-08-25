@@ -103,8 +103,8 @@ graph TD
     subgraph Layer4 [Tier D: 跨体系冲突仲裁与 AI 辩证综合]
         Arbitrator["CrossDomainConflictDetector: 时域交集判定 + 前驱关系 + 表本张力识别"]
         CEG --> Arbitrator
-        Arbitrator --> Firewall["Prompt Pipeline 辩证防火墙 (反伪共识规范)"]
-        Firewall --> LLM["Google Gemini 多模态流式综合"]
+        Arbitrator --> Firewall["Prompt 流水线辩证防火墙 (反过度共识)"]
+        Firewall --> LLM["全模型通用推理落地 (Vercel AI SDK · 流式多模态与 BYOK)"]
     end
 ```
 
@@ -186,7 +186,12 @@ corepack enable
 pnpm install
 
 # 3. 配置环境变量 (.env.local)
+DEFAULT_AI_PROVIDER=gemini
 GEMINI_API_KEY=your_gemini_api_key
+# 亦可配置任意提供商 (Anthropic, OpenAI, DeepSeek, Ollama, 自定义兼容端点):
+# ANTHROPIC_API_KEY=your_anthropic_key
+# OPENAI_API_KEY=your_openai_key
+# DEEPSEEK_API_KEY=your_deepseek_key
 
 # 4. 启动本地开发服务
 pnpm dev

@@ -106,7 +106,7 @@ graph TD
         Arbitrator["CrossDomainConflictDetector: Temporal Overlap + Timing Precursor + Relation Inference"]
         CEG --> Arbitrator
         Arbitrator --> Firewall["Prompt Pipeline Dialectical Firewall (Anti-Consensus Rules)"]
-        Firewall --> LLM["Google Gemini Multimodal Streaming Synthesis"]
+        Firewall --> LLM["Universal Multi-Model Engine (Vercel AI SDK · Streaming & BYOK)"]
     end
 ```
 
@@ -188,7 +188,12 @@ corepack enable
 pnpm install
 
 # 3. Configure environment variables (.env.local)
+DEFAULT_AI_PROVIDER=gemini
 GEMINI_API_KEY=your_gemini_api_key
+# Or use any other provider (Anthropic, OpenAI, DeepSeek, Ollama, Custom BYOK):
+# ANTHROPIC_API_KEY=your_anthropic_key
+# OPENAI_API_KEY=your_openai_key
+# DEEPSEEK_API_KEY=your_deepseek_key
 
 # 4. Start local development server
 pnpm dev
