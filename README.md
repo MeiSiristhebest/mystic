@@ -2,7 +2,7 @@
   Designed & Built with ❤️ by MeiSiristhebest (https://github.com/MeiSiristhebest)
   If this repository helps your learning or engineering, please consider dropping a ⭐ Star!
 -->
-# 🔮 Mystic - Multi-Domain AI Wisdom & Interpretable Reasoning Suite
+<h1 align="center">🔮 Mystic</h1>
 
 <p align="center">
   <b>English | <a href="./README_zh.md">简体中文</a></b>
@@ -12,16 +12,14 @@
 > 💡 **If this architecture, engineering implementation, or toolchain helps your learning or workflow, please drop a ⭐ Star!**
 > 📚 Explore the technical blueprint: [ARCHITECTURE.md](./ARCHITECTURE.md)
 
-
 <p align="center">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge" alt="License: MIT" /></a>
-  <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-16_App_Router-black.svg?style=for-the-badge" alt="Next.js 16 App Router" /></a>
-  <a href="https://ai.google.dev/"><img src="https://img.shields.io/badge/AI_Engine-Gemini_Stream_%26_Vision_API-8E44AD.svg?style=for-the-badge" alt="Gemini Stream and Vision API" /></a>
-  <a href="https://github.com/MeiSiristhebest/mystic/actions"><img src="https://img.shields.io/badge/CI-Passing-brightgreen.svg?style=for-the-badge" alt="GitHub Actions CI" /></a>
+  <b>Multi-Domain AI Wisdom & Interpretable Reasoning Suite</b>
 </p>
 
 <p align="center">
-  <a href="README.md">🇨🇳 中文</a> &nbsp;|&nbsp; <a href="README_EN.md">🇺🇸 English</a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg?style=flat" alt="License: MIT" /></a>
+  <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-16_App_Router-black.svg?style=flat&logo=nextdotjs&logoColor=white" alt="Next.js 16" /></a>
+  <a href="https://ai.google.dev/"><img src="https://img.shields.io/badge/Gemini_API-v2_Stream_%26_Vision-8E44AD.svg?style=flat&logo=googlegemini&logoColor=white" alt="Gemini API" /></a>
 </p>
 
 ---
