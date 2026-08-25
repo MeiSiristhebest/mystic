@@ -1,64 +1,54 @@
 /**
- * Mystic AI Architecture — Universal Multi-Provider AI Engine (Vercel AI SDK Core)
- * Decouples reasoning and symbolic inference from specific LLM providers.
- * Supported Providers: DeepSeek, OpenAI, Anthropic Claude, Google Gemini, Ollama, Agnes AI, Custom BYOK.
+ * Mystic AI Architecture — Zero-Hardcoding Dynamic Multi-Model Engine (Vercel AI SDK Core)
+ * Decouples reasoning and symbolic inference completely from static model strings.
+ * All models and providers are 100% dynamically configurable via environment variables or request parameters.
  */
 
-export const PROVIDER_MODELS = {
-  deepseek: {
-    CHAT: process.env.DEEPSEEK_MODEL_CHAT || "deepseek-chat",
-    REASONER: process.env.DEEPSEEK_MODEL_REASONER || "deepseek-reasoner",
-  },
-  openai: {
-    GPT_4O: process.env.OPENAI_MODEL_GPT_4O || "gpt-4o",
-    GPT_4O_MINI: process.env.OPENAI_MODEL_GPT_4O_MINI || "gpt-4o-mini",
-    O3_MINI: process.env.OPENAI_MODEL_O3_MINI || "o3-mini",
-  },
-  anthropic: {
-    CLAUDE_3_7_SONNET: process.env.ANTHROPIC_MODEL_CLAUDE_3_7 || "claude-3-7-sonnet-20250219",
-    CLAUDE_3_5_SONNET: process.env.ANTHROPIC_MODEL_CLAUDE_3_5 || "claude-3-5-sonnet-20241022",
-    CLAUDE_3_5_HAIKU: process.env.ANTHROPIC_MODEL_CLAUDE_HAIKU || "claude-3-5-haiku-20241022",
-  },
-  gemini: {
-    FLASH: process.env.GEMINI_MODEL_FLASH || "gemini-2.0-flash",
-    PRO: process.env.GEMINI_MODEL_PRO || "gemini-2.0-pro-exp-02-05",
-    LITE: process.env.GEMINI_MODEL_LITE || "gemini-2.0-flash-lite-preview-02-05",
-  },
-  agnes: {
-    FLASH: process.env.AGNES_MODEL_FLASH || "agnes-2.5-flash",
-    IMAGE: process.env.AGNES_MODEL_IMAGE || "agnes-image-2.1-flash",
-  },
+// Dynamically resolved default provider and model from environment
+export const DEFAULT_PROVIDER: AIProvider = (process.env.DEFAULT_AI_PROVIDER as AIProvider) || "gemini";
+export const DEFAULT_MODEL: string = 
+  process.env.DEFAULT_AI_MODEL || 
+  process.env.AI_MODEL || 
+  process.env.GEMINI_MODEL || 
+  process.env.OPENAI_MODEL || 
+  process.env.DEEPSEEK_MODEL || 
+  process.env.ANTHROPIC_MODEL || 
+  "gemini-2.5-flash";
+
+// Backward-compatible reference objects pointing to dynamic environment variables
+export const MODELS = {
+  get PRO() { return process.env.GEMINI_MODEL_PRO || process.env.AI_MODEL_PRO || DEFAULT_MODEL; },
+  get FLASH() { return process.env.GEMINI_MODEL_FLASH || process.env.AI_MODEL_FLASH || DEFAULT_MODEL; },
+  get LITE() { return process.env.GEMINI_MODEL_LITE || process.env.AI_MODEL_LITE || DEFAULT_MODEL; },
 } as const;
 
-// Backward-compatible Gemini constants
-export const MODELS = {
-  PRO: PROVIDER_MODELS.gemini.PRO,
-  FLASH: PROVIDER_MODELS.gemini.FLASH,
-  LITE: PROVIDER_MODELS.gemini.LITE,
+export const AGNES_MODELS = {
+  get FLASH() { return process.env.AGNES_MODEL_FLASH || DEFAULT_MODEL; },
+  get IMAGE() { return process.env.AGNES_MODEL_IMAGE || "agnes-image"; },
 } as const;
 
 export const FALLBACK_CHAIN = [
   MODELS.PRO,
   MODELS.FLASH,
-  MODELS.LITE
+  MODELS.LITE,
 ];
 
-// Backward-compatible Agnes constants
-export const AGNES_MODELS = PROVIDER_MODELS.agnes;
-
-export const DEFAULT_MODEL = AGNES_MODELS.FLASH;
-
 export type AIProvider = 
-  | "deepseek" 
-  | "openai" 
-  | "anthropic" 
   | "gemini" 
+  | "anthropic" 
+  | "openai" 
+  | "deepseek" 
+  | "grok" 
+  | "qwen" 
   | "ollama" 
   | "agnes" 
-  | "custom";
+  | "custom" 
+  | (string & {});
 
 export interface AIInvocationConfig {
+  /** Any dynamic model string (e.g. gpt-4.5, claude-3-7-sonnet, deepseek-reasoner, gemini-2.5-pro, custom-id) */
   model?: string;
+  /** Any dynamic provider identifier */
   provider?: AIProvider;
   temperature?: number;
   maxOutputTokens?: number;
@@ -111,10 +101,10 @@ export async function* generateContentStream(
       prompt, 
       systemInstruction, 
       config: {
-        model: config.model || AGNES_MODELS.FLASH,
+        model: config.model,
         ...config,
       }, 
-      provider: config.provider || "agnes" 
+      provider: config.provider || DEFAULT_PROVIDER
     }),
     signal
   });
