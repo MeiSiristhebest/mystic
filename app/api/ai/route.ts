@@ -3,110 +3,84 @@ import { streamText } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createAnthropic } from "@ai-sdk/anthropic";
-import { 
-  AKASHA_PERSONA, 
-  DEFAULT_MODEL, 
-  DEFAULT_PROVIDER,
-  AIProvider 
-} from "@/lib/ai";
+import { AKASHA_PERSONA, DEFAULT_PROVIDER, DEFAULT_MODEL, AIProvider } from "@/lib/ai";
 import { getCachedResponse, setCachedResponse, generateCacheKey } from "@/lib/ai-cache";
 
 export const runtime = 'edge';
 export const maxDuration = 300;
 
 /**
- * Dynamically resolves provider and model instance without any hardcoding.
- * Accepts any model name string from request or environment variables.
+ * Standard Provider Registry
+ * Resolves the language model instance dynamically based on provider and model ID.
+ * Zero hardcoded model names: completely data-driven.
  */
-function resolveVercelAiModel(requestedProvider?: string, userConfig: any = {}) {
-  let modelName = userConfig.model || process.env.DEFAULT_AI_MODEL || process.env.AI_MODEL;
-  let provider = (requestedProvider || userConfig.provider || process.env.DEFAULT_AI_PROVIDER || "").toLowerCase();
+function getLanguageModel(providerName?: string, userConfig: any = {}) {
+  const provider = (providerName || userConfig.provider || DEFAULT_PROVIDER).toLowerCase();
+  const modelId = userConfig.model || DEFAULT_MODEL;
 
-  // If provider not explicitly specified, auto-infer from model name prefix
-  if (!provider && modelName) {
-    if (modelName.startsWith("gemini")) provider = "gemini";
-    else if (modelName.startsWith("claude")) provider = "anthropic";
-    else if (modelName.startsWith("deepseek")) provider = "deepseek";
-    else if (modelName.startsWith("gpt") || modelName.startsWith("o1") || modelName.startsWith("o3")) provider = "openai";
-    else if (modelName.startsWith("grok")) provider = "grok";
-    else if (modelName.startsWith("qwen")) provider = "qwen";
-    else if (modelName.startsWith("llama") || modelName.startsWith("mistral")) provider = "ollama";
+  if (!modelId) {
+    throw new Error("No AI model ID provided. Please specify a model in request config or set DEFAULT_AI_MODEL.");
   }
 
-  // Fallback to default provider
-  if (!provider) {
-    provider = DEFAULT_PROVIDER;
-  }
+  const apiKey = userConfig.customApiKey;
+  const baseURL = userConfig.customBaseUrl;
 
-  // 1. Google Gemini Provider (Accepts any gemini model string)
-  if (provider === "gemini") {
-    const apiKey = userConfig.customApiKey || process.env.GEMINI_API_KEY;
-    if (!apiKey) throw new Error("GEMINI_API_KEY is not configured");
-    const baseURL = userConfig.customBaseUrl || process.env.GEMINI_BASE_URL;
-    const resolvedModel = modelName || process.env.GEMINI_MODEL || "gemini-2.5-flash";
-    const google = createGoogleGenerativeAI({ apiKey, baseURL });
-    return { model: google(resolvedModel), resolvedModel, provider };
-  }
+  switch (provider) {
+    case "google":
+    case "gemini": {
+      const key = apiKey || process.env.GEMINI_API_KEY;
+      if (!key) throw new Error("GEMINI_API_KEY is not configured");
+      const google = createGoogleGenerativeAI({
+        apiKey: key,
+        baseURL: baseURL || process.env.GEMINI_BASE_URL,
+      });
+      return { model: google(modelId), modelId, provider: "google" };
+    }
 
-  // 2. Anthropic Claude Provider (Accepts any claude model string)
-  if (provider === "anthropic" || provider === "claude") {
-    const apiKey = userConfig.customApiKey || process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) throw new Error("ANTHROPIC_API_KEY is not configured");
-    const baseURL = userConfig.customBaseUrl || process.env.ANTHROPIC_BASE_URL;
-    const resolvedModel = modelName || process.env.ANTHROPIC_MODEL || "claude-3-7-sonnet-20250219";
-    const anthropic = createAnthropic({ apiKey, baseURL });
-    return { model: anthropic(resolvedModel), resolvedModel, provider: "anthropic" };
-  }
+    case "anthropic":
+    case "claude": {
+      const key = apiKey || process.env.ANTHROPIC_API_KEY;
+      if (!key) throw new Error("ANTHROPIC_API_KEY is not configured");
+      const anthropic = createAnthropic({
+        apiKey: key,
+        baseURL: baseURL || process.env.ANTHROPIC_BASE_URL,
+      });
+      return { model: anthropic(modelId), modelId, provider: "anthropic" };
+    }
 
-  // 3. DeepSeek Provider (OpenAI compatible)
-  if (provider === "deepseek") {
-    const apiKey = userConfig.customApiKey || process.env.DEEPSEEK_API_KEY;
-    if (!apiKey) throw new Error("DEEPSEEK_API_KEY is not configured");
-    const baseURL = userConfig.customBaseUrl || process.env.DEEPSEEK_BASE_URL || "https://api.deepseek.com/v1";
-    const resolvedModel = modelName || process.env.DEEPSEEK_MODEL || "deepseek-reasoner";
-    const deepseek = createOpenAI({ baseURL, apiKey });
-    return { model: deepseek(resolvedModel), resolvedModel, provider: "deepseek" };
-  }
+    case "deepseek": {
+      const key = apiKey || process.env.DEEPSEEK_API_KEY;
+      if (!key) throw new Error("DEEPSEEK_API_KEY is not configured");
+      const deepseek = createOpenAI({
+        apiKey: key,
+        baseURL: baseURL || process.env.DEEPSEEK_BASE_URL || "https://api.deepseek.com/v1",
+      });
+      return { model: deepseek(modelId), modelId, provider: "deepseek" };
+    }
 
-  // 4. xAI Grok Provider (OpenAI compatible)
-  if (provider === "grok" || provider === "xai") {
-    const apiKey = userConfig.customApiKey || process.env.XAI_API_KEY || process.env.GROK_API_KEY;
-    if (!apiKey) throw new Error("XAI_API_KEY is not configured");
-    const baseURL = userConfig.customBaseUrl || process.env.XAI_BASE_URL || "https://api.x.ai/v1";
-    const resolvedModel = modelName || process.env.GROK_MODEL || "grok-3";
-    const grok = createOpenAI({ baseURL, apiKey });
-    return { model: grok(resolvedModel), resolvedModel, provider: "grok" };
-  }
+    case "openai": {
+      const key = apiKey || process.env.OPENAI_API_KEY;
+      if (!key) throw new Error("OPENAI_API_KEY is not configured");
+      const openai = createOpenAI({
+        apiKey: key,
+        baseURL: baseURL || process.env.OPENAI_BASE_URL,
+      });
+      return { model: openai(modelId), modelId, provider: "openai" };
+    }
 
-  // 5. Qwen / Dashscope Provider (OpenAI compatible)
-  if (provider === "qwen" || provider === "dashscope") {
-    const apiKey = userConfig.customApiKey || process.env.DASHSCOPE_API_KEY || process.env.QWEN_API_KEY;
-    if (!apiKey) throw new Error("DASHSCOPE_API_KEY is not configured");
-    const baseURL = userConfig.customBaseUrl || process.env.DASHSCOPE_BASE_URL || "https://dashscope.aliyuncs.com/compatible-mode/v1";
-    const resolvedModel = modelName || process.env.QWEN_MODEL || "qwen-2.5-max";
-    const qwen = createOpenAI({ baseURL, apiKey });
-    return { model: qwen(resolvedModel), resolvedModel, provider: "qwen" };
+    default: {
+      // Universal OpenAI-compatible driver (Ollama, vLLM, OpenRouter, Grok, Qwen, SiliconFlow, Local, BYOK)
+      const key = apiKey || process.env.CUSTOM_AI_API_KEY || process.env.OPENAI_API_KEY || "default";
+      const custom = createOpenAI({
+        apiKey: key,
+        baseURL: baseURL || process.env.CUSTOM_AI_BASE_URL || "http://localhost:11434/v1",
+      });
+      return { model: custom(modelId), modelId, provider: provider || "custom" };
+    }
   }
-
-  // 6. OpenAI Provider (Accepts any openai model string)
-  if (provider === "openai") {
-    const apiKey = userConfig.customApiKey || process.env.OPENAI_API_KEY;
-    if (!apiKey) throw new Error("OPENAI_API_KEY is not configured");
-    const baseURL = userConfig.customBaseUrl || process.env.OPENAI_BASE_URL;
-    const resolvedModel = modelName || process.env.OPENAI_MODEL || "gpt-4.5-preview";
-    const openai = createOpenAI({ apiKey, baseURL });
-    return { model: openai(resolvedModel), resolvedModel, provider: "openai" };
-  }
-
-  // 7. Universal Custom / Ollama / OpenRouter / OneAPI (BYOK)
-  const apiKey = userConfig.customApiKey || process.env.CUSTOM_AI_API_KEY || process.env.OPENAI_API_KEY || "ollama";
-  const baseURL = userConfig.customBaseUrl || process.env.CUSTOM_AI_BASE_URL || "http://localhost:11434/v1";
-  const resolvedModel = modelName || process.env.CUSTOM_AI_MODEL || "llama3.3";
-  const custom = createOpenAI({ baseURL, apiKey });
-  return { model: custom(resolvedModel), resolvedModel, provider: provider || "custom" };
 }
 
-// --- Agnes AI helpers (Legacy Compatibility) ---
+// --- Agnes AI Proxy Helper (Backward Compatibility) ---
 
 async function callAgnesStream(
   messages: Array<{ role: string; content: string }>,
@@ -124,7 +98,7 @@ async function callAgnesStream(
   fullMessages.push({ role: "system", content: systemInstruction });
   fullMessages.push(...messages);
 
-  const modelName = userConfig.model || process.env.AGNES_MODEL_FLASH || "agnes-2.5-flash";
+  const modelName = userConfig.model || process.env.AGNES_MODEL_FLASH || "default";
   const agnesConfig: Record<string, any> = {
     model: modelName,
     messages: fullMessages,
@@ -263,11 +237,11 @@ async function callAgnesStream(
   });
 }
 
-// --- Main Handler ---
+// --- Main Route Handler ---
 
 export async function POST(req: NextRequest) {
   try {
-    // 1. Same-Origin Check (Security defense against external theft)
+    // 1. Same-Origin Security Check
     const referer = req.headers.get("referer");
     const origin = req.headers.get("origin");
     const secFetchSite = req.headers.get("sec-fetch-site");
@@ -280,11 +254,8 @@ export async function POST(req: NextRequest) {
       try {
         const originUrl = new URL(origin);
         const hostUrl = host ? (host.includes("://") ? host : `https://${host}`) : "";
-        if (hostUrl) {
-          const hostParsed = new URL(hostUrl);
-          if (originUrl.host === hostParsed.host) {
-            isSameOrigin = true;
-          }
+        if (hostUrl && originUrl.host === new URL(hostUrl).host) {
+          isSameOrigin = true;
         }
       } catch (e) {
         // Parse error
@@ -293,11 +264,8 @@ export async function POST(req: NextRequest) {
       try {
         const refererUrl = new URL(referer);
         const hostUrl = host ? (host.includes("://") ? host : `https://${host}`) : "";
-        if (hostUrl) {
-          const hostParsed = new URL(hostUrl);
-          if (refererUrl.host === hostParsed.host) {
-            isSameOrigin = true;
-          }
+        if (hostUrl && refererUrl.host === new URL(hostUrl).host) {
+          isSameOrigin = true;
         }
       } catch (e) {
         // Parse error
@@ -317,10 +285,10 @@ export async function POST(req: NextRequest) {
       config: userConfig = {},
     } = body;
     
-    const requestedProvider = (body.provider as string) || (userConfig.provider as string);
+    const requestedProvider = body.provider || userConfig.provider;
 
     // Check Cache
-    const cacheKey = generateCacheKey(prompt, userConfig.model || DEFAULT_MODEL, systemInstruction);
+    const cacheKey = generateCacheKey(prompt, userConfig.model || DEFAULT_MODEL || "default", systemInstruction);
     const cached = getCachedResponse(cacheKey);
     if (cached) {
       return new Response(cached, {
@@ -328,7 +296,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // A. Route to Agnes provider (if explicitly requested)
+    // A. Route to Agnes provider (if explicitly specified)
     if (requestedProvider === "agnes") {
       const messages: Array<{ role: string; content: string }> = Array.isArray(prompt)
         ? prompt.map((m: any) => {
@@ -347,9 +315,9 @@ export async function POST(req: NextRequest) {
       return await callAgnesStream(messages, systemInstruction, userConfig, req.signal, cacheKey);
     }
 
-    // B. Route to Dynamic Vercel AI SDK Provider
+    // B. Route to Vercel AI SDK (Standard Provider Registry)
     try {
-      const { model: modelInstance, resolvedModel, provider } = resolveVercelAiModel(requestedProvider, userConfig);
+      const { model: modelInstance, modelId, provider } = getLanguageModel(requestedProvider, userConfig);
 
       // Normalize messages for Vercel AI SDK
       const messages: Array<{ role: "system" | "user" | "assistant"; content: string }> = [];
@@ -412,11 +380,11 @@ export async function POST(req: NextRequest) {
           "Content-Type": "text/plain; charset=utf-8",
           "Cache-Control": "no-cache, no-transform",
           "X-AI-Provider": provider,
-          "X-AI-Model": resolvedModel,
+          "X-AI-Model": modelId,
         },
       });
     } catch (sdkError: any) {
-      console.warn(`[Vercel AI SDK ${requestedProvider || 'default'} Error] Attempting Agnes fallback...`, sdkError);
+      console.warn(`[Vercel AI SDK Error] Attempting Agnes fallback...`, sdkError);
       if (process.env.AGNES_API_KEY) {
         const messages: Array<{ role: string; content: string }> = Array.isArray(prompt)
           ? prompt.map((m: any) => {

@@ -1,54 +1,24 @@
 /**
- * Mystic AI Architecture — Zero-Hardcoding Dynamic Multi-Model Engine (Vercel AI SDK Core)
- * Decouples reasoning and symbolic inference completely from static model strings.
- * All models and providers are 100% dynamically configurable via environment variables or request parameters.
+ * Mystic AI Architecture — Universal Multi-Model Engine (Vercel AI SDK Core)
+ * Completely decouples reasoning and domain logic from specific model names and vendors.
+ * Zero hardcoded models: 100% data-driven and environment/request-configurable.
  */
 
-// Dynamically resolved default provider and model from environment
-export const DEFAULT_PROVIDER: AIProvider = (process.env.DEFAULT_AI_PROVIDER as AIProvider) || "gemini";
-export const DEFAULT_MODEL: string = 
-  process.env.DEFAULT_AI_MODEL || 
-  process.env.AI_MODEL || 
-  process.env.GEMINI_MODEL || 
-  process.env.OPENAI_MODEL || 
-  process.env.DEEPSEEK_MODEL || 
-  process.env.ANTHROPIC_MODEL || 
-  "gemini-2.5-flash";
-
-// Backward-compatible reference objects pointing to dynamic environment variables
-export const MODELS = {
-  get PRO() { return process.env.GEMINI_MODEL_PRO || process.env.AI_MODEL_PRO || DEFAULT_MODEL; },
-  get FLASH() { return process.env.GEMINI_MODEL_FLASH || process.env.AI_MODEL_FLASH || DEFAULT_MODEL; },
-  get LITE() { return process.env.GEMINI_MODEL_LITE || process.env.AI_MODEL_LITE || DEFAULT_MODEL; },
-} as const;
-
-export const AGNES_MODELS = {
-  get FLASH() { return process.env.AGNES_MODEL_FLASH || DEFAULT_MODEL; },
-  get IMAGE() { return process.env.AGNES_MODEL_IMAGE || "agnes-image"; },
-} as const;
-
-export const FALLBACK_CHAIN = [
-  MODELS.PRO,
-  MODELS.FLASH,
-  MODELS.LITE,
-];
+export const DEFAULT_PROVIDER = process.env.DEFAULT_AI_PROVIDER || "gemini";
+export const DEFAULT_MODEL = process.env.DEFAULT_AI_MODEL || process.env.AI_MODEL || "";
 
 export type AIProvider = 
   | "gemini" 
   | "anthropic" 
   | "openai" 
   | "deepseek" 
-  | "grok" 
-  | "qwen" 
-  | "ollama" 
-  | "agnes" 
   | "custom" 
   | (string & {});
 
 export interface AIInvocationConfig {
-  /** Any dynamic model string (e.g. gpt-4.5, claude-3-7-sonnet, deepseek-reasoner, gemini-2.5-pro, custom-id) */
+  /** Dynamic model identifier (passed directly to provider) */
   model?: string;
-  /** Any dynamic provider identifier */
+  /** Provider identifier */
   provider?: AIProvider;
   temperature?: number;
   maxOutputTokens?: number;
@@ -100,10 +70,7 @@ export async function* generateContentStream(
     body: JSON.stringify({ 
       prompt, 
       systemInstruction, 
-      config: {
-        model: config.model,
-        ...config,
-      }, 
+      config, 
       provider: config.provider || DEFAULT_PROVIDER
     }),
     signal
