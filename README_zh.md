@@ -202,17 +202,23 @@ pnpm dev
 
 ---
 
-
 ---
 
 ## ⭐ 支持与 Star
 
 如果本项目对您的学习、研究或工程落地有所帮助，欢迎给本项目点亮一颗 ⭐ **Star**！这是对开源创作者最大的鼓励与支持。
 
-[![Star History Chart](https://api.star-history.com/svg?repos=MeiSiristhebest/mystic&type=Date)](https://star-history.com/#MeiSiristhebest/mystic&Date)
-
-### 🌟 Stargazers 排行榜
-[![Stargazers repo roster for @MeiSiristhebest/mystic](https://reporoster.com/stars/MeiSiristhebest/mystic)](https://github.com/MeiSiristhebest/mystic/stargazers)
+<p align="left">
+  <a href="https://github.com/MeiSiristhebest/mystic/stargazers">
+    <img src="https://img.shields.io/github/stars/MeiSiristhebest/mystic?style=for-the-badge&logo=apachespark&color=f59e0b" alt="Stargazers" />
+  </a>
+  <a href="https://github.com/MeiSiristhebest/mystic/network/members">
+    <img src="https://img.shields.io/github/forks/MeiSiristhebest/mystic?style=for-the-badge&color=3b82f6" alt="Forks" />
+  </a>
+  <a href="https://star-history.com/#MeiSiristhebest/mystic&Date">
+    <img src="https://img.shields.io/badge/Star%20History-查看趋势图表-FF6B6B?style=for-the-badge&logo=github" alt="Star History" />
+  </a>
+</p>
 
 ### 🤝 社区贡献者
 <a href="https://github.com/MeiSiristhebest/mystic/graphs/contributors">
