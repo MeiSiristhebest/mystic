@@ -224,3 +224,6 @@ pnpm dev
 <a href="https://github.com/MeiSiristhebest/mystic/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=MeiSiristhebest/mystic" alt="Contributors" />
 </a>
+
+<!-- Scarf Telemetry Pixel -->
+<img referrerpolicy="no-referrer-when-downgrade" src="https://static.scarf.sh/a.png?x-pxid=p2L36r5iF7fAu6cd2J2Y41Cp6Z3YJHInGjzgouIZuLLHJhyoV9" />
