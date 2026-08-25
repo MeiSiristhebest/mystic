@@ -218,3 +218,6 @@ GEMINI_API_KEY=your_gemini_api_key
 # 4. Start local development server
 pnpm dev
 ```
+
+<!-- Scarf Telemetry Pixel -->
+<img referrerpolicy="no-referrer-when-downgrade" src="https://static.scarf.sh/a.png?x-pxid=p2L36r5iF7fAu6cd2J2Y41Cp6Z3YJHInGjzgouIZuLLHJhyoV9" />
