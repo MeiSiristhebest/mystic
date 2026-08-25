@@ -170,15 +170,9 @@ pnpm verify
 
 If you find this project useful or inspiring, please consider giving it a ⭐ **Star** on GitHub! It helps more developers discover the work and supports continuous open-source maintenance.
 
-<p align="left">
-  <a href="https://github.com/MeiSiristhebest/mystic/stargazers">
-    <img src="https://img.shields.io/github/stars/MeiSiristhebest/mystic?style=for-the-badge&logo=apachespark&color=f59e0b" alt="Stargazers" />
-  </a>
-  <a href="https://github.com/MeiSiristhebest/mystic/network/members">
-    <img src="https://img.shields.io/github/forks/MeiSiristhebest/mystic?style=for-the-badge&color=3b82f6" alt="Forks" />
-  </a>
+<p align="center">
   <a href="https://star-history.com/#MeiSiristhebest/mystic&Date">
-    <img src="https://img.shields.io/badge/Star%20History-View%20Interactive%20Chart-FF6B6B?style=for-the-badge&logo=github" alt="Star History" />
+    <img src="https://api.star-history.com/svg?repos=MeiSiristhebest/mystic&type=Date" alt="Star History Chart" width="100%" />
   </a>
 </p>
 
