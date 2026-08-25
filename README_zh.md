@@ -208,9 +208,12 @@ pnpm dev
 
 如果本项目对您的学习、研究或工程落地有所帮助，欢迎给本项目点亮一颗 ⭐ **Star**！这是对开源创作者最大的鼓励与支持。
 
-<p align="center">
-  <a href="https://star-history.com/#MeiSiristhebest/mystic&Date">
-    <img src="https://api.star-history.com/svg?repos=MeiSiristhebest/mystic&type=Date" alt="Star History 趋势图" width="100%" />
+<p align="left">
+  <a href="https://github.com/MeiSiristhebest/mystic/stargazers">
+    <img src="https://img.shields.io/github/stars/MeiSiristhebest/mystic?style=for-the-badge&logo=apachespark&color=f59e0b" alt="Stargazers" />
+  </a>
+  <a href="https://github.com/MeiSiristhebest/mystic/network/members">
+    <img src="https://img.shields.io/github/forks/MeiSiristhebest/mystic?style=for-the-badge&color=3b82f6" alt="Forks" />
   </a>
 </p>
 
