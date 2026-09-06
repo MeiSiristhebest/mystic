@@ -1,13 +1,44 @@
+---
 name: CI Pipeline
 
 on:
   push:
-    branches: [main]
+    branches: [main, master]
+    paths:
+      - 'app/**'
+      - 'lib/**'
+      - 'hooks/**'
+      - 'scripts/**'
+      - 'tests/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'tsconfig.json'
+      - 'next.config.ts'
+      - '.github/workflows/ci.yml'
   pull_request:
-    branches: [main]
+    branches: [main, master]
+    paths:
+      - 'app/**'
+      - 'lib/**'
+      - 'hooks/**'
+      - 'scripts/**'
+      - 'tests/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'tsconfig.json'
+      - 'next.config.ts'
+      - '.github/workflows/ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  test:
+  verify:
     name: Test & Build (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
@@ -16,26 +47,32 @@ jobs:
         os: [ubuntu-latest, windows-latest]
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-      - name: Setup Node.js 22.x (LTS)
+      - name: Enable Corepack & Setup pnpm
+        shell: bash
+        run: |
+          corepack enable
+          corepack prepare pnpm@latest --activate
+
+      - name: Setup Node.js 22.x with pnpm Cache
         uses: actions/setup-node@v4
         with:
           node-version: 22.x
-
-      - name: Enable Corepack
-        run: corepack enable
+          cache: 'pnpm'
 
       - name: Install Dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: TypeScript Validation
         run: pnpm exec tsc --noEmit
 
-      - name: Run Tests
+      - name: Run Ephemeris & Evidence Graph Test Suite
         run: pnpm run test
 
-      - name: Build Production Bundle
+      - name: Next.js Production Build
         run: pnpm run build
         env:
           NEXT_TELEMETRY_DISABLED: 1
+...
